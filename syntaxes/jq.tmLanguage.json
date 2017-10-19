@@ -1,0 +1,41 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "jq",
+	"fileTypes": [
+		"jq"
+	],
+	"patterns": [
+		{
+			"include": "#command"
+		},
+		{
+			"include": "#json"
+		}
+	],
+	"repository": {
+		"command": {
+			"patterns": [
+				{
+					"name": "entity.name.class",
+					"match": "^jq\\s+(.*)",
+					"captures": {
+						"1" : {
+							"name": "entity.name.tag"
+						}
+					}
+				}
+			]
+		},		
+		"json": {
+			"begin": "^[\\{|\\[]",
+			"end": "[\\}|\\]]$",
+			"name": "source.json",
+			"patterns": [	
+				{
+					"include": "source.json"
+				}
+			]
+		}
+	},
+	"scopeName": "source.jq"
+}

@@ -8,7 +8,7 @@ import * as child_process from 'child_process';
 
 const BINARIES = {
     'linux': 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64',
-    'mac': 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64',
+    'darwin': 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64',
     'win32': 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-win64.exe'
 };
 const BIN_DIR = path.join(__dirname, '..', 'bin')

@@ -134,7 +134,7 @@ function executeJqCommand(params) {
         const contextLines = [context];
         let line = params.range.start.line + 2;
         let lineText = '';
-        while ((lineText = document.lineAt(line++).text)) {
+        while (line < document.lineCount && (lineText = document.lineAt(line++).text)) {
             contextLines.push(lineText)
         }
         jqCommand(query, JSON.parse(contextLines.join(' ')));
@@ -163,7 +163,7 @@ function isUrl(context: string): boolean {
 }
 
 function isFilepath(context: string): boolean  {
-    return context.search(/^(\/|\.\/)/) !== -1;
+    return context.search(/^(\/|\.{1,2}\/|~\/)/) !== -1;
 }
 
 function getFileName(document: vscode.TextDocument, context: string): string {

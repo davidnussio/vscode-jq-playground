@@ -4,11 +4,34 @@
     "description": "Visual Code integration with jq",
     "version": "0.0.1",
     "publisher": "davidnussio",
+    "license": "SEE LICENSE IN LICENSE",
+    "author": {
+        "name": "David Nussio",
+        "email": "david.nussio@gmail.com"
+    },
+    "icon": "images/icon.png",
+    "galleryBanner": {
+        "color": "#000000",
+        "theme": "dark"
+    },
+    "bugs": {
+        "url": "https://github.com/davidnussio/vscode-jq-playground/issues",
+        "email": "david.nussio@gmail.com"
+    },
+    "homepage": "https://github.com/davidnussio/vscode-jq-playground/blob/master/README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/davidnussio/vscode-jq-playground.git"
+    },
     "engines": {
         "vscode": "^1.17.0"
     },
     "categories": [
         "Other"
+    ],
+    "keywords": [
+        "JSON",
+        "query"
     ],
     "activationEvents": [
         "onLanguage:jq"

@@ -10,6 +10,9 @@
 		},
 		{
 			"include": "#json"
+		},
+		{
+			"include": "#comment"
 		}
 	],
 	"repository": {
@@ -33,6 +36,14 @@
 			"patterns": [	
 				{
 					"include": "source.json"
+				}
+			]
+		},
+		"comment": {
+			"patterns": [
+				{
+					"match": "^#.*",
+					"name": "comment"
 				}
 			]
 		}

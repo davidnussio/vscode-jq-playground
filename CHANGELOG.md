@@ -3,5 +3,8 @@ All notable changes to the "vscode-jq-playground" extension will be documented i
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.2]
+- Fix minor bug
+
 ## [0.0.1]
 - Initial release

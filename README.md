@@ -66,9 +66,9 @@ https://api.github.com/repos/stedolan/jq/commits?per_page=5
 
 ## TODO
 
-[ ] Support windows filesystem
-[ ] Store intermediate and share it between jq queries
-[ ] Autocomplete
+- [ ] Support windows filesystem
+- [ ] Store intermediate and share it between jq queries
+- [ ] Autocomplete
 
 
 ## Thanks

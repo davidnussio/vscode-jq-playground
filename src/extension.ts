@@ -5,6 +5,7 @@ import * as download from 'download';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
+import { WorkspaceFilesCompletionItemProvider } from './autocomplete'
 
 const BINARIES = {
     'linux': 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64',
@@ -20,14 +21,15 @@ const CODE_LENS_TITLE = '[Execute jq]';
 const Logger = vscode.window.createOutputChannel('jq output');
 
 export function activate(context: vscode.ExtensionContext) {
-    
+
     setupEnvironment()
         .then(() => {
             context.subscriptions.push(vscode.commands.registerCommand(EXECUTE_JQ_COMMAND, executeJqCommand));
             context.subscriptions.push(vscode.languages.registerCodeLensProvider(LANGUAGES, { provideCodeLenses }));
+            context.subscriptions.push(vscode.languages.registerCompletionItemProvider(LANGUAGES, new WorkspaceFilesCompletionItemProvider()));
         })
-        .catch(error => { 
-            Logger.appendLine(error); 
+        .catch(error => {
+            Logger.appendLine(error);
         });
 }
 
@@ -60,7 +62,7 @@ function setupEnvironment(): Promise<any> {
 }
 
 function provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken) {
-    const matches:RegexMatch[] = findRegexes(document);
+    const matches: RegexMatch[] = findRegexes(document);
     return matches.map(match => new vscode.CodeLens(match.range, {
         title: CODE_LENS_TITLE,
         command: EXECUTE_JQ_COMMAND,
@@ -116,8 +118,8 @@ function executeJqCommand(params) {
     const query: string = document
         .lineAt(params.range.start.line)
         .text.replace(/jq\s+/, '');
-    const context:string = document.lineAt(params.range.start.line + 1).text;
-    
+    const context: string = document.lineAt(params.range.start.line + 1).text;
+
     if (isUrl(context)) {
         download(context)
             .then(data => jqCommand(query, JSON.parse(data.toString())))
@@ -125,8 +127,11 @@ function executeJqCommand(params) {
                 Logger.append(err);
                 Logger.show();
             });
+    } else if (isWorksaceFile(context, vscode.workspace.textDocuments)) {
+        const text: string = getWorksaceFile(context, vscode.workspace.textDocuments);
+        jqCommand(query, JSON.parse(text));
     } else if (isFilepath(context)) {
-        const fileName:string = getFileName(document, context);
+        const fileName: string = getFileName(document, context);
         if (fs.existsSync(fileName)) {
             jqCommand(query, JSON.parse(fs.readFileSync(fileName).toString()));
         }
@@ -139,6 +144,21 @@ function executeJqCommand(params) {
         }
         jqCommand(query, JSON.parse(contextLines.join(' ')));
     }
+}
+
+function isWorksaceFile(context: string, textDocuments: vscode.TextDocument[]): boolean {
+    return textDocuments
+        .filter(document => document.fileName === context)
+        .length === 1;
+}
+
+function getWorksaceFile(context: string, textDocuments: vscode.TextDocument[]): string {
+    for (const document of textDocuments) {
+        if (document.fileName === context) {
+            return document.getText();
+        }
+    }
+    return "";
 }
 
 function jqCommand(statement: string, jsonObj: any) {
@@ -162,7 +182,7 @@ function isUrl(context: string): boolean {
     return context.search(/^http(s)?/) !== -1;
 }
 
-function isFilepath(context: string): boolean  {
+function isFilepath(context: string): boolean {
     return context.search(/^(\/|\.{1,2}\/|~\/)/) !== -1;
 }
 

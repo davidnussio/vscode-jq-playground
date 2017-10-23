@@ -16,6 +16,7 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
     * file on filesystem
     * http resource
 * Highlighting inline json code
+* Autocomplete filename from workspace opened file
 
 ## Usage
 
@@ -54,6 +55,10 @@ jq .foo,.bar
 # Use absolute pahts
 jq .foo,.bar
 /home/dev/files/example.json
+
+# Unsaved temporary file
+jq .
+Untitled-1
 ```
 
 
@@ -66,7 +71,8 @@ https://api.github.com/repos/stedolan/jq/commits?per_page=5
 
 ## TODO
 
-- [ ] Support windows filesystem
+- [ ] Better error reporting
+- [ ] Support (testing) windows filesystem
 - [ ] Store intermediate and share it between jq queries
 - [ ] Autocomplete
 

@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
 import { WorkspaceFilesCompletionItemProvider } from './autocomplete'
+import { OutputDataHandler, EditorDataHandler } from './dataHandler'
 
 const BINARIES = {
     'linux': 'https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64',
@@ -16,11 +17,12 @@ const BIN_DIR = path.join(__dirname, '..', 'bin')
 const FILEPATH = path.join(BIN_DIR, /^win32/.test(process.platform) ? './jq.exe' : './jq');
 const LANGUAGES = ['jq'];
 const EXECUTE_JQ_COMMAND = 'extension.executeJqCommand';
-const CODE_LENS_TITLE = '[Execute jq]';
+const CODE_LENS_TITLE = 'jq';
 
 const Logger = vscode.window.createOutputChannel('jq output');
 
 export function activate(context: vscode.ExtensionContext) {
+    
 
     setupEnvironment()
         .then(() => {
@@ -30,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
         .catch(error => {
             Logger.appendLine(error);
-        });
+        }); 
 }
 
 export function deactivate() {
@@ -62,22 +64,32 @@ function setupEnvironment(): Promise<any> {
 }
 
 function provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken) {
-    const matches: RegexMatch[] = findRegexes(document);
-    return matches.map(match => new vscode.CodeLens(match.range, {
-        title: CODE_LENS_TITLE,
-        command: EXECUTE_JQ_COMMAND,
-        arguments: [match]
-    }));
+    const matches: JqMatch[] = findRegexes(document);
+    return matches.map(match => {
+        return [
+            new vscode.CodeLens(match.range, {
+                title: CODE_LENS_TITLE + ' → to output',
+                command: EXECUTE_JQ_COMMAND,
+                arguments: [match]
+            }),
+            new vscode.CodeLens(match.range, {
+                title: CODE_LENS_TITLE + ' → to editor',
+                command: EXECUTE_JQ_COMMAND,
+                arguments: [{...match, openResult: 'editor'}]
+            })
+        ]
+    })
+    .reduce((a,b) => a.concat(b));
 }
 
-interface RegexMatch {
+interface JqMatch {
     document: vscode.TextDocument;
-    regex: RegExp;
     range: vscode.Range;
+    openResult: string;
 }
 
-function findRegexes(document: vscode.TextDocument): RegexMatch[] {
-    const matches: RegexMatch[] = [];
+function findRegexes(document: vscode.TextDocument): JqMatch[] {
+    const matches: JqMatch[] = [];
     for (let i = 0; i < document.lineCount; i++) {
         const line = document.lineAt(i);
         let match: RegExpExecArray | null;
@@ -85,7 +97,7 @@ function findRegexes(document: vscode.TextDocument): RegexMatch[] {
         regex.lastIndex = 0;
         const text = line.text.substr(0, 1000);
         while ((match = regex.exec(text))) {
-            const result = createRegexMatch(document, i, match);
+            const result = jqMatch(document, i);
             if (result) {
                 matches.push(result);
             }
@@ -94,23 +106,12 @@ function findRegexes(document: vscode.TextDocument): RegexMatch[] {
     return matches;
 }
 
-function createRegexMatch(document: vscode.TextDocument, line: number, match: RegExpExecArray) {
-    const regex = createRegex(match[2], match[3]);
-    if (regex) {
-        return {
-            document: document,
-            regex: regex,
-            range: new vscode.Range(line, 0, line, 2)
-        };
-    }
-}
-
-function createRegex(pattern: string, flags: string) {
-    try {
-        return new RegExp(pattern, flags);
-    } catch (e) {
-        // discard
-    }
+function jqMatch(document: vscode.TextDocument, line: number) {
+    return {
+        document: document,
+        range: new vscode.Range(line, 0, line, 30),
+        openResult: 'output'
+    };
 }
 
 function executeJqCommand(params) {
@@ -122,18 +123,18 @@ function executeJqCommand(params) {
 
     if (isUrl(context)) {
         download(context)
-            .then(data => jqCommand(query, JSON.parse(data.toString())))
+            .then(data => jqCommand(query, JSON.parse(data.toString()), outputDataHandlerFactory(params.openResult)))
             .catch(err => {
                 Logger.append(err);
                 Logger.show();
             });
     } else if (isWorksaceFile(context, vscode.workspace.textDocuments)) {
         const text: string = getWorksaceFile(context, vscode.workspace.textDocuments);
-        jqCommand(query, JSON.parse(text));
+        jqCommand(query, JSON.parse(text), outputDataHandlerFactory(params.openResult));
     } else if (isFilepath(context)) {
         const fileName: string = getFileName(document, context);
         if (fs.existsSync(fileName)) {
-            jqCommand(query, JSON.parse(fs.readFileSync(fileName).toString()));
+            jqCommand(query, JSON.parse(fs.readFileSync(fileName).toString()), outputDataHandlerFactory(params.openResult));
         }
     } else {
         const contextLines = [context];
@@ -142,7 +143,7 @@ function executeJqCommand(params) {
         while (line < document.lineCount && (lineText = document.lineAt(line++).text)) {
             contextLines.push(lineText)
         }
-        jqCommand(query, JSON.parse(contextLines.join(' ')));
+        jqCommand(query, JSON.parse(contextLines.join(' ')), outputDataHandlerFactory(params.openResult));
     }
 }
 
@@ -161,21 +162,25 @@ function getWorksaceFile(context: string, textDocuments: vscode.TextDocument[]):
     return "";
 }
 
-function jqCommand(statement: string, jsonObj: any) {
+function jqCommand(statement: string, jsonObj: any, outputHandler) {
     const process = child_process.spawn(FILEPATH, [statement]);
     process.stdin.write(JSON.stringify(jsonObj));
     process.stdin.end();
 
-    process.stdout.on('data', data => {
-        Logger.clear();
-        Logger.append(data.toString());
-        Logger.show();
-    });
+    process.stdout.on('data', data => outputHandler.onData(data));
+    process.stdout.on('close', () => outputHandler.onClose())
 
     process.stderr.on('data', error => {
         Logger.append('[ERROR] - ' + error.toString());
         Logger.show();
     });
+}
+
+function outputDataHandlerFactory(type: string) {
+    if (type === 'editor') {
+        return new EditorDataHandler();
+    }
+    return new OutputDataHandler(Logger);
 }
 
 function isUrl(context: string): boolean {

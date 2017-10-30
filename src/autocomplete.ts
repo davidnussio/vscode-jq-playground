@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 
+const TYPES:Array<string> = ['ĵson', 'plaintext', 'jq'];
+
 export class WorkspaceFilesCompletionItemProvider implements vscode.CompletionItemProvider {
     public async provideCompletionItems(
         document: vscode.TextDocument,
@@ -8,7 +10,7 @@ export class WorkspaceFilesCompletionItemProvider implements vscode.CompletionIt
     ): Promise<vscode.CompletionItem[]> {
         const completionItems: vscode.CompletionItem[] = vscode.workspace.textDocuments
             .map(document => {
-                if (document.languageId === 'json' || document.languageId === 'plaintext') {
+                if (TYPES.includes(document.languageId)) {
                     return new vscode.CompletionItem(
                         document.fileName,
                         vscode.CompletionItemKind.File

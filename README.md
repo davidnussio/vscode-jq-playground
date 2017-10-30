@@ -17,6 +17,7 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
     * http resource
 * Highlighting inline json code
 * Autocomplete filename from workspace opened file
+* 
 
 ## Usage
 
@@ -73,7 +74,7 @@ https://api.github.com/repos/stedolan/jq/commits?per_page=5
 
 - [ ] Better error reporting
 - [ ] Support (testing) windows filesystem
-- [ ] Store intermediate and share it between jq queries
+- [x] Store intermediate and share it between jq queries
 - [ ] Autocomplete
 
 

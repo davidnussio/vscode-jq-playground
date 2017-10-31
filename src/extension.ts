@@ -22,7 +22,10 @@ const CODE_LENS_TITLE = 'jq';
 const Logger = vscode.window.createOutputChannel('jq output');
 
 export function activate(context: vscode.ExtensionContext) {
-    
+
+    context.subscriptions.push(vscode.commands.registerCommand('extension.openManual', openManual));
+    context.subscriptions.push(vscode.commands.registerCommand('extension.openTutorial', openTutorial));
+    context.subscriptions.push(vscode.commands.registerCommand('extension.openPlay', openPlay));
 
     setupEnvironment()
         .then(() => {
@@ -36,6 +39,33 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+}
+
+function openManual() {
+    vscode.commands.executeCommand(
+        'vscode.open', 
+        vscode.Uri.parse('https://stedolan.github.io/jq/manual/')
+    );
+}
+
+function openTutorial() {
+    vscode.commands.executeCommand(
+        'vscode.open', 
+        vscode.Uri.parse('https://stedolan.github.io/jq/tutorial/')
+    );
+}
+
+function openPlay() {
+    vscode.window.showInputBox({prompt: "jq query", value: "."}).then(query => {
+        const json = encodeURIComponent(
+            vscode.window.activeTextEditor.document.getText()
+            .replace(/\n|\s{2,}$/g, '%0A')
+        );
+        vscode.commands.executeCommand(
+            'vscode.open', 
+            vscode.Uri.parse(`https://jqplay.org/jq?j=${json}&q=${encodeURIComponent(query)}`)
+        );
+    });
 }
 
 function setupEnvironment(): Promise<any> {

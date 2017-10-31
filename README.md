@@ -6,7 +6,11 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ## Demo
 
+### Usage example
 ![vscode-jq-playground](https://media.giphy.com/media/3ohhwkqXNc3hrmoECI/giphy.gif)
+
+### Execute query online (jqplay)
+![alt](https://media.giphy.com/media/3ov9k1k8R0jSttJUT6/giphy.gif)
 
 ## Main Features
 
@@ -17,7 +21,9 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
     * http resource
 * Highlighting inline json code
 * Autocomplete filename from workspace opened file
-* 
+* Execute jq command and show result in new text editor
+* Execute jq query online on [jqplay.org](https://jqplay.org) and share snippet
+* Open manual and tutorial from command
 
 ## Usage
 
@@ -62,6 +68,14 @@ jq .
 Untitled-1
 ```
 
+### Open online manual
+`ctrl+shift+p → > Manual`
+
+### Open online Tutoral
+`ctrl+shift+p → > Tutorial`
+
+### Execute online query (jqplay)
+`ctrl+shift+p → > jqplay → .[] | { id: .userId, title: .title }`
 
 ### JSON file from http request
 ```
@@ -72,6 +86,7 @@ https://api.github.com/repos/stedolan/jq/commits?per_page=5
 
 ## TODO
 
+- [ ] Run jq query on selected text
 - [ ] Better error reporting
 - [ ] Support (testing) windows filesystem
 - [x] Store intermediate and share it between jq queries

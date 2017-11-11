@@ -193,14 +193,14 @@ function getWorksaceFile(context: string, textDocuments: vscode.TextDocument[]):
 }
 
 function jqCommand(statement: string, jsonObj: any, outputHandler) {
-    const process = child_process.spawn(FILEPATH, [statement]);
-    process.stdin.write(JSON.stringify(jsonObj));
-    process.stdin.end();
+    const jqProcess = child_process.spawn(FILEPATH, [statement]);
+    jqProcess.stdin.write(JSON.stringify(jsonObj));
+    jqProcess.stdin.end();
 
-    process.stdout.on('data', data => outputHandler.onData(data));
-    process.stdout.on('close', () => outputHandler.onClose())
+    jqProcess.stdout.on('data', data => outputHandler.onData(data));
+    jqProcess.stdout.on('close', () => outputHandler.onClose())
 
-    process.stderr.on('data', error => {
+    jqProcess.stderr.on('data', error => {
         Logger.append('[ERROR] - ' + error.toString());
         Logger.show();
     });

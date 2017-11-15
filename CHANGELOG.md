@@ -3,6 +3,9 @@ All notable changes to the "vscode-jq-playground" extension will be documented i
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.5.0]
+- Try to support JSON Object with non string keys.
+
 ## [0.3.0]
 - New commands under *jq playground* group. There are commands to open online manual, tutorial and execute query for active text editor on [jqplay.org](https://jqplay.org/)
 

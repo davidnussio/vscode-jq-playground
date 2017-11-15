@@ -10,7 +10,10 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 ![vscode-jq-playground](https://media.giphy.com/media/3ohhwkqXNc3hrmoECI/giphy.gif)
 
 ### Execute query online (jqplay)
-![alt](https://media.giphy.com/media/3ov9k1k8R0jSttJUT6/giphy.gif)
+![jqplay](https://media.giphy.com/media/3ov9k1k8R0jSttJUT6/giphy.gif)
+
+### Try to use JSON Object with non string keys.
+![bad-json](https://media.giphy.com/media/3o6fJ0kIg5QTHjtloQ/giphy.gif)
 
 ## Main Features
 
@@ -24,6 +27,7 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 * Execute jq command and show result in new text editor
 * Execute jq query online on [jqplay.org](https://jqplay.org) and share snippet
 * Open manual and tutorial from command
+* Support non string keys
 
 ## Usage
 
@@ -88,7 +92,7 @@ https://api.github.com/repos/stedolan/jq/commits?per_page=5
 
 - [ ] Run jq query on selected text
 - [ ] Better error reporting
-- [ ] Support (testing) windows filesystem
+- [ ] Support (testing) windows filesystem (is there someone who test it on windows?)
 - [x] Store intermediate and share it between jq queries
 - [ ] Autocomplete
 

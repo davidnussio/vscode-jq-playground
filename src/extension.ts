@@ -5,7 +5,6 @@ import * as child_process from "child_process";
 import * as download from "download";
 import * as fs from "fs";
 import * as path from "path";
-import * as jsonlint from "jsonlint";
 
 import { EditorDataHandler, OutputDataHandler } from "./dataHandler";
 import { WorkspaceFilesCompletionItemProvider } from "./autocomplete";
@@ -239,14 +238,14 @@ function getWorksaceFile(context: string, textDocuments: vscode.TextDocument[]):
 function jqCommand(statement: string, jsonObj: any, outputHandler) {
     if (jsonObj === undefined) { return; }
 
-    const process = child_process.spawn(FILEPATH, [statement]);
-    process.stdin.write(JSON.stringify(jsonObj));
-    process.stdin.end();
+    const jqPprocess = child_process.spawn(FILEPATH, [statement]);
+    jqPprocess.stdin.write(JSON.stringify(jsonObj));
+    jqPprocess.stdin.end();
 
-    process.stdout.on("data", (data) => outputHandler.onData(data));
-    process.stdout.on("close", () => outputHandler.onClose());
+    jqPprocess.stdout.on("data", (data) => outputHandler.onData(data));
+    jqPprocess.stdout.on("close", () => outputHandler.onClose());
 
-    process.stderr.on("data", (error) => {
+    jqPprocess.stderr.on("data", (error) => {
         Logger.append("[ERROR] - " + error.toString());
         Logger.show();
     });

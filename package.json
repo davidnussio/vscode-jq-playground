@@ -1,99 +1,124 @@
 {
-    "name": "vscode-jq-playground",
-    "displayName": "Visual Code jq playground",
-    "description": "Visual Code integration with jq",
-    "version": "0.4.1",
-    "publisher": "davidnussio",
-    "license": "SEE LICENSE IN LICENSE",
-    "author": {
-        "name": "David Nussio",
-        "email": "david.nussio@gmail.com"
-    },
-    "icon": "images/icon.png",
-    "galleryBanner": {
-        "color": "#000000",
-        "theme": "dark"
-    },
-    "bugs": {
-        "url": "https://github.com/davidnussio/vscode-jq-playground/issues",
-        "email": "david.nussio@gmail.com"
-    },
-    "homepage": "https://github.com/davidnussio/vscode-jq-playground/blob/master/README.md",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/davidnussio/vscode-jq-playground.git"
-    },
-    "engines": {
-        "vscode": "^1.17.0"
-    },
-    "categories": [
-        "Other"
+  "name": "vscode-jq-playground",
+  "displayName": "Visual Code jq playground",
+  "description": "Visual Code integration with jq",
+  "version": "0.4.1",
+  "publisher": "davidnussio",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": {
+    "name": "David Nussio",
+    "email": "david.nussio@gmail.com"
+  },
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#000000",
+    "theme": "dark"
+  },
+  "bugs": {
+    "url": "https://github.com/davidnussio/vscode-jq-playground/issues",
+    "email": "david.nussio@gmail.com"
+  },
+  "homepage": "https://github.com/davidnussio/vscode-jq-playground/blob/master/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidnussio/vscode-jq-playground.git"
+  },
+  "engines": {
+    "vscode": "^1.17.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["JSON", "query"],
+  "activationEvents": [
+    "onLanguage:jq",
+    "onCommand:extension.openManual",
+    "onCommand:extension.openTutorial",
+    "onCommand:extension.openPlay",
+    "onCommand:extension.runQueryOutput",
+    "onCommand:extension.runQueryEditor"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "jq",
+        "extensions": [".jq"],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "keywords": [
-        "JSON",
-        "query"
+    "grammars": [
+      {
+        "language": "jq",
+        "scopeName": "source.jq",
+        "path": "./syntaxes/jq.tmLanguage.json",
+        "embeddedLanguages": {
+          "source.json": "json"
+        }
+      }
     ],
-    "activationEvents": [
-        "onLanguage:jq",
-        "onCommand:extension.openManual",
-        "onCommand:extension.openTutorial",
-        "onCommand:extension.openPlay"
+    "commands": [
+      {
+        "command": "extension.openManual",
+        "title": "Manual",
+        "category": "jq playground"
+      },
+      {
+        "command": "extension.openTutorial",
+        "title": "Tutorial",
+        "category": "jq playground"
+      },
+      {
+        "command": "extension.openPlay",
+        "title": "Open online jqplay",
+        "category": "jq playground"
+      },
+      {
+        "command": "extension.runQueryOutput",
+        "title": "Run query in output",
+        "category": "jq playground"
+      },
+      {
+        "command": "extension.runQueryEditor",
+        "title": "Run query in editor",
+        "category": "jq playground"
+      }
     ],
-    "main": "./out/extension",
-    "contributes": {
-        "languages": [
-            {
-                "id": "jq",
-                "extensions": [
-                    ".jq"
-                ],
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "jq",
-                "scopeName": "source.jq",
-                "path": "./syntaxes/jq.tmLanguage.json",
-                "embeddedLanguages": {
-                    "source.json": "json"
-                }
-            }
-        ],
-        "commands": [
-            {
-                "command": "extension.openManual",
-                "title": "Manual",
-                "category": "jq playground"
-            },
-            {
-                "command": "extension.openTutorial",
-                "title": "Tutorial",
-                "category": "jq playground"
-            },
-            {
-                "command": "extension.openPlay",
-                "title": "Open online jqplay",
-                "category": "jq playground"
-            }
-        ]
-    },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc --alwaysStrict -p ./",
-        "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
-    },
-    "devDependencies": {
-        "@types/mocha": "^2.2.42",
-        "@types/node": "^7.0.43",
-        "tslint": "^5.8.0",
-        "tslint-eslint-rules": "^4.1.1",
-        "typescript": "^2.5.3",
-        "vscode": "^1.1.5"
-    },
-    "dependencies": {
-        "download": "^6.2.5"
-    }
+    "keybindings": [
+      {
+        "command": "extension.runQueryOutput",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "editorTextFocus && editorLangId == 'jq'"
+      },
+      {
+        "command": "extension.runQueryEditor",
+        "key": "shift+enter",
+        "mac": "shift+enter",
+        "when": "editorTextFocus && editorLangId == 'jq'"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc --alwaysStrict -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^7.0.43",
+    "tslint": "^5.8.0",
+    "tslint-eslint-rules": "^4.1.1",
+    "typescript": "^2.5.3",
+    "vscode": "^1.1.5"
+  },
+  "dependencies": {
+    "download": "^6.2.5"
+  },
+  "prettier": {
+    "printWidth": 120,
+    "singleQuote": false,
+    "trailingComma": "es5",
+    "arrowParens": "always"
+  }
 }

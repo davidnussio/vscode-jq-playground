@@ -88,7 +88,7 @@ function doRunQuery(openResult) {
       openResult,
     };
 
-    if (editor.document.getText(queryLine).startsWith("jq")) {
+    if (editor.document.lineAt(position).text.startsWith("jq")) {
       executeJqCommand(match);
     } else {
       vscode.window.showWarningMessage("Current line does not contain jq query string");

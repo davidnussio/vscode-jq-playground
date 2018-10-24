@@ -199,9 +199,12 @@ function executeJqCommand(params) {
   } else {
     const contextLines = [context];
     let line = params.range.start.line + 2;
-    let lineText = "";
     // tslint:disable-next-line:no-conditional-assignment
-    while (line < document.lineCount && (lineText = document.lineAt(line++).text)) {
+    while (line < document.lineCount) {
+      let lineText = document.lineAt(line++).text;
+      if (lineText.search(/^(jq)\s+(.+?)|#/) === 0) {
+        break;
+      }
       contextLines.push(lineText);
     }
     jsonParser(contextLines.join(" ")).then((json) =>
@@ -211,29 +214,21 @@ function executeJqCommand(params) {
 }
 
 function jsonParser(text: string): Promise<any> {
-  const TRY_FIX_JSON: string = "Try fix json";
   return new Promise((resolve, reject) => {
     try {
       resolve(JSON.parse(text));
     } catch (e) {
-      const position: number = +e.message.match(/Unexpected token .* in JSON at position (\d+)/)[1];
-      vscode.window.showErrorMessage(`${e.message} → ${text.substr(position, 50)} ←`, TRY_FIX_JSON).then((res) => {
-        if (res === TRY_FIX_JSON) {
-          try {
-            // tslint:disable-next-line:prefer-const variable-name
-            let __jq_tmp_variable = "";
-            // tslint:disable-next-line:no-eval
-            eval(`__jq_tmp_variable = ${text};`);
-            const fixed = JSON.parse(JSON.stringify(__jq_tmp_variable));
-            resolve(fixed);
-          } catch (e) {
-            vscode.window.showErrorMessage(e.message);
-            reject("Unable to fix JSON, check document format");
-          }
-        } else {
-          reject("Check the JSON format");
-        }
-      });
+      try {
+        // tslint:disable-next-line:prefer-const variable-name
+        let __jq_tmp_variable = "";
+        // tslint:disable-next-line:no-eval
+        eval(`__jq_tmp_variable = ${text};`);
+        const fixed = JSON.parse(JSON.stringify(__jq_tmp_variable));
+        resolve(fixed);
+      } catch (e) {
+        vscode.window.showErrorMessage(e.message);
+        reject("Unable to fix JSON, check document format");
+      }
     }
   });
 }
@@ -261,11 +256,11 @@ function jqCommand(statement: string, jsonObj: any, outputHandler) {
   jqPprocess.stdin.end();
 
   jqPprocess.stdout.on("data", (data) => outputHandler.onData(data));
-  jqPprocess.stdout.on("close", () => outputHandler.onClose());
+  jqPprocess.on("close", () => outputHandler.onClose());
 
   jqPprocess.stderr.on("data", (error) => {
-    Logger.append("[ERROR] - " + error.toString());
-    Logger.show();
+    // vscode.window.showErrorMessage(error.toString());
+    outputHandler.onData("[ERROR] - " + error.toString());
   });
 }
 

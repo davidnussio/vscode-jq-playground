@@ -116,7 +116,7 @@
         "@types/node": "^7.0.43",
         "tslint": "^5.8.0",
         "tslint-eslint-rules": "^4.1.1",
-        "typescript": "^2.5.3",
+        "typescript": "^3.2.2",
         "vscode": "^1.1.5"
     },
     "dependencies": {

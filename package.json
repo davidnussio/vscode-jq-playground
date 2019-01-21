@@ -115,7 +115,7 @@
         "@types/mocha": "^2.2.42",
         "@types/node": "^7.0.43",
         "tslint": "^5.12.1",
-        "tslint-eslint-rules": "^4.1.1",
+        "tslint-eslint-rules": "^5.4.0",
         "typescript": "^2.5.3",
         "vscode": "^1.1.5"
     },

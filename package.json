@@ -120,7 +120,7 @@
         "vscode": "^1.1.5"
     },
     "dependencies": {
-        "download": "^6.2.5"
+        "download": "^7.1.0"
     },
     "prettier": {
         "printWidth": 120,

@@ -24,7 +24,7 @@
         "url": "https://github.com/davidnussio/vscode-jq-playground.git"
     },
     "engines": {
-        "vscode": "^1.17.0"
+        "vscode": "^1.31.0"
     },
     "categories": [
         "Other"
@@ -117,7 +117,7 @@
         "tslint": "^5.12.1",
         "tslint-eslint-rules": "^4.1.1",
         "typescript": "^2.5.3",
-        "vscode": "^1.1.5"
+        "vscode": "^1.1.30"
     },
     "dependencies": {
         "download": "^6.2.5"

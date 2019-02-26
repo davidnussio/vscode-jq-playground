@@ -5,14 +5,24 @@ import * as child_process from "child_process";
 import * as download from "download";
 import * as fs from "fs";
 import * as path from "path";
+import * as checksum from "checksum";
 
 import { EditorDataHandler, OutputDataHandler } from "./dataHandler";
 import { WorkspaceFilesCompletionItemProvider } from "./autocomplete";
 
 const BINARIES = {
-  darwin: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64",
-  linux: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64",
-  win32: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe",
+  darwin: {
+    file: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64",
+    checksum: "8673400d1886ed051b40fe8dee09d89237936502",
+  },
+  linux: {
+    file: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64",
+    checksum: "056ba5d6bbc617c29d37158ce11fd5a443093949",
+  },
+  win32: {
+    file: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe",
+    checksum: "2b7ae7b902aa251b55f2fd73ad5b067d2215ce78",
+  },
 };
 
 const BIN_DIR = path.join(__dirname, "..", "bin");
@@ -101,23 +111,27 @@ function setupEnvironment(): Promise<any> {
     fs.mkdirSync(BIN_DIR);
   }
 
-  if (!fs.existsSync(FILEPATH)) {
+  return new Promise((resolve, reject) => {
     if (!BINARIES[process.platform]) {
-      return Promise.reject(`Platform (${process.platform}) not supported!`);
+      return reject(`Platform (${process.platform}) not supported!`);
     }
 
-    Logger.append(`Download jq binary for platform (${process.platform})...`);
-    return download(BINARIES[process.platform]).then((data) => {
-      fs.writeFileSync(FILEPATH, data);
-      if (!/^win32/.test(process.platform)) {
-        fs.chmodSync(FILEPATH, "0777");
+    checksum.file(FILEPATH, (error, hex) => {
+      if (hex === BINARIES[process.platform].checksum) {
+        resolve();
       }
-      Logger.append(" [ OK ]");
-      Logger.show();
+      Logger.append(`Download jq binary for platform (${process.platform})...`);
+      return download(BINARIES[process.platform].file).then((data) => {
+        fs.writeFileSync(FILEPATH, data);
+        if (!/^win32/.test(process.platform)) {
+          fs.chmodSync(FILEPATH, "0777");
+        }
+        Logger.append(" [ OK ]");
+        Logger.show();
+        resolve();
+      });
     });
-  }
-
-  return Promise.resolve();
+  });
 }
 
 function provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken) {
@@ -199,9 +213,8 @@ function executeJqCommand(params) {
   } else {
     const contextLines = [context];
     let line = params.range.start.line + 2;
-    // tslint:disable-next-line:no-conditional-assignment
     while (line < document.lineCount) {
-      let lineText = document.lineAt(line++).text;
+      const lineText = document.lineAt(line++).text;
       if (lineText.search(/^(jq)\s+(.+?)|#/) === 0) {
         break;
       }

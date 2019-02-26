@@ -112,15 +112,16 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "@types/mocha": "^2.2.42",
-        "@types/node": "^7.0.43",
-        "tslint": "^5.12.1",
-        "tslint-eslint-rules": "^4.1.1",
-        "typescript": "^2.5.3",
+        "@types/mocha": "^5.2.6",
+        "@types/node": "^11.9.5",
+        "tslint": "^5.13.0",
+        "tslint-eslint-rules": "^5.4.0",
+        "typescript": "^3.3.3333",
         "vscode": "^1.1.30"
     },
     "dependencies": {
-        "download": "^6.2.5"
+        "checksum": "^0.1.1",
+        "download": "^7.1.0"
     },
     "prettier": {
         "printWidth": 120,

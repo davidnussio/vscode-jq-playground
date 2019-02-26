@@ -10,9 +10,9 @@ import { EditorDataHandler, OutputDataHandler } from "./dataHandler";
 import { WorkspaceFilesCompletionItemProvider } from "./autocomplete";
 
 const BINARIES = {
-  darwin: "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64",
-  linux: "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64",
-  win32: "https://github.com/stedolan/jq/releases/download/jq-1.5/jq-win64.exe",
+  darwin: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64",
+  linux: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64",
+  win32: "https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe",
 };
 
 const BIN_DIR = path.join(__dirname, "..", "bin");

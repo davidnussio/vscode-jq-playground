@@ -27,6 +27,8 @@ const BINARIES = {
 
 const BIN_DIR = path.join(__dirname, "..", "bin");
 const FILEPATH = path.join(BIN_DIR, /^win32/.test(process.platform) ? "./jq.exe" : "./jq");
+const EXAMPLES_DIR = path.join(__dirname, "..", "examples");
+const MANUAL_PATH = path.join(EXAMPLES_DIR, "manual.jq");
 const LANGUAGES = ["jq"];
 const EXECUTE_JQ_COMMAND = "extension.executeJqCommand";
 const CODE_LENS_TITLE = "jq";
@@ -36,11 +38,12 @@ const Logger = vscode.window.createOutputChannel("jq output");
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.commands.registerCommand("extension.openManual", openManual));
   context.subscriptions.push(vscode.commands.registerCommand("extension.openTutorial", openTutorial));
+  context.subscriptions.push(vscode.commands.registerCommand("extension.openExamples", openExamples));
   context.subscriptions.push(vscode.commands.registerCommand("extension.openPlay", openPlay));
   context.subscriptions.push(vscode.commands.registerCommand("extension.runQueryOutput", runQueryOutput));
   context.subscriptions.push(vscode.commands.registerCommand("extension.runQueryEditor", runQueryEditor));
 
-  setupEnvironment()
+  setupEnvironment(context)
     .then(() => {
       context.subscriptions.push(vscode.commands.registerCommand(EXECUTE_JQ_COMMAND, executeJqCommand));
       context.subscriptions.push(vscode.languages.registerCodeLensProvider(LANGUAGES, { provideCodeLenses }));
@@ -62,6 +65,14 @@ function openManual() {
 
 function openTutorial() {
   vscode.commands.executeCommand("vscode.open", vscode.Uri.parse("https://stedolan.github.io/jq/tutorial/"));
+}
+
+function openExamples() {
+  fs.readFile(MANUAL_PATH, {}, (err, data) => {
+    vscode.workspace
+      .openTextDocument({ content: data.toString(), language: "jq" })
+      .then((doc) => vscode.window.showTextDocument(doc, vscode.ViewColumn.Active));
+  });
 }
 
 function openPlay() {
@@ -106,7 +117,21 @@ function doRunQuery(openResult) {
   }
 }
 
-function setupEnvironment(): Promise<any> {
+function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
+  return downloadBinary().then(() => upgradeMessage(context));
+}
+
+function upgradeMessage(context: vscode.ExtensionContext): Promise<any> {
+  const prevVersion = context.globalState.get("jq-payload-version");
+  const jqExtension = vscode.extensions.getExtension("davidnussio.vscode-jq-playground");
+  if (prevVersion !== jqExtension.packageJSON.version) {
+    context.globalState.update("jq-payload-version", jqExtension.packageJSON.version);
+    openExamples();
+  }
+  return Promise.resolve();
+}
+
+function downloadBinary(): Promise<any> {
   if (!fs.existsSync(BIN_DIR)) {
     fs.mkdirSync(BIN_DIR);
   }
@@ -119,17 +144,18 @@ function setupEnvironment(): Promise<any> {
     checksum.file(FILEPATH, (error, hex) => {
       if (hex === BINARIES[process.platform].checksum) {
         resolve();
+      } else {
+        Logger.append(`Download jq binary for platform (${process.platform})...`);
+        return download(BINARIES[process.platform].file).then((data) => {
+          fs.writeFileSync(FILEPATH, data);
+          if (!/^win32/.test(process.platform)) {
+            fs.chmodSync(FILEPATH, "0777");
+          }
+          Logger.append(" [ OK ]");
+          Logger.show();
+          resolve();
+        });
       }
-      Logger.append(`Download jq binary for platform (${process.platform})...`);
-      return download(BINARIES[process.platform].file).then((data) => {
-        fs.writeFileSync(FILEPATH, data);
-        if (!/^win32/.test(process.platform)) {
-          fs.chmodSync(FILEPATH, "0777");
-        }
-        Logger.append(" [ OK ]");
-        Logger.show();
-        resolve();
-      });
     });
   });
 }

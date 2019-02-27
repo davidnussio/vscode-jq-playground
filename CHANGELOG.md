@@ -4,6 +4,15 @@ All notable changes to the "vscode-jq-playground" extension will be documented i
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [2.0.0]
+
+* Update jq binary from version 1.5 to 1.6
+* Integrated examples from manual → ctrl+p → jq palyground: Manual
+
+## [1.3.0]
+
+- Bugfixes
+
 ## [0.6.0]
 
 * Support hotkeys: ctrl+enter → to output, shift+enter → to editor

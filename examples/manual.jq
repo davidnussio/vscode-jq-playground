@@ -1,5 +1,17 @@
+# Update version
+# Changelog: 
+# - Update jq binary from version 1.5 to 1.6
+# - Integrated examples from manual → ctrl+p → jq palyground: Manual
+
 jq .
 "Hello, world!"
+
+jq .[0] | {message: .commit.message, name: .commit.committer.name}
+https://api.github.com/repos/stedolan/jq/commits?per_page=5
+
+jq [.[] | {message: .commit.message, name: .commit.committer.name, parents: [.parents[].html_url]}]
+https://api.github.com/repos/stedolan/jq/commits?per_page=5
+
 
 jq .foo
 {"foo": 42, "bar": "less interesting data"}

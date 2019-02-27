@@ -1,8 +1,3 @@
-# Update version
-# Changelog: 
-# - Update jq binary from version 1.5 to 1.6
-# - Integrated examples from manual → ctrl+p → jq palyground: Manual
-
 jq .
 "Hello, world!"
 

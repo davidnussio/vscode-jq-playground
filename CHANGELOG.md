@@ -3,7 +3,7 @@
 ## [2.0.0]
 
 * Update jq binary from version 1.5 to 1.6
-* With the new → ctrl+p → _jq playground: Manual_ command, the extension will open a notebook with executable examples [JQ Manual](https://stedolan.github.io/jq/manual/)
+* With the new → ctrl+shift+p → _jq playground: Examples_ command, the extension will open a notebook with executable examples [JQ Manual](https://stedolan.github.io/jq/manual/)
 
 ## [1.3.0]
 

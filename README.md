@@ -6,6 +6,11 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ## Demo
 
+### JQ Manual examples
+
+![jq-manual-examples](https://media.giphy.com/media/fs3AFamgsr9Qw7yvgN/giphy.gif)
+
+
 ### Usage example
 
 ![vscode-jq-playground](https://media.giphy.com/media/3ohhwkqXNc3hrmoECI/giphy.gif)
@@ -30,6 +35,7 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 * Execute jq command and show result in new text editor
 * Execute jq query online on [jqplay.org](https://jqplay.org) and share snippet
 * Open manual and tutorial from command
+* Open examples from jq manual and run it (ctrl+shift+p → jq playground: Examples)
 * Support non string keys
 * Support hotkeys
   * ctrl+enter → to output

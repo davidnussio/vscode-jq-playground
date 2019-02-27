@@ -34,7 +34,12 @@
     "query"
   ],
   "activationEvents": [
-    "*"
+    "onLanguage:jq",
+    "onCommand:extension.openManual",
+    "onCommand:extension.openTutorial",
+    "onCommand:extension.openPlay",
+    "onCommand:extension.runQueryOutput",
+    "onCommand:extension.runQueryEditor"
   ],
   "main": "./out/extension",
   "contributes": {

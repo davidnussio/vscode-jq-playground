@@ -1,13 +1,9 @@
 # Change Log
 
-All notable changes to the "vscode-jq-playground" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
 ## [2.0.0]
 
 * Update jq binary from version 1.5 to 1.6
-* Integrated examples from manual → ctrl+p → jq palyground: Manual
+* With the new → ctrl+p → _jq playground: Manual_ command, the extension will open a notebook with executable examples [JQ Manual](https://stedolan.github.io/jq/manual/)
 
 ## [1.3.0]
 

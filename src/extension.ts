@@ -8,7 +8,7 @@ import * as path from "path";
 import * as checksum from "checksum";
 
 import { EditorDataHandler, OutputDataHandler } from "./dataHandler";
-import { WorkspaceFilesCompletionItemProvider } from "./autocomplete";
+import { WorkspaceFilesCompletionItemProvider, TestCompletionItemProvider } from "./autocomplete";
 
 const BINARIES = {
   darwin: {
@@ -49,6 +49,9 @@ export function activate(context: vscode.ExtensionContext) {
       context.subscriptions.push(vscode.languages.registerCodeLensProvider(LANGUAGES, { provideCodeLenses }));
       context.subscriptions.push(
         vscode.languages.registerCompletionItemProvider(LANGUAGES, new WorkspaceFilesCompletionItemProvider())
+      );
+      context.subscriptions.push(
+        vscode.languages.registerCompletionItemProvider(LANGUAGES, new TestCompletionItemProvider())
       );
     })
     .catch((error) => {

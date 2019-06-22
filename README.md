@@ -15,6 +15,10 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ![vscode-jq-playground](https://media.giphy.com/media/3ohhwkqXNc3hrmoECI/giphy.gif)
 
+### Autocomplete
+
+![Autocomplete](https://media.giphy.com/media/fXWUulNjiQ6m8qLS7W/giphy.gif)
+
 ### Execute query online (jqplay)
 
 ![jqplay](https://media.giphy.com/media/3ov9k1k8R0jSttJUT6/giphy.gif)
@@ -31,7 +35,9 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
   * file on filesystem
   * http resource
 * Highlighting inline json code
-* Autocomplete filename from workspace opened file
+* Autocomplete 
+  * filename from workspace opened file
+  * jq operators and functions
 * Execute jq command and show result in new text editor
 * Execute jq query online on [jqplay.org](https://jqplay.org) and share snippet
 * Open manual and tutorial from command
@@ -86,6 +92,31 @@ jq .
 Untitled-1
 ```
 
+### Support jq command line options
+
+```json
+jq --slurp . + [5] + [6]
+[
+  1,
+  2,
+  3
+]
+
+jq --raw-input --slurp split("\\n")
+foo\nbar\nbaz
+
+jq -r (map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv
+[
+    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
+    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
+    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
+    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
+]
+
+jq --raw-output "\(.one)\t\(.two)"
+{"one":1,"two":"x"}
+```
+
 ### Open online manual
 
 `ctrl+shift+p → > Manual`
@@ -112,7 +143,7 @@ https://api.github.com/repos/stedolan/jq/commits?per_page=5
 * [ ] Better error reporting
 * [ ] Support (testing) windows filesystem (is there someone who test it on windows?)
 * [x] Store intermediate and share it between jq queries
-* [ ] Autocomplete
+* [x] Autocomplete
 
 ## Thanks
 

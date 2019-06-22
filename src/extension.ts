@@ -9,6 +9,7 @@ import * as checksum from "checksum";
 
 import { EditorDataHandler, OutputDataHandler } from "./dataHandler";
 import { WorkspaceFilesCompletionItemProvider, TestCompletionItemProvider } from "./autocomplete";
+import { Messages } from "./messages";
 
 const BINARIES = {
   darwin: {
@@ -32,10 +33,18 @@ const MANUAL_PATH = path.join(EXAMPLES_DIR, "manual.jq");
 const LANGUAGES = ["jq"];
 const EXECUTE_JQ_COMMAND = "extension.executeJqCommand";
 const CODE_LENS_TITLE = "jq";
+const JQ_PLAYGROUND_VERSION = "vscode-jq-playground.version";
 
 const Logger = vscode.window.createOutputChannel("jq output");
 
 export function activate(context: vscode.ExtensionContext) {
+  const jqPlayground = vscode.extensions.getExtension("davidnussio.vscode-jq-playground")!;
+  const currentVersion = jqPlayground.packageJSON.version;
+  const previousVersion = context.globalState.get<string>(JQ_PLAYGROUND_VERSION);
+
+  void showWelcomePage(currentVersion, previousVersion);
+  context.globalState.update(JQ_PLAYGROUND_VERSION, currentVersion);
+
   context.subscriptions.push(vscode.commands.registerCommand("extension.openManual", openManual));
   context.subscriptions.push(vscode.commands.registerCommand("extension.openTutorial", openTutorial));
   context.subscriptions.push(vscode.commands.registerCommand("extension.openExamples", openExamples));
@@ -315,5 +324,28 @@ function getFileName(document: vscode.TextDocument, context: string): string {
     return context;
   } else {
     return path.join(path.dirname(document.fileName), context);
+  }
+}
+
+async function showWelcomePage(version: string, previousVersion: string | undefined) {
+  try {
+    if (previousVersion === undefined) {
+      Logger.append("Welcome to jq playground install");
+      return;
+    }
+
+    const [major, minor] = version.split(".");
+    const [prevMajor, prevMinor] = previousVersion.split(".");
+    if (
+      (major === prevMajor && minor === prevMinor) ||
+      // Don't notify on downgrades
+      (major < prevMajor || (major === prevMajor && minor < prevMinor))
+    ) {
+      return;
+    }
+
+    await Messages.showWhatsNewMessage(version);
+  } finally {
+    Logger.show();
   }
 }

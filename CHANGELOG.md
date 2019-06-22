@@ -1,5 +1,15 @@
 # Change Log
 
+## [2.1.0]
+
+* Added autocomplete jq operators and functions
+* Support jq command line options #22
+* Enhanced input data parser
+
+## [2.0.1]
+
+* Some small improvements
+
 ## [2.0.0]
 
 * Update jq binary from version 1.5 to 1.6
@@ -7,7 +17,7 @@
 
 ## [1.3.0]
 
-- Bugfixes
+* Bugfixes
 
 ## [0.6.0]
 

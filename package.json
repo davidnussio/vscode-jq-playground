@@ -118,12 +118,12 @@
     "test": "npm run compile && node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
-    "@types/mocha": "^5.2.6",
-    "@types/node": "^11.9.5",
-    "tslint": "^5.13.0",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^11.13.15",
+    "tslint": "^5.18.0",
     "tslint-eslint-rules": "^5.4.0",
-    "typescript": "^3.3.3333",
-    "vscode": "^1.1.30"
+    "typescript": "^3.5.2",
+    "vscode": "^1.1.34"
   },
   "dependencies": {
     "checksum": "^0.1.1",

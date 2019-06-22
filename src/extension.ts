@@ -213,28 +213,39 @@ function jqMatch(document: vscode.TextDocument, line: number) {
   };
 }
 
+function extractArgsString(queryLine: string) {
+  const args = queryLine.match(/^(([-{1,2}][a-zA-Z0-9\-]+)\s+)+/g);
+  if (args === null) {
+    return "";
+  }
+
+  return args[0];
+}
+
 function executeJqCommand(params) {
   const document: vscode.TextDocument = params.document;
-  const query: string = document.lineAt(params.range.start.line).text.replace(/jq\s+/, "");
+  const queryLine: string = document.lineAt(params.range.start.line).text.replace(/jq\s+/, "");
   const context: string = document.lineAt(params.range.start.line + 1).text;
+
+  const argsString = extractArgsString(queryLine);
+  const args = argsString.split(/\s+/).filter((i) => i);
+  const regExpCleanArgs = new RegExp(`.*${argsString}\\s*`);
+  const query = argsString === "" ? queryLine : queryLine.replace(regExpCleanArgs, "");
 
   if (isUrl(context)) {
     download(context)
-      .then((data) => jsonParser(data.toString()))
-      .then((json) => jqCommand(query, json, outputDataHandlerFactory(params.openResult)))
+      .then((data) => jqCommand(args, query, data.toString(), outputDataHandlerFactory(params.openResult)))
       .catch((err) => {
         Logger.append(err);
         Logger.show();
       });
   } else if (isWorksaceFile(context, vscode.workspace.textDocuments)) {
     const text: string = getWorksaceFile(context, vscode.workspace.textDocuments);
-    jsonParser(text).then((json) => jqCommand(query, json, outputDataHandlerFactory(params.openResult)));
+    jqCommand(args, query, text, outputDataHandlerFactory(params.openResult));
   } else if (isFilepath(context)) {
     const fileName: string = getFileName(document, context);
     if (fs.existsSync(fileName)) {
-      jsonParser(fs.readFileSync(fileName).toString()).then((json) => {
-        jqCommand(query, json, outputDataHandlerFactory(params.openResult));
-      });
+      jqCommand(args, query, fs.readFileSync(fileName).toString(), outputDataHandlerFactory(params.openResult));
     }
   } else {
     const contextLines = [context];
@@ -244,32 +255,10 @@ function executeJqCommand(params) {
       if (lineText.search(/^(jq)\s+(.+?)|#/) === 0) {
         break;
       }
-      contextLines.push(lineText);
+      contextLines.push(lineText + "\n");
     }
-    jsonParser(contextLines.join(" ")).then((json) =>
-      jqCommand(query, json, outputDataHandlerFactory(params.openResult))
-    );
+    jqCommand(args, query, contextLines.join(" "), outputDataHandlerFactory(params.openResult));
   }
-}
-
-function jsonParser(text: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    try {
-      resolve(JSON.parse(text));
-    } catch (e) {
-      try {
-        // tslint:disable-next-line:prefer-const variable-name
-        let __jq_tmp_variable = "";
-        // tslint:disable-next-line:no-eval
-        eval(`__jq_tmp_variable = ${text};`);
-        const fixed = JSON.parse(JSON.stringify(__jq_tmp_variable));
-        resolve(fixed);
-      } catch (e) {
-        vscode.window.showErrorMessage(e.message);
-        reject("Unable to fix JSON, check document format");
-      }
-    }
-  });
 }
 
 function isWorksaceFile(context: string, textDocuments: vscode.TextDocument[]): boolean {
@@ -285,13 +274,13 @@ function getWorksaceFile(context: string, textDocuments: vscode.TextDocument[]):
   return "";
 }
 
-function jqCommand(statement: string, jsonObj: any, outputHandler) {
-  if (jsonObj === undefined) {
+function jqCommand(args, query: string, jsonString: any, outputHandler) {
+  if (jsonString === undefined) {
     return;
   }
 
-  const jqPprocess = child_process.spawn(FILEPATH, [statement]);
-  jqPprocess.stdin.write(JSON.stringify(jsonObj));
+  const jqPprocess = child_process.spawn(FILEPATH, [...args, query]);
+  jqPprocess.stdin.write(jsonString.trim());
   jqPprocess.stdin.end();
 
   jqPprocess.stdout.on("data", (data) => outputHandler.onData(data));

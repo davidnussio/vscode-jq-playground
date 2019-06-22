@@ -612,3 +612,67 @@ jq (..|select(type=="boolean")) |= if . then 1 else 0 end
 
 jq .foo += 1
 {"foo": 42}
+
+jq --raw-output "\(.one)\t\(.two)"
+{"one":1,"two":"x"}
+
+jq -r (map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv
+[
+    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
+    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
+    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
+    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
+]
+
+jq --raw-output (map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv
+[
+    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
+    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
+    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
+    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
+]
+
+jq . 
+[
+  {
+    "the_user": "U024HFHU5",
+    "the_text": "hey there"
+  }
+]
+[
+  {
+    "the_user": "U024HGJ4E",
+    "the_text": "right back at you"
+  }
+]
+[
+  {
+    "type": "message",
+    "user": "U028H5EBL",
+    "text": "<@U02A8N1DS>: Can I get some help with a domain registration?",
+    "ts": "1418301403.001783"
+  },
+  {
+    "type": "message",
+    "user": "U02A8N1DS",
+    "text": "Sure thing.",
+    "ts": "1418301427.001784"
+  }
+]
+
+jq --raw-input --slurp split("\\n")
+foo\nbar\nbaz
+
+jq --slurp . + [5] + [6]
+[
+  1,
+  2,
+  3
+]
+
+jq . + [5] + [6]
+[
+  1,
+  2,
+  3
+]

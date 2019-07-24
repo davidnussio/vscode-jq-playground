@@ -251,8 +251,8 @@ function executeJqCommand(params) {
         Logger.append(err);
         Logger.show();
       });
-  } else if (isWorksaceFile(context, vscode.workspace.textDocuments)) {
-    const text: string = getWorksaceFile(context, vscode.workspace.textDocuments);
+  } else if (isWorkspaceFile(context, vscode.workspace.textDocuments)) {
+    const text: string = getWorkspaceFile(context, vscode.workspace.textDocuments);
     jqCommand(args, query, text, outputDataHandlerFactory(params.openResult));
   } else if (isFilepath(context)) {
     const fileName: string = getFileName(document, context);
@@ -273,11 +273,11 @@ function executeJqCommand(params) {
   }
 }
 
-function isWorksaceFile(context: string, textDocuments: vscode.TextDocument[]): boolean {
+function isWorkspaceFile(context: string, textDocuments: vscode.TextDocument[]): boolean {
   return textDocuments.filter((document) => document.fileName === context).length === 1;
 }
 
-function getWorksaceFile(context: string, textDocuments: vscode.TextDocument[]): string {
+function getWorkspaceFile(context: string, textDocuments: vscode.TextDocument[]): string {
   for (const document of textDocuments) {
     if (document.fileName === context) {
       return document.getText();
@@ -291,7 +291,10 @@ function jqCommand(args, query: string, jsonString: any, outputHandler) {
     return;
   }
 
-  const jqPprocess = child_process.spawn(FILEPATH, [...args, query]);
+  const editor = vscode.window.activeTextEditor;
+  const cwd = path.join(editor.document.fileName, '..');
+
+  const jqPprocess = child_process.spawn(FILEPATH, [...args, query], {cwd});
   jqPprocess.stdin.write(jsonString.trim());
   jqPprocess.stdin.end();
 

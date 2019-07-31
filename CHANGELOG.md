@@ -1,5 +1,9 @@
 # Change Log
 
+## [2.1.1]
+
+* Support relative module paths
+
 ## [2.1.0]
 
 * Added autocomplete jq operators and functions

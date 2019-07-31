@@ -145,6 +145,11 @@ https://api.github.com/repos/stedolan/jq/commits?per_page=5
 * [x] Store intermediate and share it between jq queries
 * [x] Autocomplete
 
+## Contributors
+
+Thanks for cwd module patching [Joseph Andersen](https://github.com/jpandersen87)
+
 ## Thanks
 
 I be inspired by [vscode-jq](https://marketplace.visualstudio.com/items?itemName=dandric.vscode-jq)
+

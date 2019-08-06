@@ -26,24 +26,27 @@ const BINARIES = {
   },
 };
 
-const BIN_DIR = path.join(__dirname, "..", "bin");
-const FILEPATH = path.join(BIN_DIR, /^win32/.test(process.platform) ? "./jq.exe" : "./jq");
-const EXAMPLES_DIR = path.join(__dirname, "..", "examples");
-const MANUAL_PATH = path.join(EXAMPLES_DIR, "manual.jq");
-const LANGUAGES = ["jq"];
-const EXECUTE_JQ_COMMAND = "extension.executeJqCommand";
-const CODE_LENS_TITLE = "jq";
-const JQ_PLAYGROUND_VERSION = "vscode-jq-playground.version";
+const CONFIGS = {
+  FILEPATH: undefined,
+  FILENAME: /^win32/.test(process.platform) ? "./jq.exe" : "./jq",
+  MANUAL_PATH: path.join(__dirname, "..", "examples", "manual.jq"),
+  LANGUAGES: ["jq"],
+  EXECUTE_JQ_COMMAND: "extension.executeJqCommand",
+  CODE_LENS_TITLE: "jq",
+  JQ_PLAYGROUND_VERSION: "vscode-jq-playground.version",
+};
 
 const Logger = vscode.window.createOutputChannel("jq output");
 
 export function activate(context: vscode.ExtensionContext) {
   const jqPlayground = vscode.extensions.getExtension("davidnussio.vscode-jq-playground")!;
   const currentVersion = jqPlayground.packageJSON.version;
-  const previousVersion = context.globalState.get<string>(JQ_PLAYGROUND_VERSION);
+  const previousVersion = context.globalState.get<string>(CONFIGS.JQ_PLAYGROUND_VERSION);
 
   void showWelcomePage(currentVersion, previousVersion);
-  context.globalState.update(JQ_PLAYGROUND_VERSION, currentVersion);
+  context.globalState.update(CONFIGS.JQ_PLAYGROUND_VERSION, currentVersion);
+
+  CONFIGS.FILEPATH = path.join(context.globalStoragePath, CONFIGS.FILENAME);
 
   context.subscriptions.push(vscode.commands.registerCommand("extension.openManual", openManual));
   context.subscriptions.push(vscode.commands.registerCommand("extension.openTutorial", openTutorial));
@@ -54,13 +57,13 @@ export function activate(context: vscode.ExtensionContext) {
 
   setupEnvironment(context)
     .then(() => {
-      context.subscriptions.push(vscode.commands.registerCommand(EXECUTE_JQ_COMMAND, executeJqCommand));
-      context.subscriptions.push(vscode.languages.registerCodeLensProvider(LANGUAGES, { provideCodeLenses }));
+      context.subscriptions.push(vscode.commands.registerCommand(CONFIGS.EXECUTE_JQ_COMMAND, executeJqCommand));
+      context.subscriptions.push(vscode.languages.registerCodeLensProvider(CONFIGS.LANGUAGES, { provideCodeLenses }));
       context.subscriptions.push(
-        vscode.languages.registerCompletionItemProvider(LANGUAGES, new WorkspaceFilesCompletionItemProvider())
+        vscode.languages.registerCompletionItemProvider(CONFIGS.LANGUAGES, new WorkspaceFilesCompletionItemProvider())
       );
       context.subscriptions.push(
-        vscode.languages.registerCompletionItemProvider(LANGUAGES, new TestCompletionItemProvider())
+        vscode.languages.registerCompletionItemProvider(CONFIGS.LANGUAGES, new TestCompletionItemProvider())
       );
     })
     .catch((error) => {
@@ -80,7 +83,7 @@ function openTutorial() {
 }
 
 function openExamples() {
-  fs.readFile(MANUAL_PATH, {}, (err, data) => {
+  fs.readFile(CONFIGS.MANUAL_PATH, {}, (err, data) => {
     vscode.workspace
       .openTextDocument({ content: data.toString(), language: "jq" })
       .then((doc) => vscode.window.showTextDocument(doc, vscode.ViewColumn.Active));
@@ -130,7 +133,7 @@ function doRunQuery(openResult) {
 }
 
 function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
-  return downloadBinary().then(() => upgradeMessage(context));
+  return downloadBinary(context).then(() => upgradeMessage(context));
 }
 
 function upgradeMessage(context: vscode.ExtensionContext): Promise<any> {
@@ -143,25 +146,27 @@ function upgradeMessage(context: vscode.ExtensionContext): Promise<any> {
   return Promise.resolve();
 }
 
-function downloadBinary(): Promise<any> {
-  if (!fs.existsSync(BIN_DIR)) {
-    fs.mkdirSync(BIN_DIR);
+function downloadBinary(context): Promise<any> {
+  const { globalStoragePath } = context;
+
+  if (!fs.existsSync(globalStoragePath)) {
+    fs.mkdirSync(globalStoragePath);
   }
 
   return new Promise((resolve, reject) => {
     if (!BINARIES[process.platform]) {
       return reject(`Platform (${process.platform}) not supported!`);
     }
-
-    checksum.file(FILEPATH, (error, hex) => {
+    checksum.file(CONFIGS.FILEPATH, (error, hex) => {
+      Logger.append(`${CONFIGS.FILEPATH} - hey ${hex} → ${BINARIES[process.platform].checksum}`);
       if (hex === BINARIES[process.platform].checksum) {
         resolve();
       } else {
         Logger.append(`Download jq binary for platform (${process.platform})...`);
         return download(BINARIES[process.platform].file).then((data) => {
-          fs.writeFileSync(FILEPATH, data);
+          fs.writeFileSync(CONFIGS.FILEPATH, data);
           if (!/^win32/.test(process.platform)) {
-            fs.chmodSync(FILEPATH, "0777");
+            fs.chmodSync(CONFIGS.FILEPATH, "0777");
           }
           Logger.append(" [ OK ]");
           Logger.show();
@@ -178,13 +183,13 @@ function provideCodeLenses(document: vscode.TextDocument, token: vscode.Cancella
     .map((match) => {
       return [
         new vscode.CodeLens(match.range, {
-          title: CODE_LENS_TITLE + " → to output",
-          command: EXECUTE_JQ_COMMAND,
+          title: CONFIGS.CODE_LENS_TITLE + " → to output",
+          command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [match],
         }),
         new vscode.CodeLens(match.range, {
-          title: CODE_LENS_TITLE + " → to editor",
-          command: EXECUTE_JQ_COMMAND,
+          title: CONFIGS.CODE_LENS_TITLE + " → to editor",
+          command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [{ ...match, openResult: "editor" }],
         }),
       ];
@@ -292,9 +297,9 @@ function jqCommand(args, query: string, jsonString: any, outputHandler) {
   }
 
   const editor = vscode.window.activeTextEditor;
-  const cwd = path.join(editor.document.fileName, '..');
+  const cwd = path.join(editor.document.fileName, "..");
 
-  const jqPprocess = child_process.spawn(FILEPATH, [...args, query], {cwd});
+  const jqPprocess = child_process.spawn(CONFIGS.FILEPATH, [...args, query], { cwd });
   jqPprocess.stdin.write(jsonString.trim());
   jqPprocess.stdin.end();
 

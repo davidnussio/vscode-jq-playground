@@ -112,27 +112,52 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc --alwaysStrict -p ./",
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
     "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js",
+    "test:watch": "jest --watch"
   },
   "devDependencies": {
-    "@types/mocha": "^5.2.7",
-    "@types/node": "^11.13.15",
-    "tslint": "^5.18.0",
-    "tslint-eslint-rules": "^5.4.0",
-    "typescript": "^3.5.2",
-    "vscode": "^1.1.34"
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "@babel/preset-typescript": "^7.9.0",
+    "@types/glob": "^7.1.1",
+    "@types/node": "^13.13.1",
+    "@types/vscode": "^1.44.0",
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
+    "babel-jest": "^25.4.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-prettier": "^3.1.3",
+    "glob": "^7.1.6",
+    "mocha": "^7.0.1",
+    "typescript": "^3.8.3",
+    "vscode-test": "^1.3.0"
   },
   "dependencies": {
+    "@types/checksum": "^0.1.30",
+    "@types/download": "^6.2.4",
+    "@types/jest": "^25.2.1",
+    "@types/ramda": "^0.27.3",
     "checksum": "^0.1.1",
-    "download": "^7.1.0"
+    "crocks": "^0.12.4",
+    "download": "^7.1.0",
+    "eyes": "^0.1.8",
+    "ramda": "^0.27.0",
+    "ts-jest": "^25.4.0"
+  },
+  "jest": {
+    "modulePathIgnorePatterns": [
+      "<rootDir>/src/test/"
+    ]
   },
   "prettier": {
-    "printWidth": 120,
-    "singleQuote": false,
-    "trailingComma": "es5",
-    "arrowParens": "always"
+    "singleQuote": true,
+    "semi": false,
+    "printWidth": 80,
+    "trailingComma": "all"
   }
 }

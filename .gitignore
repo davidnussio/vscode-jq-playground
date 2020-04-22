@@ -60,5 +60,5 @@ typings/
 # vscode build directory
 out
 bin
-
-.npmrc
+.vscode-test/
+*.vsix

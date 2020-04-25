@@ -65,8 +65,6 @@ jq .foo, .bar
 jq .user, .projects[]
 {"user":"stedolan", "projects": ["jq", "wikiflow"]}
 
-jq"
-      - '"wikiflow"
 jq .[4,2]
 ["a","b","c","d","e"]
 
@@ -478,14 +476,13 @@ jq strptime("%Y-%m-%dT%H:%M:%SZ")|mktime
 jq .[] == 1
 [1, 1.0, "1", "banana"]
 
-jq |-
-        if . == 0 then
-          "zero"
-        elif . == 1 then
-          "one"
-        else
-          "many"
-        end
+jq if . == 0 then \
+    "zero" \
+  elif . == 1 then \
+    "one" \
+  else \
+    "many" \
+  end
 2
 
 jq . < 5

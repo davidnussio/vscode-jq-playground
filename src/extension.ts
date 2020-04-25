@@ -6,7 +6,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as checksum from 'checksum'
 
-// import { EditorDataHandler, OutputDataHandler } from './dataHandler'
 import {
   WorkspaceFilesCompletionItemProvider,
   TestCompletionItemProvider,
@@ -39,24 +38,23 @@ const CONFIGS = {
   EXECUTE_JQ_COMMAND: 'extension.executeJqCommand',
   CODE_LENS_TITLE: 'jq',
   JQ_PLAYGROUND_VERSION: 'vscode-jq-playground.version',
+  SHOW_EXAMPLES: 'vscode-jq-payground.showExamples',
 }
 
 const Logger = vscode.window.createOutputChannel('jq output')
 
 export function activate(context: vscode.ExtensionContext) {
-  const jqPlayground = vscode.extensions.getExtension(
-    'davidnussio.vscode-jq-playground',
-  )!
-  const currentVersion = jqPlayground.packageJSON.version
-  const previousVersion = context.globalState.get<string>(
-    CONFIGS.JQ_PLAYGROUND_VERSION,
-  )
+  setupEnvironment(context)
+    .then(() => checkEnvironment(context))
+    .then(() => configureSubscriptions(context))
+    .catch((error) => {
+      vscode.window.showErrorMessage(error)
+      Logger.appendLine(error)
+      Logger.show()
+    })
+}
 
-  void showWelcomePage(currentVersion, previousVersion)
-  context.globalState.update(CONFIGS.JQ_PLAYGROUND_VERSION, currentVersion)
-
-  CONFIGS.FILEPATH = path.join(context.globalStoragePath, CONFIGS.FILENAME)
-
+function configureSubscriptions(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.openManual', openManual),
   )
@@ -75,40 +73,78 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.runQueryEditor', runQueryEditor),
   )
-
-  setupEnvironment(context)
-    .then(() => {
-      context.subscriptions.push(
-        vscode.commands.registerCommand(
-          CONFIGS.EXECUTE_JQ_COMMAND,
-          executeJqCommand,
-        ),
-      )
-      context.subscriptions.push(
-        vscode.languages.registerCodeLensProvider(CONFIGS.LANGUAGES, {
-          provideCodeLenses,
-        }),
-      )
-      context.subscriptions.push(
-        vscode.languages.registerCompletionItemProvider(
-          CONFIGS.LANGUAGES,
-          new WorkspaceFilesCompletionItemProvider(),
-        ),
-      )
-      context.subscriptions.push(
-        vscode.languages.registerCompletionItemProvider(
-          CONFIGS.LANGUAGES,
-          new TestCompletionItemProvider(),
-        ),
-      )
-    })
-    .catch((error) => {
-      Logger.appendLine(error)
-    })
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      CONFIGS.EXECUTE_JQ_COMMAND,
+      executeJqCommand,
+    ),
+  )
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(CONFIGS.LANGUAGES, {
+      provideCodeLenses,
+    }),
+  )
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      CONFIGS.LANGUAGES,
+      new WorkspaceFilesCompletionItemProvider(),
+    ),
+  )
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(
+      CONFIGS.LANGUAGES,
+      new TestCompletionItemProvider(),
+    ),
+  )
 }
 
 // tslint:disable-next-line:no-empty
 export function deactivate() {}
+
+function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
+  const config = vscode.workspace.getConfiguration()
+
+  // Use user configurated executable or auto downloaded
+  const userFilePath: fs.PathLike = config.get('conf.binary.path')
+  if (fs.existsSync(userFilePath)) {
+    // User configurated binary path
+    CONFIGS.FILEPATH = userFilePath
+    return Promise.resolve()
+  } else {
+    // Default path, automatically downloaded from github
+    // https://github.com/stedolan/jq
+    CONFIGS.FILEPATH = path.join(context.globalStoragePath, CONFIGS.FILENAME)
+    return downloadBinary(context)
+  }
+}
+
+// TODO: Clean this function flow
+async function checkEnvironment(
+  context: vscode.ExtensionContext,
+): Promise<any> {
+  const jqPlayground = vscode.extensions.getExtension(
+    'davidnussio.vscode-jq-playground',
+  )
+  const currentVersion = jqPlayground.packageJSON.version
+  const previousVersion = context.globalState.get<string>(
+    CONFIGS.JQ_PLAYGROUND_VERSION,
+  )
+  if (previousVersion === currentVersion) {
+    return Promise.resolve()
+  }
+  // Update stored version
+  context.globalState.update(CONFIGS.JQ_PLAYGROUND_VERSION, currentVersion)
+  // Show update message
+  if (showWelcomePage(currentVersion, previousVersion)) {
+    const showExamples = context.globalState.get<boolean>(CONFIGS.SHOW_EXAMPLES)
+    context.globalState.update(CONFIGS.SHOW_EXAMPLES, false)
+    if (showExamples) {
+      openExamples()
+    }
+    Messages.showWhatsNewMessage(currentVersion)
+  }
+  return Promise.resolve()
+}
 
 function openManual() {
   vscode.commands.executeCommand(
@@ -186,25 +222,6 @@ function doRunQuery(openResult) {
   }
 }
 
-function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
-  return downloadBinary(context).then(() => upgradeMessage(context))
-}
-
-function upgradeMessage(context: vscode.ExtensionContext): Promise<any> {
-  const prevVersion = context.globalState.get('jq-payload-version')
-  const jqExtension = vscode.extensions.getExtension(
-    'davidnussio.vscode-jq-playground',
-  )
-  if (prevVersion !== jqExtension.packageJSON.version) {
-    context.globalState.update(
-      'jq-payload-version',
-      jqExtension.packageJSON.version,
-    )
-    openExamples()
-  }
-  return Promise.resolve()
-}
-
 function downloadBinary(context): Promise<any> {
   const { globalStoragePath } = context
 
@@ -216,27 +233,24 @@ function downloadBinary(context): Promise<any> {
     if (!BINARIES[process.platform]) {
       return reject(`Platform (${process.platform}) not supported!`)
     }
-    checksum.file(CONFIGS.FILEPATH, (error, hex) => {
-      Logger.append(
-        `${CONFIGS.FILEPATH} - hey ${hex} → ${
-          BINARIES[process.platform].checksum
-        }`,
-      )
+    return checksum.file(CONFIGS.FILEPATH, (_, hex) => {
       if (hex === BINARIES[process.platform].checksum) {
         resolve()
       } else {
         Logger.append(
           `Download jq binary for platform (${process.platform})...`,
         )
-        return download(BINARIES[process.platform].file).then((data) => {
-          fs.writeFileSync(CONFIGS.FILEPATH, data)
-          if (!/^win32/.test(process.platform)) {
-            fs.chmodSync(CONFIGS.FILEPATH, '0777')
-          }
-          Logger.append(' [ OK ]')
-          Logger.show()
-          resolve()
-        })
+        download(BINARIES[process.platform].file)
+          .then((data) => {
+            fs.writeFileSync(CONFIGS.FILEPATH, data)
+            if (!/^win32/.test(process.platform)) {
+              fs.chmodSync(CONFIGS.FILEPATH, '0755')
+            }
+            Logger.append(' [ OK ]')
+            Logger.show()
+            resolve()
+          })
+          .catch(reject)
       }
     })
   })
@@ -252,7 +266,7 @@ function provideCodeLenses(
     .map((match) => {
       return [
         new vscode.CodeLens(match.range, {
-          title: '⚡ ➜ output',
+          title: '⚡ ➜ console',
           command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [match],
         }),
@@ -300,20 +314,7 @@ function jqMatch(document: vscode.TextDocument, line: number) {
   }
 }
 
-// function extractArgsString(queryLine: string) {
-//   const args = queryLine.match(/^(([-{1,2}][a-zA-Z0-9-]+)\s+)+/g)
-//   if (args === null) {
-//     return ''
-//   }
-
-//   return args[0]
-// }
-
-// const edata = new EditorDataHandler()
-// const odata = new OutputDataHandler(Logger)
-
 const renderOutput = (type) => (data) => {
-  console.log('Ok...', bufferToString(data))
   if (type === 'editor') {
     vscode.workspace
       .openTextDocument({ content: bufferToString(data), language: 'jq' })
@@ -325,7 +326,10 @@ const renderOutput = (type) => (data) => {
 }
 
 function renderError(data) {
-  console.log('Error...', bufferToString(data))
+  Logger.clear()
+  Logger.append(bufferToString(data))
+  Logger.show()
+  vscode.window.showErrorMessage(bufferToString(data))
 }
 
 function executeJqCommand(params) {
@@ -344,9 +348,7 @@ function executeJqCommand(params) {
     queryLine.search(/\s*\\\s*$/) !== -1 && line < document.lineCount;
     line++
   ) {
-    queryLine =
-      queryLine.replace(/\s*\\\s*$/, ' ') +
-      document.lineAt(params.range.start.line + line).text
+    queryLine = queryLine.replace(/\s*\\\s*$/, ' ') + document.lineAt(line).text
     lineOffset++
   }
   const context: string = document.lineAt(params.range.start.line + lineOffset)
@@ -424,13 +426,6 @@ function getWorkspaceFile(
   return ''
 }
 
-// function outputDataHandlerFactory(type: string) {
-//   if (type === 'editor') {
-//     return new EditorDataHandler()
-//   }
-//   return new OutputDataHandler(Logger)
-// }
-
 function isUrl(context: string): boolean {
   return context.search(/^http(s)?/) !== -1
 }
@@ -447,29 +442,26 @@ function getFileName(document: vscode.TextDocument, context: string): string {
   }
 }
 
-async function showWelcomePage(
+function showWelcomePage(
   version: string,
   previousVersion: string | undefined,
-) {
-  try {
-    if (previousVersion === undefined) {
-      Logger.append('Welcome to jq playground install')
-      return
-    }
-
-    const [major, minor] = version.split('.')
-    const [prevMajor, prevMinor] = previousVersion.split('.')
-    if (
-      (major === prevMajor && minor === prevMinor) ||
-      // Don't notify on downgrades
-      major < prevMajor ||
-      (major === prevMajor && minor < prevMinor)
-    ) {
-      return
-    }
-
-    await Messages.showWhatsNewMessage(version)
-  } finally {
-    Logger.show()
+): boolean {
+  // Fresh install, no previous version
+  if (previousVersion === undefined) {
+    return true
   }
+
+  const [major, minor] = version.split('.')
+  const [prevMajor, prevMinor] = previousVersion.split('.')
+  if (
+    // Patch updates
+    (major === prevMajor && minor === prevMinor) ||
+    // Don't notify on downgrades
+    major < prevMajor ||
+    (major === prevMajor && minor < prevMinor)
+  ) {
+    return false
+  }
+
+  return true
 }

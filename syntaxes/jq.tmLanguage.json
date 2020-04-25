@@ -1,52 +1,89 @@
 {
-	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "jq",
-	"fileTypes": [
-		"jq"
-	],
-	"patterns": [
-		{
-			"include": "#command"
-		},
-		{
-			"include": "#json"
-		},
-		{
-			"include": "#comment"
-		}
-	],
-	"repository": {
-		"command": {
-			"patterns": [
-				{
-					"name": "entity.name.class",
-					"match": "^jq\\s+(.*)",
-					"captures": {
-						"1" : {
-							"name": "entity.name.tag"
-						}
-					}
-				}
-			]
-		},		
-		"json": {
-			"begin": "^[\\{|\\[]",
-			"end": "[\\}|\\]]$",
-			"name": "source.json",
-			"patterns": [	
-				{
-					"include": "source.json"
-				}
-			]
-		},
-		"comment": {
-			"patterns": [
-				{
-					"match": "^#.*",
-					"name": "comment"
-				}
-			]
-		}
-	},
-	"scopeName": "source.jq"
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "jq",
+  "fileTypes": ["jq"],
+  "patterns": [
+    {
+      "include": "#command"
+    },
+    {
+      "include": "#json"
+    },
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#main"
+    }
+  ],
+  "repository": {
+    "command": {
+      "patterns": [
+        {
+          "begin": "(^jq)(.*\\\\.*)",
+          "beginCaptures": {
+            "1": {
+              "name": "entity.name.class"
+            },
+            "2": {
+              "name": "entity.name.tag"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#main__1"
+            }
+          ],
+          "end": "(.*[^\\\\\\s]$)",
+          "endCaptures": {
+            "1": {
+              "name": "entity.name.tag.json"
+            }
+          }
+        },
+        {
+          "match": "(^jq)(.*)",
+          "captures": {
+            "1": {
+              "name": "entity.name.class"
+            },
+            "2": {
+              "name": "entity.name.tag.json"
+            }
+          }
+        }
+      ]
+    },
+    "main__1": {
+      "patterns": [
+        {
+          "match": "([a-z])",
+          "name": "entity.name.tag.json"
+        },
+        {
+          "match": "([^a-z])",
+          "name": "entity.name.tag.json"
+        }
+      ]
+    },
+    "json": {
+      "begin": "^[\\{|\\[]",
+      "end": "[\\}|\\]]$",
+      "name": "source.json",
+      "patterns": [
+        {
+          "include": "source.json"
+        }
+      ]
+    },
+    "comment": {
+      "patterns": [
+        {
+          "match": "^#.*",
+          "name": "comment"
+        }
+      ]
+    }
+  },
+  "scopeName": "source.jq"
 }

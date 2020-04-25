@@ -6,6 +6,7 @@ import {
 } from '../command-line'
 
 import { fetchContent } from '../fetch-document'
+import { Rejected } from 'crocks/Async'
 
 describe('Spawn jq command line', () => {
   test('extract jq command options and filter', () => {
@@ -61,17 +62,17 @@ describe('Spawn jq command line', () => {
     ])
   })
 
-  test('should execute command', done => {
+  test('should execute command', (done) => {
     const jqCommand = spawnCommand('/usr/bin/jq')
 
-    const renderError = data => {
+    const renderError = (data) => {
       done(bufferToString(data))
     }
-    const expectJson = expected => data => {
+    const expectJson = (expected) => (data) => {
       expect(bufferToJSON(data)).toEqual(expected)
       done()
     }
-    const expectText = expected => data => {
+    const expectText = (expected) => (data) => {
       expect(bufferToString(data)).toEqual(expected)
       done()
     }
@@ -129,11 +130,5 @@ describe('Spawn jq command line', () => {
         KEY_b: 2,
       }),
     )
-  })
-})
-
-describe('Context', () => {
-  test('should ', () => {
-    expect(fetchContent('http://www.example.com').valueOf()).toEqual(false)
   })
 })

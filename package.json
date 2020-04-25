@@ -44,6 +44,17 @@
   ],
   "main": "./out/extension",
   "contributes": {
+    "configuration": {
+      "title": "JQ playground configuration",
+      "properties": {
+        "conf.binary.path": {
+          "type": "string",
+          "default": "",
+          "description": "Resource configuration: Configure files using glob patterns to have an empty last line always",
+          "scope": "application"
+        }
+      }
+    },
     "languages": [
       {
         "id": "jq",

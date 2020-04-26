@@ -47,10 +47,10 @@
     "configuration": {
       "title": "JQ playground configuration",
       "properties": {
-        "conf.binary.path": {
+        "jqPlayground.binaryPath": {
           "type": "string",
           "default": "",
-          "description": "Resource configuration: Configure files using glob patterns to have an empty last line always",
+          "description": "Specifies the folder path to jq binary. (/home/user/bin/jq). Leaves empty to automatically download from github.",
           "scope": "application"
         }
       }
@@ -135,16 +135,16 @@
     "@babel/preset-env": "^7.9.5",
     "@babel/preset-typescript": "^7.9.0",
     "@types/glob": "^7.1.1",
-    "@types/node": "^13.13.1",
-    "@types/vscode": "^1.44.0",
+    "@types/node": "^13.13.2",
+    "@types/vscode": "^1.31.0",
     "@typescript-eslint/eslint-plugin": "^2.29.0",
     "@typescript-eslint/parser": "^2.29.0",
     "babel-jest": "^25.4.0",
     "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.1",
+    "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
     "glob": "^7.1.6",
-    "mocha": "^7.0.1",
+    "mocha": "^7.1.1",
     "typescript": "^3.8.3",
     "vscode-test": "^1.3.0"
   },
@@ -152,10 +152,10 @@
     "@types/checksum": "^0.1.30",
     "@types/download": "^6.2.4",
     "@types/jest": "^25.2.1",
-    "@types/ramda": "^0.27.3",
+    "@types/ramda": "^0.27.4",
     "checksum": "^0.1.1",
     "crocks": "^0.12.4",
-    "download": "^7.1.0",
+    "download": "^8.0.0",
     "eyes": "^0.1.8",
     "ramda": "^0.27.0",
     "ts-jest": "^25.4.0"

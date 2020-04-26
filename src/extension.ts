@@ -44,11 +44,16 @@ const CONFIGS = {
 const Logger = vscode.window.createOutputChannel('jq output')
 
 export function activate(context: vscode.ExtensionContext) {
+  configureSubscriptions(context)
   setupEnvironment(context)
     .then(() => checkEnvironment(context))
-    .then(() => configureSubscriptions(context))
     .catch((error) => {
-      vscode.window.showErrorMessage(error)
+      vscode.window.showErrorMessage(
+        ' 🔥 Extension activation error! Check jq output console for more details',
+      )
+      Logger.appendLine('')
+      Logger.appendLine('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥')
+      Logger.appendLine('  Extension activation error!')
       Logger.appendLine(error)
       Logger.show()
     })
@@ -225,10 +230,6 @@ function doRunQuery(openResult) {
 function downloadBinary(context): Promise<any> {
   const { globalStoragePath } = context
 
-  if (!fs.existsSync(globalStoragePath)) {
-    fs.mkdirSync(globalStoragePath)
-  }
-
   return new Promise((resolve, reject) => {
     if (!BINARIES[process.platform]) {
       return reject(`Platform (${process.platform}) not supported!`)
@@ -237,20 +238,30 @@ function downloadBinary(context): Promise<any> {
       if (hex === BINARIES[process.platform].checksum) {
         resolve()
       } else {
-        Logger.append(
-          `Download jq binary for platform (${process.platform})...`,
+        Logger.appendLine(
+          `Download jq binary for platform (${process.platform})`,
         )
-        download(BINARIES[process.platform].file)
+        Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`)
+        Logger.appendLine(`  - to dir ${globalStoragePath}`)
+        Logger.append('  - start downloading...')
+        download(BINARIES[process.platform].file, globalStoragePath)
           .then((data) => {
             fs.writeFileSync(CONFIGS.FILEPATH, data)
             if (!/^win32/.test(process.platform)) {
               fs.chmodSync(CONFIGS.FILEPATH, '0755')
             }
-            Logger.append(' [ OK ]')
+            Logger.appendLine('     [ OK ]')
             Logger.show()
             resolve()
           })
-          .catch(reject)
+          .catch((err) => {
+            Logger.appendLine('     [ ERROR ]')
+            Logger.appendLine(`  - ${err}`)
+            Logger.show()
+            reject(
+              ' *** An error occurred during activation.\n *** Try again or download jq binary manually.\n *** Check vscode configuration → Jq Playground: Binary Path',
+            )
+          })
       }
     })
   })

@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.0.0]
+
+* Support multiline query
+* Full support for jq command line options
+* Support custom binary installation
+
 ## [2.1.1]
 
 * Support relative module paths

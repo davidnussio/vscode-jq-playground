@@ -267,12 +267,8 @@ function downloadBinary(context): Promise<any> {
   })
 }
 
-function provideCodeLenses(
-  document: vscode.TextDocument,
-  token: vscode.CancellationToken,
-) {
+function provideCodeLenses(document: vscode.TextDocument) {
   const matches: IJqMatch[] = findRegexes(document)
-  console.log('token → ', token)
   return matches
     .map((match) => {
       return [
@@ -367,6 +363,16 @@ function executeJqCommand(params) {
   lineOffset++
 
   const args = parseCommandArgs(queryLine)
+
+  let queryLineWithoutOpts = args[args.length - 1]
+
+  if (isWorkspaceFile(queryLineWithoutOpts, vscode.workspace.textDocuments)) {
+    args[args.length - 1] = getWorkspaceFile(
+      queryLineWithoutOpts,
+      vscode.workspace.textDocuments,
+    )
+  }
+
   const cwd = path.join(vscode.window.activeTextEditor.document.fileName, '..')
 
   if (isUrl(context)) {
@@ -420,8 +426,11 @@ function isWorkspaceFile(
   textDocuments: ReadonlyArray<vscode.TextDocument>,
 ): boolean {
   return (
-    textDocuments.filter((document) => document.fileName === context).length ===
-    1
+    textDocuments.filter(
+      (document) =>
+        document.fileName === context ||
+        path.basename(document.fileName) === context,
+    ).length === 1
   )
 }
 
@@ -430,7 +439,10 @@ function getWorkspaceFile(
   textDocuments: ReadonlyArray<vscode.TextDocument>,
 ): string {
   for (const document of textDocuments) {
-    if (document.fileName === context) {
+    if (
+      document.fileName === context ||
+      path.basename(document.fileName) === context
+    ) {
       return document.getText()
     }
   }

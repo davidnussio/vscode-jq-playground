@@ -13,36 +13,30 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ### Usage example
 
+![vscode-jq-payground](https://media.giphy.com/media/d7ffrUyHrXinEvrMrU/giphy.gif)
+
 ![vscode-jq-playground](https://media.giphy.com/media/3ohhwkqXNc3hrmoECI/giphy.gif)
 
 ### Autocomplete
 
 ![Autocomplete](https://media.giphy.com/media/fXWUulNjiQ6m8qLS7W/giphy.gif)
 
-### Execute query online (jqplay)
 
-![jqplay](https://media.giphy.com/media/3ov9k1k8R0jSttJUT6/giphy.gif)
-
-### Try to use JSON Object with non string keys.
-
-![bad-json](https://media.giphy.com/media/3o6fJ0kIg5QTHjtloQ/giphy.gif)
 
 ## Main Features
 
-* Create notebook that contain description text and json query command
-* JSON can be
-  * embedded into document
-  * file on filesystem
+* Create notebook with jq query filters
+* Support data input as:
+  * embedded documents
+  * filesystem files
   * http resource
-* Highlighting inline json code
+* Support jq query filter as:
+  * inline
+  * opened workspace files
+* Highlighting code
 * Autocomplete 
-  * filename from workspace opened file
-  * jq operators and functions
-* Execute jq command and show result in new text editor
-* Execute jq query online on [jqplay.org](https://jqplay.org) and share snippet
-* Open manual and tutorial from command
+* Open command filter result in output console or in new editor file
 * Open examples from jq manual and run it (ctrl+shift+p → jq playground: Examples)
-* Support non string keys
 * Support hotkeys
   * ctrl+enter → to output
   * shift+enter → to editor
@@ -102,6 +96,10 @@ jq --slurp . + [5] + [6]
   3
 ]
 
+# Multi value arguments
+jq --arg var val .value = $var
+{}
+
 jq --raw-input --slurp split("\\n")
 foo\nbar\nbaz
 
@@ -115,6 +113,48 @@ jq -r (map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])
 
 jq --raw-output "\(.one)\t\(.two)"
 {"one":1,"two":"x"}
+```
+
+### Multiline query filter (backslash)
+
+```json
+# Multiline query filter
+jq if . == 0 then \
+    "zero" \
+  elif . == 1 then \
+    "one" \
+  else \
+    "many" \ 
+  end
+2
+
+# Multiline query filter
+jq -r (map(keys) | \
+  add | \
+  unique) as $cols | \
+  map(. as $row | \
+  $cols | \
+  map($row[.])) as $rows | \
+  $cols, $rows[] | \
+  @csv
+[
+    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
+    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
+    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
+    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
+]
+```
+
+### Use workspace file as command input or query filter
+
+```json
+# Opened workspace file as filter
+jq opened-workspace-file-filter.jq
+[1, 2, 3, 4, 5]
+
+# Opened workspace file as filter and query input
+jq opened-workspace-file-filter.jq
+opened-workspace-file-with-data.json
 ```
 
 ### Open online manual
@@ -136,14 +176,6 @@ jq --raw-output "\(.one)\t\(.two)"
 jq .[0] | {message: .commit.message, name: .commit.committer.name}
 https://api.github.com/repos/stedolan/jq/commits?per_page=5
 ```
-
-## TODO
-
-* [x] Run jq query with hotkeys
-* [ ] Better error reporting
-* [ ] Support (testing) windows filesystem (is there someone who test it on windows?)
-* [x] Store intermediate and share it between jq queries
-* [x] Autocomplete
 
 ## Contributors
 

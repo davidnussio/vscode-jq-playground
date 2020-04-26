@@ -5,6 +5,7 @@
 * Support multiline query
 * Full support for jq command line options
 * Support custom binary installation
+* Use workspace file as command input or query filter
 
 ## [2.1.1]
 

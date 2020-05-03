@@ -11,3 +11,9 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+internals/**
+webpack.config.js
+files/**
+
+node_modules/**
+!node_modules/cacheable_request

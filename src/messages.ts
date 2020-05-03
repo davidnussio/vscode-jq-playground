@@ -7,7 +7,7 @@ export class Messages {
 
     const result = await window.showInformationMessage(
       `
-      jq playground has been updated (ver. ${version}! Support multiline query and full support for
+      jq playground has been updated (ver. ${version})! Support multiline query and full support for
       command line options
       `,
       ...actions,

@@ -1,0 +1,572 @@
+{
+  "IN": {
+    "documentation": ""
+  },
+  "INDEX": {
+    "documentation": ""
+  },
+  "JOIN": {
+    "documentation": ""
+  },
+  "acos": {
+    "documentation": ""
+  },
+  "acosh": {
+    "documentation": ""
+  },
+  "add": {
+    "documentation": ""
+  },
+  "all": {
+    "documentation": ""
+  },
+  "any": {
+    "documentation": ""
+  },
+  "arrays": {
+    "documentation": ""
+  },
+  "ascii_downcase": {
+    "documentation": ""
+  },
+  "ascii_upcase": {
+    "documentation": ""
+  },
+  "asin": {
+    "documentation": ""
+  },
+  "asinh": {
+    "documentation": ""
+  },
+  "atan": {
+    "documentation": ""
+  },
+  "atan2": {
+    "documentation": ""
+  },
+  "atanh": {
+    "documentation": ""
+  },
+  "booleans": {
+    "documentation": ""
+  },
+  "bsearch": {
+    "documentation": ""
+  },
+  "builtins": {
+    "documentation": ""
+  },
+  "capture": {
+    "documentation": ""
+  },
+  "cbrt": {
+    "documentation": ""
+  },
+  "ceil": {
+    "documentation": ""
+  },
+  "combinations": {
+    "documentation": ""
+  },
+  "contains": {
+    "documentation": ""
+  },
+  "copysign": {
+    "documentation": ""
+  },
+  "cos": {
+    "documentation": ""
+  },
+  "cosh": {
+    "documentation": ""
+  },
+  "debug": {
+    "documentation": ""
+  },
+  "del": {
+    "documentation": ""
+  },
+  "delpaths": {
+    "documentation": ""
+  },
+  "drem": {
+    "documentation": ""
+  },
+  "empty": {
+    "documentation": ""
+  },
+  "endswith": {
+    "documentation": ""
+  },
+  "env": {
+    "documentation": ""
+  },
+  "erf": {
+    "documentation": ""
+  },
+  "erfc": {
+    "documentation": ""
+  },
+  "error": {
+    "documentation": ""
+  },
+  "exp": {
+    "documentation": ""
+  },
+  "exp10": {
+    "documentation": ""
+  },
+  "exp2": {
+    "documentation": ""
+  },
+  "explode": {
+    "documentation": ""
+  },
+  "expm1": {
+    "documentation": ""
+  },
+  "fabs": {
+    "documentation": ""
+  },
+  "fdim": {
+    "documentation": ""
+  },
+  "finites": {
+    "documentation": ""
+  },
+  "first": {
+    "documentation": ""
+  },
+  "flatten": {
+    "documentation": ""
+  },
+  "floor": {
+    "documentation": ""
+  },
+  "fma": {
+    "documentation": ""
+  },
+  "fmax": {
+    "documentation": ""
+  },
+  "fmin": {
+    "documentation": ""
+  },
+  "fmod": {
+    "documentation": ""
+  },
+  "format": {
+    "documentation": ""
+  },
+  "frexp": {
+    "documentation": ""
+  },
+  "from_entries": {
+    "documentation": ""
+  },
+  "fromdate": {
+    "documentation": ""
+  },
+  "fromdateiso8601": {
+    "documentation": ""
+  },
+  "fromjson": {
+    "documentation": ""
+  },
+  "fromstream": {
+    "documentation": ""
+  },
+  "gamma": {
+    "documentation": ""
+  },
+  "get_jq_origin": {
+    "documentation": ""
+  },
+  "get_prog_origin": {
+    "documentation": ""
+  },
+  "get_search_list": {
+    "documentation": ""
+  },
+  "getpath": {
+    "documentation": ""
+  },
+  "gmtime": {
+    "documentation": ""
+  },
+  "group_by": {
+    "documentation": ""
+  },
+  "gsub": {
+    "documentation": ""
+  },
+  "halt": {
+    "documentation": ""
+  },
+  "halt_error": {
+    "documentation": ""
+  },
+  "has": {
+    "documentation": ""
+  },
+  "hypot": {
+    "documentation": ""
+  },
+  "implode": {
+    "documentation": ""
+  },
+  "in": {
+    "documentation": ""
+  },
+  "index": {
+    "documentation": ""
+  },
+  "indices": {
+    "documentation": ""
+  },
+  "infinite": {
+    "documentation": ""
+  },
+  "input": {
+    "documentation": ""
+  },
+  "input_filename": {
+    "documentation": ""
+  },
+  "input_line_number": {
+    "documentation": ""
+  },
+  "inputs": {
+    "documentation": ""
+  },
+  "inside": {
+    "documentation": ""
+  },
+  "isempty": {
+    "documentation": ""
+  },
+  "isfinite": {
+    "documentation": ""
+  },
+  "isinfinite": {
+    "documentation": ""
+  },
+  "isnan": {
+    "documentation": ""
+  },
+  "isnormal": {
+    "documentation": ""
+  },
+  "iterables": {
+    "documentation": ""
+  },
+  "j0": {
+    "documentation": ""
+  },
+  "j1": {
+    "documentation": ""
+  },
+  "jn": {
+    "documentation": ""
+  },
+  "join": {
+    "documentation": ""
+  },
+  "keys": {
+    "documentation": ""
+  },
+  "keys_unsorted": {
+    "documentation": ""
+  },
+  "last": {
+    "documentation": ""
+  },
+  "ldexp": {
+    "documentation": ""
+  },
+  "leaf_paths": {
+    "documentation": ""
+  },
+  "length": {
+    "documentation": ""
+  },
+  "lgamma": {
+    "documentation": ""
+  },
+  "lgamma_r": {
+    "documentation": ""
+  },
+  "limit": {
+    "documentation": ""
+  },
+  "localtime": {
+    "documentation": ""
+  },
+  "log": {
+    "documentation": ""
+  },
+  "log10": {
+    "documentation": ""
+  },
+  "log1p": {
+    "documentation": ""
+  },
+  "log2": {
+    "documentation": ""
+  },
+  "logb": {
+    "documentation": ""
+  },
+  "ltrimstr": {
+    "documentation": ""
+  },
+  "map": {
+    "documentation": ""
+  },
+  "map_values": {
+    "documentation": ""
+  },
+  "match": {
+    "documentation": ""
+  },
+  "max": {
+    "documentation": ""
+  },
+  "max_by": {
+    "documentation": ""
+  },
+  "min": {
+    "documentation": ""
+  },
+  "min_by": {
+    "documentation": ""
+  },
+  "mktime": {
+    "documentation": ""
+  },
+  "modf": {
+    "documentation": ""
+  },
+  "modulemeta": {
+    "documentation": ""
+  },
+  "nan": {
+    "documentation": ""
+  },
+  "nearbyint": {
+    "documentation": ""
+  },
+  "nextafter": {
+    "documentation": ""
+  },
+  "nexttoward": {
+    "documentation": ""
+  },
+  "normals": {
+    "documentation": ""
+  },
+  "not": {
+    "documentation": ""
+  },
+  "now": {
+    "documentation": ""
+  },
+  "nth": {
+    "documentation": ""
+  },
+  "nulls": {
+    "documentation": ""
+  },
+  "numbers": {
+    "documentation": ""
+  },
+  "objects": {
+    "documentation": ""
+  },
+  "path": {
+    "documentation": ""
+  },
+  "paths": {
+    "documentation": ""
+  },
+  "pow": {
+    "documentation": ""
+  },
+  "pow10": {
+    "documentation": ""
+  },
+  "range": {
+    "documentation": ""
+  },
+  "recurse": {
+    "documentation": ""
+  },
+  "recurse_down": {
+    "documentation": ""
+  },
+  "remainder": {
+    "documentation": ""
+  },
+  "repeat": {
+    "documentation": ""
+  },
+  "reverse": {
+    "documentation": ""
+  },
+  "rindex": {
+    "documentation": ""
+  },
+  "rint": {
+    "documentation": ""
+  },
+  "round": {
+    "documentation": ""
+  },
+  "rtrimstr": {
+    "documentation": ""
+  },
+  "scalars": {
+    "documentation": ""
+  },
+  "scalars_or_empty": {
+    "documentation": ""
+  },
+  "scalb": {
+    "documentation": ""
+  },
+  "scalbln": {
+    "documentation": ""
+  },
+  "scan": {
+    "documentation": ""
+  },
+  "select": {
+    "documentation": ""
+  },
+  "setpath": {
+    "documentation": ""
+  },
+  "significand": {
+    "documentation": ""
+  },
+  "sin": {
+    "documentation": ""
+  },
+  "sinh": {
+    "documentation": ""
+  },
+  "sort": {
+    "documentation": ""
+  },
+  "sort_by": {
+    "documentation": ""
+  },
+  "split": {
+    "documentation": ""
+  },
+  "splits": {
+    "documentation": ""
+  },
+  "sqrt": {
+    "documentation": ""
+  },
+  "startswith": {
+    "documentation": ""
+  },
+  "stderr": {
+    "documentation": ""
+  },
+  "strflocaltime": {
+    "documentation": ""
+  },
+  "strftime": {
+    "documentation": ""
+  },
+  "strings": {
+    "documentation": ""
+  },
+  "strptime": {
+    "documentation": ""
+  },
+  "sub": {
+    "documentation": ""
+  },
+  "tan": {
+    "documentation": ""
+  },
+  "tanh": {
+    "documentation": ""
+  },
+  "test": {
+    "documentation": ""
+  },
+  "tgamma": {
+    "documentation": ""
+  },
+  "to_entries": {
+    "documentation": ""
+  },
+  "todate": {
+    "documentation": ""
+  },
+  "todateiso8601": {
+    "documentation": ""
+  },
+  "tojson": {
+    "documentation": ""
+  },
+  "tonumber": {
+    "documentation": ""
+  },
+  "tostream": {
+    "documentation": ""
+  },
+  "tostring": {
+    "documentation": ""
+  },
+  "transpose": {
+    "documentation": ""
+  },
+  "trunc": {
+    "documentation": ""
+  },
+  "truncate_stream": {
+    "documentation": ""
+  },
+  "type": {
+    "documentation": ""
+  },
+  "unique": {
+    "documentation": ""
+  },
+  "unique_by": {
+    "documentation": ""
+  },
+  "until": {
+    "documentation": ""
+  },
+  "utf8bytelength": {
+    "documentation": ""
+  },
+  "values": {
+    "documentation": ""
+  },
+  "walk": {
+    "documentation": ""
+  },
+  "while": {
+    "documentation": ""
+  },
+  "with_entries": {
+    "documentation": ""
+  },
+  "y0": {
+    "documentation": ""
+  },
+  "y1": {
+    "documentation": ""
+  },
+  "yn": {
+    "documentation": ""
+  }
+}

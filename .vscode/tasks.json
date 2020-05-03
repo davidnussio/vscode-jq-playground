@@ -1,16 +1,30 @@
-// See https://go.microsoft.com/fwlink/?LinkId=733558
+// See htt	ps://go.microsoft.com/fwlink/?LinkId=733558
 // for the documentation about the tasks.json format
 {
 	"version": "2.0.0",
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "watch",
-			"problemMatcher": "$tsc-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never"
+			"script": "webpack-dev",
+			"problemMatcher": {
+                "owner": "typescript",
+                "pattern":[
+                    {
+						"regexp": "\\[tsl\\] ERROR",
+                        "file": 1,
+                        "location": 2,
+                        "message": 3
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "webpack is watching the files...",
+                    "endsPattern": "Built at:.*"
+				}
 			},
+			"isBackground": true,
+			"label": "npm: webpack-dev",
+			"detail": "webpack --mode development --watch",
 			"group": {
 				"kind": "build",
 				"isDefault": true

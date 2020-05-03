@@ -70,6 +70,10 @@ jq .foo
 }
 ```
 
+- test
+  - f
+  - d
+
 ### JSON file from filesystem
 
 ```json

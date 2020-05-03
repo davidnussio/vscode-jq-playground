@@ -1,10 +1,15 @@
 'use strict'
 
 import * as vscode from 'vscode'
-import * as download from 'download'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as checksum from 'checksum'
+import * as md5 from 'md5-file'
+import * as stream from 'stream'
+import { promisify } from 'util'
+import got from 'got'
+import * as builtins from './builtins.json'
+
+const pipeline = promisify(stream.pipeline)
 
 import {
   WorkspaceFilesCompletionItemProvider,
@@ -17,16 +22,16 @@ const BINARIES = {
   darwin: {
     file:
       'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64',
-    checksum: '8673400d1886ed051b40fe8dee09d89237936502',
+    checksum: 'f2c7caa006dd3dff54f5c8adad3445ab',
   },
   linux: {
     file: 'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64',
-    checksum: '056ba5d6bbc617c29d37158ce11fd5a443093949',
+    checksum: '1fffde9f3c7944f063265e9a5e67ae4f',
   },
   win32: {
     file:
       'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe',
-    checksum: '2b7ae7b902aa251b55f2fd73ad5b067d2215ce78',
+    checksum: 'c885ce0e1e52dad697ea8a91c5b2c400',
   },
 }
 
@@ -98,7 +103,7 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       CONFIGS.LANGUAGES,
-      new TestCompletionItemProvider(),
+      new TestCompletionItemProvider(builtins),
     ),
   )
 }
@@ -227,6 +232,10 @@ function doRunQuery(openResult) {
   }
 }
 
+function md5sum(filename) {
+  return fs.existsSync(filename) ? md5.sync(filename) : ''
+}
+
 function downloadBinary(context): Promise<any> {
   const { globalStoragePath } = context
 
@@ -234,36 +243,47 @@ function downloadBinary(context): Promise<any> {
     if (!BINARIES[process.platform]) {
       return reject(`Platform (${process.platform}) not supported!`)
     }
-    return checksum.file(CONFIGS.FILEPATH, (_, hex) => {
-      if (hex === BINARIES[process.platform].checksum) {
-        resolve()
-      } else {
-        Logger.appendLine(
-          `Download jq binary for platform (${process.platform})`,
-        )
-        Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`)
-        Logger.appendLine(`  - to dir ${globalStoragePath}`)
-        Logger.append('  - start downloading...')
-        download(BINARIES[process.platform].file, globalStoragePath)
-          .then((data) => {
-            fs.writeFileSync(CONFIGS.FILEPATH, data)
-            if (!/^win32/.test(process.platform)) {
-              fs.chmodSync(CONFIGS.FILEPATH, '0755')
-            }
-            Logger.appendLine('     [ OK ]')
+
+    if (md5sum(CONFIGS.FILEPATH) === BINARIES[process.platform].checksum) {
+      resolve()
+    } else {
+      Logger.appendLine(`Download jq binary for platform (${process.platform})`)
+      Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`)
+      Logger.appendLine(`  - to dir ${globalStoragePath}`)
+      Logger.appendLine('  - start downloading...')
+      pipeline(
+        got
+          .stream(BINARIES[process.platform].file)
+          .on('downloadProgress', () => {
+            Logger.append('.')
             Logger.show()
-            resolve()
-          })
-          .catch((err) => {
-            Logger.appendLine('     [ ERROR ]')
-            Logger.appendLine(`  - ${err}`)
-            Logger.show()
-            reject(
-              ' *** An error occurred during activation.\n *** Try again or download jq binary manually.\n *** Check vscode configuration → Jq Playground: Binary Path',
-            )
-          })
-      }
-    })
+          }),
+        fs.createWriteStream(CONFIGS.FILEPATH),
+      )
+        .then(() => {
+          Logger.appendLine('')
+          if (
+            md5sum(CONFIGS.FILEPATH) !== BINARIES[process.platform].checksum
+          ) {
+            throw new Error('Download file checksum error')
+          }
+          if (!/^win32/.test(process.platform)) {
+            fs.chmodSync(CONFIGS.FILEPATH, '0755')
+          }
+          Logger.appendLine('  - [ OK ]')
+          Logger.show()
+          resolve()
+        })
+        .catch((err) => {
+          Logger.appendLine('')
+          Logger.appendLine('  - [ ERROR ]')
+          Logger.appendLine(`  - ${err}`)
+          Logger.show()
+          reject(
+            ' *** An error occurred during activation.\n *** Try again or download jq binary manually.\n *** Check vscode configuration → Jq Playground: Binary Path',
+          )
+        })
+    }
   })
 }
 
@@ -376,7 +396,8 @@ function executeJqCommand(params) {
   const cwd = path.join(vscode.window.activeTextEditor.document.fileName, '..')
 
   if (isUrl(context)) {
-    download(context)
+    got
+      .get(context)
       .then((data) =>
         jqCommand(args, { cwd }, data.toString()).fork(
           renderError,

@@ -6,7 +6,7 @@ import * as path from 'path'
 import * as md5 from 'md5-file'
 import * as stream from 'stream'
 import { promisify } from 'util'
-import got from 'got'
+import fetch from 'node-fetch'
 import * as builtins from './builtins.json'
 
 const pipeline = promisify(stream.pipeline)
@@ -38,7 +38,7 @@ const BINARIES = {
 const CONFIGS = {
   FILEPATH: undefined,
   FILENAME: /^win32/.test(process.platform) ? './jq.exe' : './jq',
-  MANUAL_PATH: path.join(__dirname, '..', 'examples', 'manual.jq'),
+  MANUAL_PATH: path.join('.', 'examples', 'manual.jq'),
   LANGUAGES: ['jq'],
   EXECUTE_JQ_COMMAND: 'extension.executeJqCommand',
   CODE_LENS_TITLE: 'jq',
@@ -113,6 +113,8 @@ export function deactivate() {}
 
 function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
   const config = vscode.workspace.getConfiguration()
+
+  CONFIGS.MANUAL_PATH = path.join(context.extensionPath, CONFIGS.MANUAL_PATH)
 
   // Use user configurated executable or auto downloaded
   const userFilePath: fs.PathLike = config.get('conf.binary.path')
@@ -251,15 +253,14 @@ function downloadBinary(context): Promise<any> {
       Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`)
       Logger.appendLine(`  - to dir ${globalStoragePath}`)
       Logger.appendLine('  - start downloading...')
-      pipeline(
-        got
-          .stream(BINARIES[process.platform].file)
-          .on('downloadProgress', () => {
-            Logger.append('.')
-            Logger.show()
-          }),
-        fs.createWriteStream(CONFIGS.FILEPATH),
-      )
+      fetch(BINARIES[process.platform].file)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`Unexpected response ${res.statusText}`)
+          }
+
+          return pipeline(res.body, fs.createWriteStream(CONFIGS.FILEPATH))
+        })
         .then(() => {
           Logger.appendLine('')
           if (
@@ -396,10 +397,10 @@ function executeJqCommand(params) {
   const cwd = path.join(vscode.window.activeTextEditor.document.fileName, '..')
 
   if (isUrl(context)) {
-    got
-      .get(context)
+    fetch(context)
+      .then((data) => data.text())
       .then((data) =>
-        jqCommand(args, { cwd }, data.toString()).fork(
+        jqCommand(args, { cwd }, data).fork(
           renderError,
           renderOutput(params.openResult),
         ),

@@ -17,9 +17,9 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ![vscode-jq-playground](https://media.giphy.com/media/3ohhwkqXNc3hrmoECI/giphy.gif)
 
-### Autocomplete
+### Autocomplete with inline documentation
 
-![Autocomplete](https://media.giphy.com/media/fXWUulNjiQ6m8qLS7W/giphy.gif)
+![Autocomplete](https://media.giphy.com/media/eHFSm80lXQnxQe2D64/giphy.gif)
 
 
 
@@ -34,7 +34,7 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
   * inline
   * opened workspace files
 * Highlighting code
-* Autocomplete 
+* Autocomplete with documentation and examples
 * Open command filter result in output console or in new editor file
 * Open examples from jq manual and run it (ctrl+shift+p → jq playground: Examples)
 * Support hotkeys

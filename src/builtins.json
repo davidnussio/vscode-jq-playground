@@ -29,6 +29,15 @@
   "del": {
     "documentation": "## `del(path_expression)`\n\nThe builtin function `del` removes a key and its corresponding\nvalue from an object.\n\n- `jq del(.foo)`\nInput: `{\"foo\": 42, \"bar\": 9001, \"baz\": 42}`\nOutput: `{\"bar\": 9001, \"baz\": 42}`\n\n- `jq del(.[1, 2])`\nInput: `[\"foo\", \"bar\", \"baz\"]`\nOutput: `[\"foo\"]`\n\n"
   },
+  "getpath": {
+    "documentation": "## `getpath(PATHS)`\n\nThe builtin function `getpath` outputs the values in `.` found\nat each path in `PATHS`.\n\n- `jq getpath([\"a\",\"b\"])`\nInput: `null`\nOutput: `null`\n\n- `jq [getpath([\"a\",\"b\"], [\"a\",\"c\"])]`\nInput: `{\"a\":{\"b\":0, \"c\":1}}`\nOutput: `[0, 1]`\n\n"
+  },
+  "setpath": {
+    "documentation": "## `setpath(PATHS; VALUE)`\n\nThe builtin function `setpath` sets the `PATHS` in `.` to `VALUE`.\n\n- `jq setpath([\"a\",\"b\"]; 1)`\nInput: `null`\nOutput: `{\"a\": {\"b\": 1}}`\n\n- `jq setpath([\"a\",\"b\"]; 1)`\nInput: `{\"a\":{\"b\":0}}`\nOutput: `{\"a\": {\"b\": 1}}`\n\n- `jq setpath([0,\"a\"]; 1)`\nInput: `null`\nOutput: `[{\"a\":1}]`\n\n"
+  },
+  "delpaths": {
+    "documentation": "## `delpaths(PATHS)`\n\nThe builtin function `delpaths` sets the `PATHS` in `.`.\n`PATHS` must be an array of paths, where each path is an array\nof strings and numbers.\n\n- `jq delpaths([[\"a\",\"b\"]])`\nInput: `{\"a\":{\"b\":1},\"x\":{\"y\":2}}`\nOutput: `{\"a\":{},\"x\":{\"y\":2}}`\n\n"
+  },
   "to_entries": {
     "documentation": "## `to_entries`, `from_entries`, `with_entries`\n\nThese functions convert between an object and an array of\nkey-value pairs. If `to_entries` is passed an object, then\nfor each `k: v` entry in the input, the output array\nincludes `{\"key\": k, \"value\": v}`.\n\n`from_entries` does the opposite conversion, and\n`with_entries(foo)` is a shorthand for `to_entries |\nmap(foo) | from_entries`, useful for doing some operation to\nall keys and values of an object. `from_entries` accepts key, Key,\nname, Name, value and Value as keys.\n\n- `jq to_entries`\nInput: `{\"a\": 1, \"b\": 2}`\nOutput: `[{\"key\":\"a\", \"value\":1}, {\"key\":\"b\", \"value\":2}]`\n\n- `jq from_entries`\nInput: `[{\"key\":\"a\", \"value\":1}, {\"key\":\"b\", \"value\":2}]`\nOutput: `{\"a\": 1, \"b\": 2}`\n\n- `jq with_entries(.key |= \"KEY_\" + .)`\nInput: `{\"a\": 1, \"b\": 2}`\nOutput: `{\"KEY_a\": 1, \"KEY_b\": 2}`\n\n"
   },
@@ -140,6 +149,12 @@
   "isnormal": {
     "documentation": "## `infinite`, `nan`, `isinfinite`, `isnan`, `isfinite`, `isnormal`\n\nSome arithmetic operations can yield infinities and \"not a\nnumber\" (NaN) values.  The `isinfinite` builtin returns `true`\nif its input is infinite.  The `isnan` builtin returns `true`\nif its input is a NaN.  The `infinite` builtin returns a\npositive infinite value.  The `nan` builtin returns a NaN.\nThe `isnormal` builtin returns true if its input is a normal\nnumber.\n\nNote that division by zero raises an error.\n\nCurrently most arithmetic operations operating on infinities,\nNaNs, and sub-normals do not raise errors.\n\n- `jq .[] | (infinite * .) < 0`\nInput: `[-1, 1]`\nOutput: `true,false`\n\n- `jq infinite, nan | type`\nInput: `null`\nOutput: `\"number\",\"number\"`\n\n"
   },
+  "sort": {
+    "documentation": "## `sort, sort_by(path_expression)`\n\nThe `sort` functions sorts its input, which must be an\narray. Values are sorted in the following order:\n\n* `null`\n* `false`\n* `true`\n* numbers\n* strings, in alphabetical order (by unicode codepoint value)\n* arrays, in lexical order\n* objects\n\nThe ordering for objects is a little complex: first they're\ncompared by comparing their sets of keys (as arrays in\nsorted order), and if their keys are equal then the values\nare compared key by key.\n\n`sort` may be used to sort by a particular field of an\nobject, or by applying any jq filter.\n\n`sort_by(foo)` compares two elements by comparing the result of\n`foo` on each element.\n\n- `jq sort`\nInput: `[8,3,null,6]`\nOutput: `[null,3,6,8]`\n\n- `jq sort_by(.foo)`\nInput: `[{\"foo\":4, \"bar\":10}, {\"foo\":3, \"bar\":100}, {\"foo\":2, \"bar\":1}]`\nOutput: `[{\"foo\":2, \"bar\":1}, {\"foo\":3, \"bar\":100}, {\"foo\":4, \"bar\":10}]`\n\n"
+  },
+  "sort_by": {
+    "documentation": "## `sort, sort_by(path_expression)`\n\nThe `sort` functions sorts its input, which must be an\narray. Values are sorted in the following order:\n\n* `null`\n* `false`\n* `true`\n* numbers\n* strings, in alphabetical order (by unicode codepoint value)\n* arrays, in lexical order\n* objects\n\nThe ordering for objects is a little complex: first they're\ncompared by comparing their sets of keys (as arrays in\nsorted order), and if their keys are equal then the values\nare compared key by key.\n\n`sort` may be used to sort by a particular field of an\nobject, or by applying any jq filter.\n\n`sort_by(foo)` compares two elements by comparing the result of\n`foo` on each element.\n\n- `jq sort`\nInput: `[8,3,null,6]`\nOutput: `[null,3,6,8]`\n\n- `jq sort_by(.foo)`\nInput: `[{\"foo\":4, \"bar\":10}, {\"foo\":3, \"bar\":100}, {\"foo\":2, \"bar\":1}]`\nOutput: `[{\"foo\":2, \"bar\":1}, {\"foo\":3, \"bar\":100}, {\"foo\":4, \"bar\":10}]`\n\n"
+  },
   "group_by": {
     "documentation": "## `group_by(path_expression)`\n\n`group_by(.foo)` takes as input an array, groups the\nelements having the same `.foo` field into separate arrays,\nand produces all of these arrays as elements of a larger\narray, sorted by the value of the `.foo` field.\n\nAny jq expression, not just a field access, may be used in\nplace of `.foo`. The sorting order is the same as described\nin the `sort` function above.\n\n- `jq group_by(.foo)`\nInput: `[{\"foo\":1, \"bar\":10}, {\"foo\":3, \"bar\":100}, {\"foo\":1, \"bar\":1}]`\nOutput: `[[{\"foo\":1, \"bar\":10}, {\"foo\":1, \"bar\":1}], [{\"foo\":3, \"bar\":100}]]`\n\n"
   },
@@ -201,7 +216,7 @@
     "documentation": "## `implode`\n\nThe inverse of explode.\n\n- `jq implode`\nInput: `[65, 66, 67]`\nOutput: `\"ABC\"`\n\n"
   },
   "split": {
-    "documentation": "## `split(str)`\n\nSplits an input string on the separator argument.\n\n- `jq split(\", \")`\nInput: `\"a, b,c,d, e, \"`\nOutput: `[\"a\",\"b,c,d\",\"e\",\"\"]`\n\n"
+    "documentation": "## `split(regex; flags)`\n\nFor backwards compatibility, `split` splits on a string, not a regex.\n\n"
   },
   "join": {
     "documentation": "## `join(str)`\n\nJoins the array of elements given as input, using the\nargument as separator. It is the inverse of `split`: that is,\nrunning `split(\"foo\") | join(\"foo\")` over any input string\nreturns said input string.\n\nNumbers and booleans in the input are converted to strings.\nNull values are treated as empty strings. Arrays and objects\nin the input are not supported.\n\n- `jq join(\", \")`\nInput: `[\"a\",\"b,c,d\",\"e\"]`\nOutput: `\"a, b,c,d, e\"`\n\n- `jq join(\" \")`\nInput: `[\"a\",1,2.3,true,null,false]`\nOutput: `\"a 1 2.3 true  false\"`\n\n"
@@ -211,6 +226,12 @@
   },
   "ascii_upcase": {
     "documentation": "## `ascii_downcase`, `ascii_upcase`\n\nEmit a copy of the input string with its alphabetic characters (a-z and A-Z)\nconverted to the specified case.\n\n"
+  },
+  "while": {
+    "documentation": "## `while(cond; update)`\n\nThe `while(cond; update)` function allows you to repeatedly\napply an update to `.` until `cond` is false.\n\nNote that `while(cond; update)` is internally defined as a\nrecursive jq function.  Recursive calls within `while` will\nnot consume additional memory if `update` produces at most one\noutput for each input.  See advanced topics below.\n\n- `jq [while(.<100; .*2)]`\nInput: `1`\nOutput: `[1,2,4,8,16,32,64]`\n\n"
+  },
+  "until": {
+    "documentation": "## `until(cond; next)`\n\nThe `until(cond; next)` function allows you to repeatedly\napply the expression `next`, initially to `.` then to its own\noutput, until `cond` is true.  For example, this can be used\nto implement a factorial function (see below).\n\nNote that `until(cond; next)` is internally defined as a\nrecursive jq function.  Recursive calls within `until()` will\nnot consume additional memory if `next` produces at most one\noutput for each input.  See advanced topics below.\n\n- `jq [.,1]|until(.[0] < 1; [.[0] - 1, .[1] * .[0]])|.[1]`\nInput: `4`\nOutput: `24`\n\n"
   },
   "recurse": {
     "documentation": "## `recurse(f)`, `recurse`, `recurse(f; condition)`, `recurse_down`\n\nThe `recurse(f)` function allows you to search through a\nrecursive structure, and extract interesting data from all\nlevels. Suppose your input represents a filesystem:\n\n    {\"name\": \"/\", \"children\": [\n      {\"name\": \"/bin\", \"children\": [\n        {\"name\": \"/bin/ls\", \"children\": []},\n        {\"name\": \"/bin/sh\", \"children\": []}]},\n      {\"name\": \"/home\", \"children\": [\n        {\"name\": \"/home/stephen\", \"children\": [\n          {\"name\": \"/home/stephen/jq\", \"children\": []}]}]}]}\n\nNow suppose you want to extract all of the filenames\npresent. You need to retrieve `.name`, `.children[].name`,\n`.children[].children[].name`, and so on. You can do this\nwith:\n\n    recurse(.children[]) | .name\n\nWhen called without an argument, `recurse` is equivalent to\n`recurse(.[]?)`.\n\n`recurse(f)` is identical to `recurse(f; . != null)` and can be\nused without concerns about recursion depth.\n\n`recurse(f; condition)` is a generator which begins by\nemitting . and then emits in turn .|f, .|f|f, .|f|f|f, ...  so long\nas the computed value satisfies the condition. For example,\nto generate all the integers, at least in principle, one\ncould write `recurse(.+1; true)`.\n\nFor legacy reasons, `recurse_down` exists as an alias to\ncalling `recurse` without arguments. This alias is considered\n*deprecated* and will be removed in the next major release.\n\nThe recursive calls in `recurse` will not consume additional\nmemory whenever `f` produces at most a single output for each\ninput.\n\n- `jq recurse(.foo[])`\nInput: `{\"foo\":[{\"foo\": []}, {\"foo\":[{\"foo\":[]}]}]}`\nOutput: `{\"foo\":[{\"foo\":[]},{\"foo\":[{\"foo\":[]}]}]},{\"foo\":[]},{\"foo\":[{\"foo\":[]}]},{\"foo\":[]}`\n\n- `jq recurse`\nInput: `{\"a\":0,\"b\":[1]}`\nOutput: `{\"a\":0,\"b\":[1]},0,[1],1`\n\n- `jq recurse(. * .; . < 20)`\nInput: `2`\nOutput: `2,4,16`\n\n"
@@ -248,8 +269,17 @@
   "splits": {
     "documentation": "## `splits(regex)`, `splits(regex; flags)`\n\nThese provide the same results as their `split` counterparts,\nbut as a stream instead of an array.\n\n"
   },
+  "sub": {
+    "documentation": "## `sub(regex; tostring)` `sub(regex; string; flags)`\n\nEmit the string obtained by replacing the first match of regex in the\ninput string with `tostring`, after interpolation.  `tostring` should\nbe a jq string, and may contain references to named captures. The\nnamed captures are, in effect, presented as a JSON object (as\nconstructed by `capture`) to `tostring`, so a reference to a captured\nvariable named \"x\" would take the form: \"\\(.x)\".\n\n"
+  },
+  "gsub": {
+    "documentation": "## `gsub(regex; string)`, `gsub(regex; string; flags)`\n\n`gsub` is like `sub` but all the non-overlapping occurrences of the regex are\nreplaced by the string, after interpolation.\n\n"
+  },
   "isempty": {
     "documentation": "## `isempty(exp)`\n\nReturns true if `exp` produces no outputs, false otherwise.\n\n- `jq isempty(empty)`\nInput: `null`\nOutput: `true`\n\n"
+  },
+  "limit": {
+    "documentation": "## `limit(n; exp)`\n\nThe `limit` function extracts up to `n` outputs from `exp`.\n\n- `jq [limit(3;.[])]`\nInput: `[0,1,2,3,4,5,6,7,8,9]`\nOutput: `[0,1,2]`\n\n"
   },
   "first": {
     "documentation": "## `first`, `last`, `nth(n)`\n\nThe `first` and `last` functions extract the first\nand last values from any array at `.`.\n\nThe `nth(n)` function extracts the nth value of any array at `.`.\n\n- `jq [range(.)]|[first, last, nth(5)]`\nInput: `10`\nOutput: `[0,9,5]`\n\n"

@@ -5,15 +5,6 @@
 {
 	"version": "0.2.0",
 	"configurations": [
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/internals/build-examples.js",
-            "skipFiles": [
-                "<node_internals>/**"
-            ]
-        },
 		{
             "name": "Launch Extension",
             "type": "extensionHost",
@@ -23,7 +14,7 @@
             "stopOnEntry": false,
             "sourceMaps": true,
 			"outFiles": [ "${workspaceFolder}/dist/**/*.js"],
-            "preLaunchTask": "${defaultBuildTask}"
+            "preLaunchTask": "${defaultBuildTask}",
         }
 	]
 }

@@ -14,6 +14,6 @@ vsc-extension-quickstart.md
 internals/**
 webpack.config.js
 files/**
+babel.config.js
 
-node_modules/**
-!node_modules/cacheable_request
+node_modules

@@ -7,9 +7,9 @@ const json = require('../files/builtins.json')
 const readFileAsync = util.promisify(fs.readFile)
 const writeFileAsync = util.promisify(fs.writeFile)
 
-const processMatches = (matches, title, body, examples = []) => {
-  return matches.reduce((acc, m) => {
-    const key = m.replace(/^`|`$/g, '').replace(/\(.*/, '')
+const processMatches = (title, body, examples = []) => {
+  return title.split(',').reduce((acc, m) => {
+    const key = m.replace(/`/g, '').replace(/\(.*/, '').trim()
     if (json[key]) {
       return {
         ...acc,
@@ -35,11 +35,9 @@ const processMatches = (matches, title, body, examples = []) => {
 }
 
 const processTitle = ({ title, body, examples }) => {
-  const matches = title.match(/`([a-z0-9_\\(\\)]+)*`/g)
-  const result =
-    matches && matches.length
-      ? processMatches(matches, title, body, examples)
-      : false
+  const result = title.startsWith('`')
+    ? processMatches(title, body, examples)
+    : false
   return Object.keys(result).length ? result : false
 }
 

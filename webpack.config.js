@@ -3,6 +3,8 @@
 'use strict'
 
 const path = require('path')
+const TerserPlugin = require('terser-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -18,12 +20,27 @@ const config = {
   },
   devtool: 'source-map',
   externals: {
-    'cacheable-request': 'cacheable-request',
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
     extensions: ['.ts', '.js'],
+  },
+  plugins: [new CleanWebpackPlugin()],
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true,
+        terserOptions: {
+          ecma: 8,
+          keep_classnames: true,
+          module: true,
+        },
+      }),
+    ],
   },
   module: {
     rules: [

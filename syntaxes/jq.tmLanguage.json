@@ -10,6 +10,9 @@
       "include": "#json"
     },
     {
+			"include": "#keywords"
+		},
+    {
       "include": "#comment"
     },
     {
@@ -47,22 +50,16 @@
     "main__1": {
       "patterns": [
         {
-          "match": "(if|then|else|elif|end)",
+          "match": "(\\-[a-z\\-]+)",
+          "name": "constant.numeric"
+        },
+        {
+          "match": "(if|then|else|elif|end|try|catch)",
           "name": "entity.name.type"
         },
         {
-          "match": "([a-z_]+\\()([^\\)]+)(\\))",
-          "captures" : {
-            "1" : {
-              "name": "entity.name.function"
-            },
-            "2" : {
-              "name" : "entity.name.tag"
-            },
-            "3" : {
-              "name": "entity.name.function"
-            }
-          }
+          "match": "(input_line_number|scalars_or_empty|truncate_stream|get_search_list|get_prog_origin|fromdateiso8601|utf8bytelength|input_filename|ascii_downcase|todateiso8601|strflocaltime|keys_unsorted|get_jq_origin|with_entries|recurse_down|from_entries|combinations|ascii_upcase|significand|to_entries|startswith|nexttoward|modulemeta|map_values|leaf_paths|isinfinite|halt_error|fromstream|unique_by|transpose|remainder|nextafter|nearbyint|localtime|iterables|tostring|tostream|tonumber|strptime|strftime|rtrimstr|ltrimstr|lgamma_r|isnormal|isfinite|infinite|group_by|fromjson|fromdate|endswith|delpaths|copysign|contains|builtins|booleans|strings|sort_by|setpath|scalbln|scalars|reverse|recurse|objects|numbers|normals|isempty|indices|implode|getpath|flatten|finites|explode|capture|bsearch|values|unique|tojson|todate|tgamma|stderr|splits|select|rindex|repeat|mktime|min_by|max_by|lgamma|length|inside|inputs|gmtime|format|arrays|while|until|trunc|split|scalb|round|range|pow10|paths|nulls|match|log1p|log10|limit|ldexp|isnan|input|index|hypot|gamma|frexp|floor|first|expm1|exp10|error|empty|debug|atanh|atan2|asinh|acosh|INDEX|walk|type|test|tanh|sqrt|sort|sinh|scan|rint|path|modf|logb|log2|last|keys|join|halt|gsub|fmod|fmin|fmax|fdim|fabs|exp2|erfc|drem|cosh|ceil|cbrt|atan|asin|acos|JOIN|tan|sub|sin|pow|nth|now|not|nan|min|max|map|log|has|fma|exp|erf|env|del|cos|any|all|add|yn|y1|y0|jn|j1|j0|in|IN)",
+          "name": "entity.name.function"
         },
         {
           "match": "([a-z]+)",
@@ -70,7 +67,7 @@
         },
         {
           "match": "([0-9]+)",
-          "name": "entity.name.function"
+          "name": "entity.name.tag"
         },
         {
           "match": "([^a-z])",

@@ -1,5 +1,11 @@
 # Change Log
 
+## [3.1.0]
+
+* Code autocomple with official documentaion
+* Optimized extension vsix package size from 2MB to 74KB
+* Small fix to code highlight
+
 ## [3.0.0]
 
 * Support multiline query

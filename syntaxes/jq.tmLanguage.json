@@ -23,7 +23,7 @@
     "command": {
       "patterns": [
         {
-          "begin": "(^jq)",
+          "begin": "(jq[^\\']+\\')",
           "beginCaptures": {
             "1": {
               "name": "entity.name.class"
@@ -34,7 +34,7 @@
               "include": "#main__1"
             }
           ],
-          "end": "(.*[^\\\\\\s]$)",
+          "end": " ([^\\]+'\\s*$)",
           "endCaptures": {
             "1": {
               "patterns": [

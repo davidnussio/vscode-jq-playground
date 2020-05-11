@@ -119,28 +119,29 @@ jq --raw-output "\(.one)\t\(.two)"
 {"one":1,"two":"x"}
 ```
 
-### Multiline query filter (backslash)
+### Multiline query filter (quoted string 'filter...')
 
 ```json
 # Multiline query filter
-jq if . == 0 then \
-    "zero" \
-  elif . == 1 then \
-    "one" \
-  else \
-    "many" \ 
+jq 'if . == 0 then
+    "zero"
+  elif . == 1 then
+    "one"
+  else
+    "many"
   end
+'
 2
 
 # Multiline query filter
-jq -r (map(keys) | \
-  add | \
-  unique) as $cols | \
-  map(. as $row | \
-  $cols | \
-  map($row[.])) as $rows | \
-  $cols, $rows[] | \
-  @csv
+jq -r '(map(keys)
+  | add
+  | unique) as $cols
+  | map(. as $row
+  | $cols
+  | map($row[.])) as $rows
+  | $cols, $rows[]
+  | @csv'
 [
     {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
     {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},

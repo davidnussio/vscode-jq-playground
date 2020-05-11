@@ -211,26 +211,30 @@ function runQueryEditor() {
 function doRunQuery(openResult) {
   const editor = vscode.window.activeTextEditor
 
-  if (editor.selection.isEmpty) {
-    const position: vscode.Position = editor.selection.active
-    const queryLine = new vscode.Range(
-      new vscode.Position(position.line, 0),
-      new vscode.Position(position.line, position.character),
+  let line = editor.selection.start.line
+  let queryLine = ''
+
+  do {
+    queryLine = editor.document.lineAt(line).text
+  } while (queryLine.startsWith('jq') === false && line-- > 0)
+
+  const range = new vscode.Range(
+    new vscode.Position(line, 0),
+    new vscode.Position(line, editor.document.lineAt(line).text.length),
+  )
+
+  const match: IJqMatch = {
+    document: vscode.window.activeTextEditor.document,
+    range,
+    openResult,
+  }
+
+  if (queryLine.startsWith('jq')) {
+    executeJqCommand(match)
+  } else {
+    vscode.window.showWarningMessage(
+      'Current line does not contain jq query string',
     )
-
-    const match: IJqMatch = {
-      document: vscode.window.activeTextEditor.document,
-      range: queryLine,
-      openResult,
-    }
-
-    if (editor.document.lineAt(position).text.startsWith('jq')) {
-      executeJqCommand(match)
-    } else {
-      vscode.window.showWarningMessage(
-        'Current line does not contain jq query string',
-      )
-    }
   }
 }
 
@@ -369,23 +373,29 @@ function executeJqCommand(params) {
     .lineAt(params.range.start.line)
     .text.replace(/jq\s+/, '')
 
+  const args = parseCommandArgs(queryLine)
+
+  let queryLineWithoutOpts = args[args.length - 1]
+
   let lineOffset = 1
 
-  for (
-    let line = params.range.start.line + lineOffset;
-    queryLine.search(/\s*\\\s*$/) !== -1 && line < document.lineCount;
-    line++
-  ) {
-    queryLine = queryLine.replace(/\s*\\\s*$/, ' ') + document.lineAt(line).text
-    lineOffset++
+  if (queryLineWithoutOpts.startsWith("'")) {
+    for (
+      let line = params.range.start.line + lineOffset, documentLine = '';
+      queryLineWithoutOpts.search(/[^\\]'\s*$/) === -1 &&
+      line < document.lineCount;
+      line++
+    ) {
+      documentLine = document.lineAt(line).text
+      // Is next jq filter?
+      queryLineWithoutOpts = queryLineWithoutOpts + documentLine
+      lineOffset++
+    }
+    args[args.length - 1] = queryLineWithoutOpts.slice(1, -1)
   }
   const context: string = document.lineAt(params.range.start.line + lineOffset)
     .text
   lineOffset++
-
-  const args = parseCommandArgs(queryLine)
-
-  let queryLineWithoutOpts = args[args.length - 1]
 
   if (isWorkspaceFile(queryLineWithoutOpts, vscode.workspace.textDocuments)) {
     args[args.length - 1] = getWorkspaceFile(

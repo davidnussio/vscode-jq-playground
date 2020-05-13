@@ -38,8 +38,8 @@ const BINARIES = {
 const CONFIGS = {
   FILEPATH: undefined,
   FILENAME: /^win32/.test(process.platform) ? './jq.exe' : './jq',
-  MANUAL_PATH: path.join('.', 'examples', 'manual.jq'),
-  LANGUAGES: ['jq'],
+  MANUAL_PATH: path.join('.', 'examples', 'manual.jqpg'),
+  LANGUAGES: ['jqpg'],
   EXECUTE_JQ_COMMAND: 'extension.executeJqCommand',
   CODE_LENS_TITLE: 'jq',
   JQ_PLAYGROUND_VERSION: 'vscode-jq-playground.version',
@@ -175,7 +175,7 @@ function openTutorial() {
 function openExamples() {
   fs.readFile(CONFIGS.MANUAL_PATH, {}, (err, data) => {
     vscode.workspace
-      .openTextDocument({ content: data.toString(), language: 'jq' })
+      .openTextDocument({ content: data.toString(), language: 'jqpg' })
       .then((doc) =>
         vscode.window.showTextDocument(doc, vscode.ViewColumn.Active),
       )
@@ -256,6 +256,10 @@ function downloadBinary(context): Promise<any> {
       Logger.appendLine(`Download jq binary for platform (${process.platform})`)
       Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`)
       Logger.appendLine(`  - to dir ${globalStoragePath}`)
+      if (fs.existsSync(globalStoragePath) === false) {
+        fs.mkdirSync(globalStoragePath)
+        Logger.appendLine(`  - dir does not exists: created`)
+      }
       Logger.appendLine('  - start downloading...')
       fetch(BINARIES[process.platform].file)
         .then((res) => {

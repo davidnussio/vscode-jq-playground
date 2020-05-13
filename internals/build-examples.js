@@ -39,7 +39,7 @@ function processSectionEntries(section) {
 }
 
 const writeExamples = compose(
-  writeFile('./examples/manual.jq'),
+  writeFile('./examples/manual.jqpg'),
   print(process.env.DEBUG),
 )
 

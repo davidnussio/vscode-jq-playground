@@ -57,8 +57,9 @@
     },
     "languages": [
       {
-        "id": "jq",
+        "id": "jqpg",
         "extensions": [
+          ".jqpg",
           ".jq"
         ],
         "configuration": "./language-configuration.json"
@@ -66,10 +67,11 @@
     ],
     "grammars": [
       {
-        "language": "jq",
-        "scopeName": "source.jq",
+        "language": "jqpg",
+        "scopeName": "source.jqpg",
         "path": "./syntaxes/jq.tmLanguage.json",
         "embeddedLanguages": {
+          "source.jq": "jq",
           "source.json": "json"
         }
       }
@@ -111,13 +113,13 @@
         "command": "extension.runQueryOutput",
         "key": "ctrl+enter",
         "mac": "cmd+enter",
-        "when": "editorTextFocus && editorLangId == 'jq'"
+        "when": "editorTextFocus && editorLangId == 'jqpg'"
       },
       {
         "command": "extension.runQueryEditor",
         "key": "shift+enter",
         "mac": "shift+enter",
-        "when": "editorTextFocus && editorLangId == 'jq'"
+        "when": "editorTextFocus && editorLangId == 'jqpg'"
       }
     ]
   },
@@ -171,6 +173,7 @@
     "node-fetch": "^2.6.0",
     "ramda": "^0.27.0"
   },
+  "extensionDependencies": ["jq-syntax-highlighting.jq-syntax-highlighting"],
   "jest": {
     "modulePathIgnorePatterns": [
       "<rootDir>/src/test/"

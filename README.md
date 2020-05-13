@@ -4,6 +4,10 @@ Visual Code jq playground allow to create a notebook with [jq](https://stedolan.
 
 Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https://stedolan.github.io/jq/tutorial/)
 
+[![Latest Release](https://vsmarketplacebadge.apphb.com/version-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground) 
+[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground) 
+[![Rating](https://vsmarketplacebadge.apphb.com/rating-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
+
 ## Demo
 
 ### JQ Manual examples
@@ -69,10 +73,6 @@ jq .foo
     "bar": "less interesting data"
 }
 ```
-
-- test
-  - f
-  - d
 
 ### JSON file from filesystem
 
@@ -189,4 +189,3 @@ Thanks for cwd module patching [Joseph Andersen](https://github.com/jpandersen87
 ## Thanks
 
 I be inspired by [vscode-jq](https://marketplace.visualstudio.com/items?itemName=dandric.vscode-jq)
-

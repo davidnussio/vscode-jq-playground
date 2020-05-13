@@ -1,5 +1,10 @@
 # Change Log
 
+## [3.2.0]
+
+* ctrl+enter (execute filter) works on all lines of the document
+* Multiline filter works like teminal with quotes 'filter...'
+
 ## [3.1.0]
 
 * Code autocomple with official documentaion

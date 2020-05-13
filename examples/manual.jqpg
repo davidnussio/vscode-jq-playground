@@ -983,7 +983,20 @@ jq [range(.)]|[first, last, nth(5)]
 # [0,9,5]
 
 
-jq [foreach .[] as $item ([[],[]]; if $item == null then [[],.[0]] else [(.[0] + [$item]),[]] end; if $item == null then .[1] else empty end)]
+jq '[
+    foreach .[] as $item (
+        [[],[]]; 
+        if $item == null then 
+            [[],.[0]] 
+        else 
+            [(.[0] + [$item]),[]] 
+        end; 
+        if $item == null then 
+            .[1] 
+        else 
+            empty 
+        end
+    )]'
 [1,2,3,4,null,"a","b",null]
 # [[1,2,3,4],["a","b"]]
 

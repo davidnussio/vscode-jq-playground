@@ -34,6 +34,7 @@
     "query"
   ],
   "activationEvents": [
+    "onLanguage:jqpg",
     "onLanguage:jq",
     "onCommand:extension.openExamples",
     "onCommand:extension.openManual",

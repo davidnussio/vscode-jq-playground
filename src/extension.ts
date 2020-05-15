@@ -252,6 +252,10 @@ function downloadBinary(context): Promise<any> {
       Logger.appendLine(`Download jq binary for platform (${process.platform})`)
       Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`)
       Logger.appendLine(`  - to dir ${globalStoragePath}`)
+      if (fs.existsSync(globalStoragePath) === false) {
+        fs.mkdirSync(globalStoragePath)
+        Logger.appendLine(`  - dir does not exists: created`)
+      }
       Logger.appendLine('  - start downloading...')
       fetch(BINARIES[process.platform].file)
         .then((res) => {
@@ -262,7 +266,6 @@ function downloadBinary(context): Promise<any> {
           return pipeline(res.body, fs.createWriteStream(CONFIGS.FILEPATH))
         })
         .then(() => {
-          Logger.appendLine('')
           if (
             md5sum(CONFIGS.FILEPATH) !== BINARIES[process.platform].checksum
           ) {

@@ -117,7 +117,7 @@ function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
   CONFIGS.MANUAL_PATH = path.join(context.extensionPath, CONFIGS.MANUAL_PATH)
 
   // Use user configurated executable or auto downloaded
-  const userFilePath: fs.PathLike = config.get('conf.binary.path')
+  const userFilePath: fs.PathLike = config.get('jqPlayground.binaryPath')
   if (fs.existsSync(userFilePath)) {
     // User configurated binary path
     CONFIGS.FILEPATH = userFilePath

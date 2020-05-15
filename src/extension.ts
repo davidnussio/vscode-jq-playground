@@ -22,7 +22,7 @@ const BINARIES = {
   darwin: {
     file:
       'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-osx-amd64',
-    checksum: 'f2c7caa006dd3dff54f5c8adad3445ab',
+    checksum: 'c15f86ad9298ee71cf7d96a29f86e88a',
   },
   linux: {
     file: 'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64',
@@ -31,7 +31,7 @@ const BINARIES = {
   win32: {
     file:
       'https://github.com/stedolan/jq/releases/download/jq-1.6/jq-win64.exe',
-    checksum: 'c885ce0e1e52dad697ea8a91c5b2c400',
+    checksum: 'af2b0264f264dde1fe705ca243886fb2',
   },
 }
 

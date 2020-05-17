@@ -174,7 +174,9 @@
     "node-fetch": "^2.6.0",
     "ramda": "^0.27.0"
   },
-  "extensionDependencies": ["jq-syntax-highlighting.jq-syntax-highlighting"],
+  "extensionDependencies": [
+    "jq-syntax-highlighting.jq-syntax-highlighting"
+  ],
   "jest": {
     "modulePathIgnorePatterns": [
       "<rootDir>/src/test/"

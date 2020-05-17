@@ -138,9 +138,10 @@ async function checkEnvironment(
     'davidnussio.vscode-jq-playground',
   )
   const currentVersion = jqPlayground.packageJSON.version
-  const previousVersion = context.globalState.get<string>(
+  let previousVersion = context.globalState.get<string>(
     CONFIGS.JQ_PLAYGROUND_VERSION,
   )
+  previousVersion = '1.0.1'
   if (previousVersion === currentVersion) {
     return Promise.resolve()
   }
@@ -153,7 +154,7 @@ async function checkEnvironment(
     if (showExamples) {
       openExamples()
     }
-    Messages.showWhatsNewMessage(currentVersion)
+    Messages.showWhatsNewMessage(context, currentVersion)
   }
   return Promise.resolve()
 }
@@ -173,6 +174,8 @@ function openTutorial() {
 }
 
 function openExamples() {
+  Logger.appendLine(CONFIGS.MANUAL_PATH)
+  Logger.show()
   fs.readFile(CONFIGS.MANUAL_PATH, {}, (err, data) => {
     vscode.workspace
       .openTextDocument({ content: data.toString(), language: 'jqpg' })
@@ -302,12 +305,12 @@ function provideCodeLenses(document: vscode.TextDocument) {
     .map((match) => {
       return [
         new vscode.CodeLens(match.range, {
-          title: '⚡ ➜ console',
+          title: '⚡ ➜ console (ctrl+enter)',
           command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [match],
         }),
         new vscode.CodeLens(match.range, {
-          title: '⚡ ➜ editor',
+          title: '⚡ ➜ editor (shift+enter)',
           command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [{ ...match, openResult: 'editor' }],
         }),

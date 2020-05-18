@@ -64,3 +64,4 @@ bin
 *.vsix
 
 dist/**
+build/**

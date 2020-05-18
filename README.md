@@ -12,14 +12,15 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ### JQ Manual examples
 
-![jq-manual-examples](https://media.giphy.com/media/fs3AFamgsr9Qw7yvgN/giphy.gif)
+![jq-manual-examples](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/general-demo.gif)
 
 
 ### Usage example
 
-![vscode-jq-payground](https://media.giphy.com/media/d7ffrUyHrXinEvrMrU/giphy.gif)
+![vscode-jq-payground](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/example_multiline.gif)
 
-![vscode-jq-playground](https://media.giphy.com/media/3ohhwkqXNc3hrmoECI/giphy.gif)
+
+![vscode-jq-playground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/buffers-examples.gif)
 
 ### Autocomplete with inline documentation
 

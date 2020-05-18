@@ -1,5 +1,25 @@
 # Change Log
 
+## [3.3.0]
+
+* Support multiline jq filter
+* Enhanced autocomple with official documentazion and examples
+* Improve (ctrl+enter) and (shift+enter) keyboard shortcut
+* Better code highlight with jq-syntax-highlighting integration
+* Support new extension file .jqpg (**jq** **p**lay**g**round) to avoid .jq script conflicts
+
+## [3.2.3]
+
+* Binary path configuration key
+
+## [3.2.2]
+
+* Fix empty dir
+
+## [3.2.1]
+
+* Fix hashcode
+
 ## [3.2.0]
 
 * ctrl+enter (execute filter) works on all lines of the document

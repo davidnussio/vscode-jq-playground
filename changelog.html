@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Ubuntu"
+      rel="stylesheet"
+    />
+    <style type="text/css">
+      body {
+        font-family: 'Ubuntu';
+        font-size: medium;
+        padding: 5ch;
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+      }
+      a,
+      a > h1 {
+        color: #3eb4cd;
+      }
+      .title > strong {
+        font-size: 1.5em;
+      }
+      .title > small {
+        font-size: 0.5em;
+        font-weight: 100;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container is-fluid">
+      <div class="box">
+        <article class="media">
+          <div class="media-left">
+            <figure class="image is-128x128">
+              <img
+                src="https://davidnussio.gallerycdn.vsassets.io/extensions/davidnussio/vscode-jq-playground/3.1.3/1589526294145/Microsoft.VisualStudio.Services.Icons.Default"
+                alt="Image"
+              />
+            </figure>
+          </div>
+          <div class="media-content">
+            <div class="content">
+              <p>
+                <a
+                  href="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/icon.png"
+                ></a>
+                <div class="title">
+                  <strong>Playground</strong> <span class="tag is-white">v3.3.0</span>
+                </div>
+                Create interactive jq filters notebook.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+      <article class="message is-info">
+        <div class="message-header">
+          <p>Changelog v3.3.0</p>
+        </div>
+        <div class="message-body">
+          <ul>
+            <li>· Support <b>multiline</b> jq filter</li>
+            <li>· Enhanced <b>autocomple</b> with official documentazion and examples</li>
+            <li>· Improve execute filter <i>(ctrl+enter)</i> and (shift+enter) <b>keyboard shortcut</b></li>
+            <li>· Better <b>code highlight</b> with jq-syntax-highlighting integration</li>
+            <li>· Support <b>new extension file</b> .jqpg (<b>jq</b> <b>p</b>lay<b>g</b>round) to avoid .jq script conflicts</li>
+          </ul>
+        </div>
+      </article>
+      <div class="columns">
+        <div class="column">
+          <!-- CARD 1 -->
+          <div class="card">
+            <div class="card-image">
+              <div class="card-content">
+                <p class="title is-5">
+                  Multiline filter #1
+                </p>
+                <p class="subtitle is-6">
+                  better jq command line compatibility
+                </p>
+              </div>
+              <figure class="image is-4by3">
+                <img
+                  src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/multiline.png"
+                  alt="Placeholder image"
+                />
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                using quoted string like jq command line
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <!-- CARD 2 -->
+          <div class="card">
+            <div class="card-image">
+              <div class="card-content">
+                <p class="title is-5">
+                  Multiline filter #2
+                </p>
+                <p class="subtitle is-6">
+                  better jq command line compatibility
+                </p>
+              </div>
+              <figure class="image is-4by3">
+                <img
+                  src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/multiline-demo.gif"
+                  alt="Placeholder image"
+                />
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                copy and paste jq filter command from extension to command line
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="columns">
+        <!-- CARD 1 -->
+        <div class="column">
+          <div class="card">
+            <div class="card-image">
+              <div class="card-content">
+                <p class="title is-5">
+                  Syntax highlight
+                </p>
+                <p class="subtitle is-6">
+                  syntax highlight depend on jq-syntax-highlighting
+                </p>
+              </div>
+              <figure class="image is-4by3">
+                <img
+                  src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/highlight.png"
+                  alt="Placeholder image"
+                />
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                <a
+                  class="button is-link"
+                  href="https://marketplace.visualstudio.com/items?itemName=jq-syntax-highlighting.jq-syntax-highlighting"
+                  >See more...</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- CARD 2 -->
+        <div class="column">
+          <div class="card">
+            <div class="card-image">
+              <div class="card-content">
+                <p class="title is-5">
+                  Autocomplete
+                </p>
+                <p class="subtitle is-6">
+                  inline documentated completation code 
+                </p>
+              </div>
+              <figure class="image is-4by3">
+                <img
+                  src="file:///home/david/Pictures/jqPlayground/autocomple-1.png"
+                  alt="Placeholder image"
+                />
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="content">
+                Enhanced code completation with official documentazion and inline examples
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

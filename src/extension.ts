@@ -358,10 +358,11 @@ const renderOutput = (type) => (data) => {
     vscode.workspace
       .openTextDocument({ content: bufferToString(data), language: 'jq' })
       .then((doc) => vscode.window.showTextDocument(doc, vscode.ViewColumn.Two))
+  } else {
+    Logger.clear()
+    Logger.append(bufferToString(data))
+    Logger.show()
   }
-  Logger.clear()
-  Logger.append(bufferToString(data))
-  Logger.show()
 }
 
 function renderError(data) {

@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as vscode from 'vscode'
 
-const TYPES: string[] = ['json', 'plaintext', 'jq']
+const TYPES: string[] = ['json', 'plaintext', 'jqpg', 'jq']
 
 // jq -n 'builtins | sort | map(split("/")[0]) | unique | map( { (.): {"documentation": ""} }) | add'
 

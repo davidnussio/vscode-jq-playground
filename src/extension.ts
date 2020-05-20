@@ -13,7 +13,7 @@ const pipeline = promisify(stream.pipeline)
 
 import {
   WorkspaceFilesCompletionItemProvider,
-  TestCompletionItemProvider,
+  JQLangCompletionItemProvider,
 } from './autocomplete'
 import { Messages } from './messages'
 import { parseCommandArgs, spawnCommand, bufferToString } from './command-line'
@@ -39,7 +39,7 @@ const CONFIGS = {
   FILEPATH: undefined,
   FILENAME: /^win32/.test(process.platform) ? './jq.exe' : './jq',
   MANUAL_PATH: path.join('.', 'examples', 'manual.jqpg'),
-  LANGUAGES: ['jqpg'],
+  LANGUAGES: ['jqpg', 'jq'],
   EXECUTE_JQ_COMMAND: 'extension.executeJqCommand',
   CODE_LENS_TITLE: 'jq',
   JQ_PLAYGROUND_VERSION: 'vscode-jq-playground.version',
@@ -103,7 +103,7 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(
       CONFIGS.LANGUAGES,
-      new TestCompletionItemProvider(builtins),
+      new JQLangCompletionItemProvider(builtins),
     ),
   )
 }
@@ -141,7 +141,6 @@ async function checkEnvironment(
   let previousVersion = context.globalState.get<string>(
     CONFIGS.JQ_PLAYGROUND_VERSION,
   )
-  previousVersion = '1.0.1'
   if (previousVersion === currentVersion) {
     return Promise.resolve()
   }
@@ -361,14 +360,14 @@ const renderOutput = (type) => (data) => {
   } else {
     Logger.clear()
     Logger.append(bufferToString(data))
-    Logger.show()
+    Logger.show(true)
   }
 }
 
 function renderError(data) {
   Logger.clear()
   Logger.append(bufferToString(data))
-  Logger.show()
+  Logger.show(true)
   vscode.window.showErrorMessage(bufferToString(data))
 }
 

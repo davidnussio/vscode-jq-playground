@@ -36,7 +36,7 @@ export class WorkspaceFilesCompletionItemProvider
   }
 }
 
-export class TestCompletionItemProvider
+export class JQLangCompletionItemProvider
   implements vscode.CompletionItemProvider {
   constructor(readonly builtins) {}
   public provideCompletionItems(

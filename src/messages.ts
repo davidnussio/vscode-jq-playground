@@ -41,8 +41,8 @@ export class Messages {
     console.log(version)
 
     const panel = vscode.window.createWebviewPanel(
-      'catCoding',
-      'Cat Coding',
+      'jq-changelog',
+      `jq Playground ver. ${version}`,
       vscode.ViewColumn.Active,
       {},
     )

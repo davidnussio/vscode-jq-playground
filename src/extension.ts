@@ -173,8 +173,6 @@ function openTutorial() {
 }
 
 function openExamples() {
-  Logger.appendLine(CONFIGS.MANUAL_PATH)
-  Logger.show()
   fs.readFile(CONFIGS.MANUAL_PATH, {}, (err, data) => {
     vscode.workspace
       .openTextDocument({ content: data.toString(), language: 'jqpg' })

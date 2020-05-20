@@ -2,7 +2,7 @@
   "name": "vscode-jq-playground",
   "displayName": "Visual Code jq playground",
   "description": "Visual Code integration with jq",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "publisher": "davidnussio",
   "license": "SEE LICENSE IN LICENSE",
   "author": {

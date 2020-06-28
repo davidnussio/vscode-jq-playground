@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import * as vscode from 'vscode'
+import { basename } from 'path'
 
 const TYPES: string[] = ['json', 'plaintext', 'jqpg', 'jq']
 
@@ -23,10 +24,10 @@ export class WorkspaceFilesCompletionItemProvider
     const completionItems: vscode.CompletionItem[] = vscode.workspace.textDocuments
       .map((doc) => {
         if (TYPES.includes(doc.languageId)) {
-          return new vscode.CompletionItem(
-            doc.fileName,
-            vscode.CompletionItemKind.File,
-          )
+          const item = new vscode.CompletionItem(basename(doc.fileName))
+          item.kind = vscode.CompletionItemKind.File
+          item.insertText = doc.fileName
+          return item
         }
         return undefined
       })

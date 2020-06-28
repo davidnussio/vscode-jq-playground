@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
 
 import { join, match, replace, trim } from 'ramda'
 import {
@@ -61,10 +61,10 @@ export const jqCommandOptions = Object.freeze({
 })
 
 // arrayToPair :: a -> Pair ([], a)
-const arrayToPair = xs => Pair([], xs)
+const arrayToPair = (xs) => Pair([], xs)
 
 // optionMap :: { option: String, optionValue: Number }
-const optionsMap = key => jqCommandOptions[key]
+const optionsMap = (key) => jqCommandOptions[key]
 
 // howManyValueForOption :: String -> Number + Boolean
 const howManyValueForOption = compose(
@@ -73,24 +73,24 @@ const howManyValueForOption = compose(
 )
 
 // optionAndValues :: Pair ([String] [String]) -> Pair ([String] [String])
-const optionAndValues = acc => {
+const optionAndValues = (acc) => {
   const howMany = howManyValueForOption(acc.snd().slice(0, 1))
 
   return howMany === false
     ? acc
     : Pair(
-        acc.fst().concat(
-          acc
-            .snd()
-            .slice(0, howMany + 1)
-            .map(trimOption),
-        ),
-        acc.snd().slice(howMany + 1),
-      )
+      acc.fst().concat(
+        acc
+          .snd()
+          .slice(0, howMany + 1)
+          .map(trimOption),
+      ),
+      acc.snd().slice(howMany + 1),
+    )
 }
 
 // extractOptionsAndFilter :: Pair ([] [String]) -> Pair([ String ] [ String ])
-const extractOptionsAndFilter = xs => reduce(optionAndValues, xs, xs.snd())
+const extractOptionsAndFilter = (xs) => reduce(optionAndValues, xs, xs.snd())
 
 // trimParts :: [String] -> [String]
 const trimOption = replace(/^['"]{1}|['"]{1}$/g, '')
@@ -111,13 +111,13 @@ export const parseCommandArgs = compose(
 )
 
 // bufferToString :: Buffer -> String
-export const bufferToString = buffer => buffer.toString()
+export const bufferToString = (buffer: Buffer) => buffer.toString()
 
 // bufferToJSON :: Buffer -> JSON
 export const bufferToJSON = compose(JSON.parse, bufferToString)
 
 // spawnCommand :: ??????
-export const spawnCommand = curry((command: string, args, options, input) =>
+export const spawnCommand = curry((command: string, args: string[], options: SpawnOptionsWithoutStdio, input: any) =>
   Async((rej, res) => {
     const result = { stdout: [], stderr: [] }
 
@@ -131,16 +131,28 @@ export const spawnCommand = curry((command: string, args, options, input) =>
     proc.stdin.write(input)
     proc.stdin.end()
 
-    proc.stdout.on('data', data => {
+    proc.stdout.on('data', (data) => {
       result.stdout.push(data)
     })
 
-    proc.stderr.on('data', data => {
+    proc.stderr.on('data', (data) => {
       result.stderr.push(data)
     })
 
-    proc.on('close', code => {
+    proc.on('close', (code) => {
       code === 0 ? res(result.stdout) : rej(result.stderr)
     })
   }),
+)
+
+export const spawnJqPlay = curry(
+  (vscode, args: ReadonlyArray<string>, input: string) =>
+    Async((rej, res) => {
+      const j = encodeURIComponent(input)
+      const q = encodeURIComponent(args[args.length - 1].replace('"', ''))
+      vscode.env
+        .openExternal(`https://jqplay.org/jq?q=${q}&j=${j}`)
+        .then(res)
+        .catch(rej)
+    }),
 )

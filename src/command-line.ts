@@ -27,6 +27,7 @@ export const jqCommandOptions = Object.freeze({
   '-R': 0,
   '--null-input': 0,
   '-n': 0,
+  '-c': 0,
   '--compact-output': 0,
   '--tab': 0,
   '--indent': 1,

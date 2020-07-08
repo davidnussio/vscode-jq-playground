@@ -364,7 +364,7 @@ const renderOutput = (type) => (data) => {
     // Do nothing
   } else if (type === 'editor') {
     vscode.workspace
-      .openTextDocument({ content: bufferToString(data), language: 'jq' })
+      .openTextDocument({ content: bufferToString(data), language: 'json' })
       .then((doc) => vscode.window.showTextDocument(doc, vscode.ViewColumn.Two))
   } else {
     Logger.clear()

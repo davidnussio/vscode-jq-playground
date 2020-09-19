@@ -17,7 +17,7 @@ import {
 } from './autocomplete'
 import { Messages } from './messages'
 import {
-  parseCommandArgs,
+  parseJqCommandArgs,
   spawnCommand,
   bufferToString,
   spawnJqPlay,
@@ -391,7 +391,7 @@ function executeJqCommand(params) {
     .lineAt(params.range.start.line)
     .text.replace(/jq\s+/, '')
 
-  const args = parseCommandArgs(queryLine)
+  const args = parseJqCommandArgs(queryLine)
 
   let queryLineWithoutOpts = args[args.length - 1]
 

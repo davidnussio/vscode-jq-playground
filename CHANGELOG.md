@@ -1,5 +1,26 @@
 # Change Log
 
+## [3.2.5]
+
+* show jq errors instead "Error: write EPIPE"
+
+## [3.2.4]
+
+* Open editor output with languageId json close #53
+
+## [3.2.3]
+
+* Fix missing option -c fix #52
+
+## [3.2.2]
+
+* Fix working with windows paths
+* Update deps
+
+## [3.2.1]
+
+* Minor fix
+
 ## [3.2.0]
 
 * Support multiline jq filter

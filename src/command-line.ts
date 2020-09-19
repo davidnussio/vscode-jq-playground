@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
 
 import { join, match, replace, trim } from 'ramda'
@@ -104,11 +105,16 @@ const pairToCommandArgs = compose(
 
 // parseCommandArgs :: String -> Pair ([String], [String])
 export const parseCommandArgs = compose(
+  map(trim),
+  match(/(--?\w+(?:-\w+)*|"(?:\\"|[^"])+"|(:?\s?[^\s]+\s?))/g),
+)
+
+// parseCommandArgs :: String -> Pair ([String], [String])
+export const parseJqCommandArgs = compose(
   pairToCommandArgs,
   extractOptionsAndFilter,
   arrayToPair,
-  map(trim),
-  match(/(--?\w+(?:-\w+)*|"(?:\\"|[^"])+"|(:?\s?[^\s]+\s?))/g),
+  parseCommandArgs,
 )
 
 // bufferToString :: Buffer -> String
@@ -124,10 +130,16 @@ export const spawnCommand = curry((command: string, args: string[], options: Spa
 
     const proc = spawn(command, args, options)
 
-    proc.on('error', rej)
-    proc.stdin.on('error', rej)
-    proc.stdout.on('error', rej)
-    proc.stderr.on('error', rej)
+    const rejErr = () => {
+      result.stderr.push("🔥 JQ query:\n\n")
+      result.stderr.push(args.join(' ') + "\n\n")
+      result.stderr.push("🔥 Error:\n\n")
+    }
+
+    proc.on('error', rejErr)
+    proc.stdin.on('error', rejErr)
+    proc.stdout.on('error', rejErr)
+    proc.stderr.on('error', rejErr)
 
     proc.stdin.write(input)
     proc.stdin.end()

@@ -153,7 +153,7 @@ export const spawnCommand = curry((command: string, args: string[], options: Spa
     })
 
     proc.on('close', (code) => {
-      code === 0 ? res(result.stdout) : rej(result.stderr)
+      code === 0 ? res(result.stdout) : rej(result.stderr.join(''))
     })
   }),
 )

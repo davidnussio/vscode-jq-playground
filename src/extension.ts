@@ -16,12 +16,7 @@ import {
   JQLangCompletionItemProvider,
 } from './autocomplete'
 import { Messages } from './messages'
-import {
-  parseJqCommandArgs,
-  spawnCommand,
-  bufferToString,
-  spawnJqPlay,
-} from './command-line'
+import { parseJqCommandArgs, spawnCommand, spawnJqPlay } from './command-line'
 
 const BINARIES = {
   darwin: {
@@ -118,7 +113,7 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
 }
 
 // tslint:disable-next-line:no-empty
-export function deactivate() { }
+export function deactivate() {}
 
 function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
   const config = vscode.workspace.getConfiguration()
@@ -314,7 +309,7 @@ function provideCodeLenses(document: vscode.TextDocument) {
           command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [{ ...match, openResult: 'editor' }],
         }),
-        // TODO: Disabled 
+        // TODO: Disabled
         // new vscode.CodeLens(match.range, {
         //   title: '🔗 jqplay',
         //   command: CONFIGS.EXECUTE_JQ_COMMAND,
@@ -340,7 +335,7 @@ function findRegexes(document: vscode.TextDocument): IJqMatch[] {
     const regex = /^(jq)\s+(.+?)/g
     regex.lastIndex = 0
     const text = line.text.substr(0, 1000)
-    // tslint:disable-next-line:no-conditional-assignment
+    // eslint-disable-next-line no-unused-vars
     while ((match = regex.exec(text))) {
       const result = jqMatch(document, i)
       if (result) {
@@ -364,28 +359,25 @@ const renderOutput = (type) => (data) => {
     // Do nothing
   } else if (type === 'editor') {
     vscode.workspace
-      .openTextDocument({ content: bufferToString(data), language: 'json' })
+      .openTextDocument({ content: data, language: 'json' })
       .then((doc) => vscode.window.showTextDocument(doc, vscode.ViewColumn.Two))
   } else {
     Logger.clear()
-    Logger.append(bufferToString(data))
+    Logger.append(data)
     Logger.show(true)
   }
 }
 
 function renderError(data) {
   Logger.clear()
-  Logger.append(bufferToString(data))
+  Logger.append(data)
   Logger.show(true)
-  vscode.window.showErrorMessage(bufferToString(data))
+  vscode.window.showErrorMessage(data)
 }
 
 function executeJqCommand(params) {
   const document: vscode.TextDocument = params.document
-  const cwd = path.join(
-    vscode.window.activeTextEditor.document.fileName,
-    '..',
-  )
+  const cwd = path.join(vscode.window.activeTextEditor.document.fileName, '..')
 
   let queryLine: string = document
     .lineAt(params.range.start.line)
@@ -411,8 +403,11 @@ function executeJqCommand(params) {
     }
     args[args.length - 1] = queryLineWithoutOpts.slice(1, -1)
   }
-  const context: string = document.lineAt(params.range.start.line + lineOffset)
-    .text
+  const contextLine = Math.min(
+    params.range.start.line + lineOffset,
+    document.lineCount - 1,
+  )
+  const context: string = document.lineAt(contextLine)?.text
   lineOffset++
 
   if (isWorkspaceFile(queryLineWithoutOpts, vscode.workspace.textDocuments)) {
@@ -426,7 +421,6 @@ function executeJqCommand(params) {
   if (params.openResult === 'jqplay') {
     jqCommand = spawnJqPlay(vscode, args)
   } else {
-
     jqCommand = spawnCommand(CONFIGS.FILEPATH, args, { cwd })
   }
 
@@ -504,12 +498,15 @@ function isUrl(context: string): boolean {
 }
 
 function isFilepath(cwd: string, context: string): boolean {
+  if (!context) {
+    return false
+  }
   const resolvedPath = getFileName(cwd, context)
   return fs.existsSync(resolvedPath)
 }
 
 function getFileName(cwd: string, context: string): string {
-  if (context.search(/^(\/|[a-z]:\\)/ig) === 0) {
+  if (context.search(/^(\/|[a-z]:\\)/gi) === 0) {
     // Resolve absolute unix and window path
     return path.resolve(context)
   } else {

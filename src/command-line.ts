@@ -81,14 +81,14 @@ const optionAndValues = (acc) => {
   return howMany === false
     ? acc
     : Pair(
-      acc.fst().concat(
-        acc
-          .snd()
-          .slice(0, howMany + 1)
-          .map(trimOption),
-      ),
-      acc.snd().slice(howMany + 1),
-    )
+        acc.fst().concat(
+          acc
+            .snd()
+            .slice(0, howMany + 1)
+            .map(trimOption),
+        ),
+        acc.snd().slice(howMany + 1),
+      )
 }
 
 // extractOptionsAndFilter :: Pair ([] [String]) -> Pair([ String ] [ String ])
@@ -121,41 +121,47 @@ export const parseJqCommandArgs = compose(
 export const bufferToString = (buffer: Buffer) => buffer.toString()
 
 // bufferToJSON :: Buffer -> JSON
-export const bufferToJSON = compose(JSON.parse, bufferToString)
+// export const bufferToJSON = compose(JSON.parse, bufferToString)
 
 // spawnCommand :: ??????
-export const spawnCommand = curry((command: string, args: string[], options: SpawnOptionsWithoutStdio, input: any) =>
-  Async((rej, res) => {
-    const result = { stdout: [], stderr: [] }
+export const spawnCommand = curry(
+  (
+    command: string,
+    args: string[],
+    options: SpawnOptionsWithoutStdio,
+    input: any,
+  ) =>
+    Async((rej, res) => {
+      const result = { stdout: [], stderr: [] }
 
-    const proc = spawn(command, args, options)
+      const proc = spawn(command, args, options)
 
-    const rejErr = () => {
-      result.stderr.push("🔥 JQ query:\n\n")
-      result.stderr.push(args.join(' ') + "\n\n")
-      result.stderr.push("🔥 Error:\n\n")
-    }
+      const rejErr = () => {
+        result.stderr.push('🔥 JQ query:\n\n')
+        result.stderr.push(args.join(' ') + '\n\n')
+        result.stderr.push('🔥 Error:\n\n')
+      }
 
-    proc.on('error', rejErr)
-    proc.stdin.on('error', rejErr)
-    proc.stdout.on('error', rejErr)
-    proc.stderr.on('error', rejErr)
+      proc.on('error', rejErr)
+      proc.stdin.on('error', rejErr)
+      proc.stdout.on('error', rejErr)
+      proc.stderr.on('error', rejErr)
 
-    proc.stdin.write(input)
-    proc.stdin.end()
+      proc.stdin.write(input)
+      proc.stdin.end()
 
-    proc.stdout.on('data', (data) => {
-      result.stdout.push(data)
-    })
+      proc.stdout.on('data', (data) => {
+        result.stdout.push(data.toString())
+      })
 
-    proc.stderr.on('data', (data) => {
-      result.stderr.push(data)
-    })
+      proc.stderr.on('data', (data) => {
+        result.stderr.push(data.toString())
+      })
 
-    proc.on('close', (code) => {
-      code === 0 ? res(result.stdout) : rej(result.stderr.join(''))
-    })
-  }),
+      proc.on('close', (code) => {
+        code === 0 ? res(result.stdout.join('')) : rej(result.stderr.join(''))
+      })
+    }),
 )
 
 export const spawnJqPlay = curry(

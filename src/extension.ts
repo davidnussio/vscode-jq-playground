@@ -17,12 +17,7 @@ import {
   JQLangCompletionItemProvider,
 } from './autocomplete'
 import { Messages } from './messages'
-import {
-  parseJqCommandArgs,
-  spawnCommand,
-  bufferToString,
-  spawnJqPlay,
-} from './command-line'
+import { parseJqCommandArgs, spawnCommand, spawnJqPlay } from './command-line'
 
 const BINARIES = {
   darwin: {
@@ -362,20 +357,20 @@ const renderOutput = (type) => (data) => {
     // Do nothing
   } else if (type === 'editor') {
     vscode.workspace
-      .openTextDocument({ content: bufferToString(data), language: 'json' })
+      .openTextDocument({ content: data, language: 'json' })
       .then((doc) => vscode.window.showTextDocument(doc, vscode.ViewColumn.Two))
   } else {
     Logger.clear()
-    Logger.append(bufferToString(data))
+    Logger.append(data)
     Logger.show(true)
   }
 }
 
 function renderError(data) {
   Logger.clear()
-  Logger.append(bufferToString(data))
+  Logger.append(data)
   Logger.show(true)
-  vscode.window.showErrorMessage(bufferToString(data))
+  vscode.window.showErrorMessage(data)
 }
 
 function executeJqCommand(params) {
@@ -406,8 +401,11 @@ function executeJqCommand(params) {
     }
     args[args.length - 1] = queryLineWithoutOpts.slice(1, -1)
   }
-  const context: string = document.lineAt(params.range.start.line + lineOffset)
-    .text
+  const contextLine = Math.min(
+    params.range.start.line + lineOffset,
+    document.lineCount - 1,
+  )
+  const context: string = document.lineAt(contextLine)?.text
   lineOffset++
 
   if (isWorkspaceFile(queryLineWithoutOpts, vscode.workspace.textDocuments)) {
@@ -509,6 +507,9 @@ function isUrl(context: string): boolean {
 }
 
 function isFilepath(cwd: string, context: string): boolean {
+  if (!context) {
+    return false
+  }
   const resolvedPath = getFileName(cwd, context)
   return fs.existsSync(resolvedPath)
 }

@@ -121,7 +121,7 @@ export const parseJqCommandArgs = compose(
 export const bufferToString = (buffer: Buffer) => buffer.toString()
 
 // bufferToJSON :: Buffer -> JSON
-export const bufferToJSON = compose(JSON.parse, bufferToString)
+// export const bufferToJSON = compose(JSON.parse, bufferToString)
 
 // spawnCommand :: ??????
 export const spawnCommand = curry(

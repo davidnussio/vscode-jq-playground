@@ -7,6 +7,7 @@ import * as md5 from 'md5-file'
 import * as stream from 'stream'
 import { promisify } from 'util'
 import fetch from 'node-fetch'
+import { parse } from 'shell-quote'
 import * as builtins from './builtins.json'
 
 const pipeline = promisify(stream.pipeline)
@@ -249,7 +250,7 @@ function downloadBinary(context): Promise<any> {
     }
 
     if (md5sum(CONFIGS.FILEPATH) === BINARIES[process.platform].checksum) {
-      resolve()
+      resolve(true)
     } else {
       Logger.appendLine(`Download jq binary for platform (${process.platform})`)
       Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`)
@@ -279,7 +280,7 @@ function downloadBinary(context): Promise<any> {
           }
           Logger.appendLine('  - [ OK ]')
           Logger.show()
-          resolve()
+          resolve(true)
         })
         .catch((err) => {
           Logger.appendLine('')
@@ -330,13 +331,10 @@ function findRegexes(document: vscode.TextDocument): IJqMatch[] {
   const matches: IJqMatch[] = []
   for (let i = 0; i < document.lineCount; i++) {
     const line = document.lineAt(i)
-    // eslint-disable-next-line no-unused-vars
-    let match: RegExpExecArray | null
     const regex = /^(jq)\s+(.+?)/g
     regex.lastIndex = 0
     const text = line.text.substr(0, 1000)
-    // eslint-disable-next-line no-unused-vars
-    while ((match = regex.exec(text))) {
+    while (regex.exec(text)) {
       const result = jqMatch(document, i)
       if (result) {
         matches.push(result)
@@ -419,7 +417,7 @@ function executeJqCommand(params) {
 
   let jqCommand
   if (params.openResult === 'jqplay') {
-    jqCommand = spawnJqPlay(vscode, args)
+    jqCommand = spawnJqPlay(vscode, args).map(bufferToString)
   } else {
     jqCommand = spawnCommand(CONFIGS.FILEPATH, args, { cwd })
   }
@@ -448,6 +446,17 @@ function executeJqCommand(params) {
         renderOutput(params.openResult),
       )
     }
+  } else if (
+    context.match(/^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find) /)
+  ) {
+    const [httpCli, ...httpCliOptions] = parse(context.replace('$ ', ''))
+    // @TODO: check this out
+    if (httpCli === 'http') {
+      httpCliOptions.unshift('--ignore-stdin')
+    }
+    spawnCommand(httpCli, httpCliOptions, { cwd }, '')
+      .chain(jqCommand)
+      .fork(renderError, renderOutput(params.openResult))
   } else {
     const contextLines = [context]
     let line = params.range.start.line + lineOffset
@@ -494,7 +503,7 @@ function getWorkspaceFile(
 }
 
 function isUrl(context: string): boolean {
-  return context.search(/^http(s)?/) !== -1
+  return context.search(/^http(s)?:\/\//) !== -1
 }
 
 function isFilepath(cwd: string, context: string): boolean {

@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import { spawn, SpawnOptionsWithoutStdio } from 'child_process'
+import { spawn, CommonSpawnOptions } from 'child_process'
 
 import { join, match, replace, trim } from 'ramda'
 import {
@@ -128,11 +128,14 @@ export const spawnCommand = curry(
   (
     command: string,
     args: string[],
-    options: SpawnOptionsWithoutStdio,
+    options: CommonSpawnOptions,
     input: any,
+    timeout = 5000,
   ) =>
     Async((rej, res) => {
       const result = { stdout: [], stderr: [] }
+
+      options.stdio = [input ? 'pipe' : 'ignore', 'pipe', 'pipe']
 
       const proc = spawn(command, args, options)
 
@@ -143,22 +146,32 @@ export const spawnCommand = curry(
       }
 
       proc.on('error', rejErr)
-      proc.stdin.on('error', rejErr)
+
+      if (input) {
+        proc.stdin.on('error', rejErr)
+        proc.stdin.write(input)
+        proc.stdin.end()
+      }
+
       proc.stdout.on('error', rejErr)
-      proc.stderr.on('error', rejErr)
-
-      proc.stdin.write(input)
-      proc.stdin.end()
-
       proc.stdout.on('data', (data) => {
-        result.stdout.push(data.toString())
+        result.stdout.push(data)
       })
 
+      proc.stderr.on('error', rejErr)
       proc.stderr.on('data', (data) => {
-        result.stderr.push(data.toString())
+        result.stderr.push(data)
       })
+
+      const commandTimeout = setTimeout(() => {
+        proc.kill('SIGABRT')
+        result.stderr.push(
+          `Command aborted: ${timeout} seconds timeout reached!`,
+        )
+      }, timeout)
 
       proc.on('close', (code) => {
+        clearTimeout(commandTimeout)
         code === 0 ? res(result.stdout.join('')) : rej(result.stderr.join(''))
       })
     }),

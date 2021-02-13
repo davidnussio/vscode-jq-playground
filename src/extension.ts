@@ -21,7 +21,7 @@ import {
   parseJqCommandArgs,
   spawnCommand,
   bufferToString,
-  spawnJqPlay
+  spawnJqPlay,
 } from './command-line'
 
 const BINARIES = {
@@ -119,7 +119,7 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
 }
 
 // tslint:disable-next-line:no-empty
-export function deactivate() { }
+export function deactivate() {}
 
 function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
   const config = vscode.workspace.getConfiguration()
@@ -255,7 +255,7 @@ function downloadBinary(context): Promise<any> {
     }
 
     if (md5sum(CONFIGS.FILEPATH) === BINARIES[process.platform].checksum) {
-      resolve()
+      resolve(true)
     } else {
       Logger.appendLine(`Download jq binary for platform (${process.platform})`)
       Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`)
@@ -285,7 +285,7 @@ function downloadBinary(context): Promise<any> {
           }
           Logger.appendLine('  - [ OK ]')
           Logger.show()
-          resolve()
+          resolve(true)
         })
         .catch((err) => {
           Logger.appendLine('')
@@ -315,7 +315,7 @@ function provideCodeLenses(document: vscode.TextDocument) {
           command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [{ ...match, openResult: 'editor' }],
         }),
-        // TODO: Disabled 
+        // TODO: Disabled
         // new vscode.CodeLens(match.range, {
         //   title: '🔗 jqplay',
         //   command: CONFIGS.EXECUTE_JQ_COMMAND,
@@ -380,10 +380,7 @@ function renderError(data) {
 
 function executeJqCommand(params) {
   const document: vscode.TextDocument = params.document
-  const cwd = path.join(
-    vscode.window.activeTextEditor.document.fileName,
-    '..',
-  )
+  const cwd = path.join(vscode.window.activeTextEditor.document.fileName, '..')
 
   let queryLine: string = document
     .lineAt(params.range.start.line)
@@ -424,7 +421,6 @@ function executeJqCommand(params) {
   if (params.openResult === 'jqplay') {
     jqCommand = spawnJqPlay(vscode, args).map(bufferToString)
   } else {
-
     jqCommand = spawnCommand(CONFIGS.FILEPATH, args, { cwd })
   }
 
@@ -452,17 +448,17 @@ function executeJqCommand(params) {
         renderOutput(params.openResult),
       )
     }
-  } else if (context.match(/^\$ (http|curl|wget|cat|ls|grep|tail|head|find) /)) {
+  } else if (
+    context.match(/^\$ (http|curl|wget|cat|ls|dir|grep|tail|head|find) /)
+  ) {
     const [httpCli, ...httpCliOptions] = parse(context.replace('$ ', ''))
     // @TODO: check this out
-    if (httpCli === 'http') { httpCliOptions.unshift('--ignore-stdin') }
+    if (httpCli === 'http') {
+      httpCliOptions.unshift('--ignore-stdin')
+    }
     spawnCommand(httpCli, httpCliOptions, { cwd }, '')
       .chain(jqCommand)
-      .fork(
-        renderError,
-        renderOutput(params.openResult)
-      )
-
+      .fork(renderError, renderOutput(params.openResult))
   } else {
     const contextLines = [context]
     let line = params.range.start.line + lineOffset
@@ -518,7 +514,7 @@ function isFilepath(cwd: string, context: string): boolean {
 }
 
 function getFileName(cwd: string, context: string): string {
-  if (context.search(/^(\/|[a-z]:\\)/ig) === 0) {
+  if (context.search(/^(\/|[a-z]:\\)/gi) === 0) {
     // Resolve absolute unix and window path
     return path.resolve(context)
   } else {

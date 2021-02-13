@@ -81,14 +81,14 @@ const optionAndValues = (acc) => {
   return howMany === false
     ? acc
     : Pair(
-      acc.fst().concat(
-        acc
-          .snd()
-          .slice(0, howMany + 1)
-          .map(trimOption),
-      ),
-      acc.snd().slice(howMany + 1),
-    )
+        acc.fst().concat(
+          acc
+            .snd()
+            .slice(0, howMany + 1)
+            .map(trimOption),
+        ),
+        acc.snd().slice(howMany + 1),
+      )
 }
 
 // extractOptionsAndFilter :: Pair ([] [String]) -> Pair([ String ] [ String ])
@@ -124,48 +124,57 @@ export const bufferToString = (buffer: Buffer) => buffer.toString()
 export const bufferToJSON = compose(JSON.parse, bufferToString)
 
 // spawnCommand :: ??????
-export const spawnCommand = curry((command: string, args: string[], options: CommonSpawnOptions, input: any, timeout = 5000) =>
-  Async((rej, res) => {
-    const result = { stdout: [], stderr: [] }
+export const spawnCommand = curry(
+  (
+    command: string,
+    args: string[],
+    options: CommonSpawnOptions,
+    input: any,
+    timeout = 5000,
+  ) =>
+    Async((rej, res) => {
+      const result = { stdout: [], stderr: [] }
 
-    options.stdio = [input ? 'pipe' : 'ignore', 'pipe', 'pipe']
+      options.stdio = [input ? 'pipe' : 'ignore', 'pipe', 'pipe']
 
-    const proc = spawn(command, args, options)
+      const proc = spawn(command, args, options)
 
-    const rejErr = () => {
-      result.stderr.push("🔥 JQ query:\n\n")
-      result.stderr.push(args.join(' ') + "\n\n")
-      result.stderr.push("🔥 Error:\n\n")
-    }
+      const rejErr = () => {
+        result.stderr.push('🔥 JQ query:\n\n')
+        result.stderr.push(args.join(' ') + '\n\n')
+        result.stderr.push('🔥 Error:\n\n')
+      }
 
-    proc.on('error', rejErr)
+      proc.on('error', rejErr)
 
-    if (input) {
-      proc.stdin.on('error', rejErr)
-      proc.stdin.write(input)
-      proc.stdin.end()
-    }
+      if (input) {
+        proc.stdin.on('error', rejErr)
+        proc.stdin.write(input)
+        proc.stdin.end()
+      }
 
-    proc.stdout.on('error', rejErr)
-    proc.stdout.on('data', (data) => {
-      result.stdout.push(data)
-    })
+      proc.stdout.on('error', rejErr)
+      proc.stdout.on('data', (data) => {
+        result.stdout.push(data)
+      })
 
-    proc.stderr.on('error', rejErr)
-    proc.stderr.on('data', (data) => {
-      result.stderr.push(data)
-    })
+      proc.stderr.on('error', rejErr)
+      proc.stderr.on('data', (data) => {
+        result.stderr.push(data)
+      })
 
-    const commandTimeout = setTimeout(() => {
-      proc.kill('SIGABRT')
-      result.stderr.push(`Command aborted: ${timeout} seconds timeout reached!`)
-    }, timeout)
+      const commandTimeout = setTimeout(() => {
+        proc.kill('SIGABRT')
+        result.stderr.push(
+          `Command aborted: ${timeout} seconds timeout reached!`,
+        )
+      }, timeout)
 
-    proc.on('close', (code) => {
-      clearTimeout(commandTimeout)
-      code === 0 ? res(result.stdout.join('')) : rej(result.stderr.join(''))
-    })
-  }),
+      proc.on('close', (code) => {
+        clearTimeout(commandTimeout)
+        code === 0 ? res(result.stdout.join('')) : rej(result.stderr.join(''))
+      })
+    }),
 )
 
 export const spawnJqPlay = curry(

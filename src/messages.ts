@@ -14,7 +14,7 @@ function getWebviewContent(
         rej(err)
       }
       panel.webview.html = data.toString()
-      res()
+      res(true)
     })
   })
 }

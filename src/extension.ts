@@ -17,7 +17,12 @@ import {
   JQLangCompletionItemProvider,
 } from './autocomplete'
 import { Messages } from './messages'
-import { parseJqCommandArgs, spawnCommand, spawnJqPlay } from './command-line'
+import {
+  bufferToString,
+  parseJqCommandArgs,
+  spawnCommand,
+  spawnJqPlay,
+} from './command-line'
 
 const BINARIES = {
   darwin: {

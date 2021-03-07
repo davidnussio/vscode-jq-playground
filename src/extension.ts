@@ -452,7 +452,9 @@ function executeJqCommand(params) {
       )
     }
   } else if (
-    context.match(/^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find) /)
+    context.match(
+      /^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find)(?:\.exe)? /,
+    )
   ) {
     const [httpCli, ...httpCliOptions] = parse(context.replace('$ ', ''))
     // @TODO: check this out

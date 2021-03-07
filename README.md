@@ -4,9 +4,9 @@ Visual Code jq playground allow to create a notebook with [jq](https://stedolan.
 
 Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https://stedolan.github.io/jq/tutorial/)
 
-[![Latest Release](https://vsmarketplacebadge.apphb.com/version-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground) 
-[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground) 
-[![Installs](https://vsmarketplacebadge.apphb.com/downloads-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground) 
+[![Latest Release](https://vsmarketplacebadge.apphb.com/version-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
+[![Installs](https://vsmarketplacebadge.apphb.com/downloads-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
 [![Rating](https://vsmarketplacebadge.apphb.com/rating-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
 
 ## Demo
@@ -15,11 +15,9 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ![jq-manual-examples](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/general-demo.gif)
 
-
 ### Usage example
 
 ![vscode-jq-payground](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/example_multiline.gif)
-
 
 ![vscode-jq-playground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/buffers-examples.gif)
 
@@ -27,115 +25,113 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ![Autocomplete](https://media.giphy.com/media/eHFSm80lXQnxQe2D64/giphy.gif)
 
-
-
 ## Main Features
 
-* Create notebook with jq query filters
-* Support data input as:
-  * embedded documents
-  * filesystem files
-  * http resource
-* Support jq query filter as:
-  * inline
-  * opened workspace files
-* Highlighting code
-* Autocomplete with documentation and examples
-* Open command filter result in output console or in new editor file
-* Open examples from jq manual and run it (ctrl+shift+p → jq playground: Examples)
-* Support hotkeys
-  * ctrl+enter → to output
-  * shift+enter → to editor
+- Create notebook with multiple executable jq filters in one file
+- Support different data inputs:
+  - json text
+  - string
+  - url
+  - file
+  - workspace buffer and file
+  - command line (limited)
+- Highlighting code
+- Autocomplete with documentation and examples
+- Open command filter result in output console or in new buffer
+- Open examples from jq manual and run it (ctrl+shift+p → jq playground: Examples)
+- Support hotkeys
+  - ctrl+enter → to output
+  - shift+enter → to editor
 
 ## Usage
 
-Create file with `.jq` extension and then write jq command with json
+Open new file and change _'Language Mode'_ to `jqpg` (JQ PlayGround) or
+use a file with `.jqpg` extension.
 
-```json
-# Example 1: json file
-jq .[2]
-/home/dev/files/example.json
+### Start write jq filters
 
-# Example 1: json inline
-jq .[2]
-{"foo": 42, "bar": "less interesting data"}
+```
+jq [options] <jq filter>
+[ JSON_TEXT | STRINGS | URL | FILE | COMMAND_LINE ]
 ```
 
-### JSON inline
+### Open official jq examples in jq playground
+
+```
+Command Palette... (ctrl + shift + p): jq playground: Examples
+```
+
+### JSON_TEXT
 
 ```json
-# Value at key example from https://jqplay.org/
-jq .foo
+# Example 1
+jq '.foo'
 {"foo": 42, "bar": "less interesting data"}
 
-# Same example with formatted json
-jq .foo
+# Example 2
+jq '.foo'
 {
     "foo": 42,
     "bar": "less interesting data"
 }
 ```
 
-### JSON file from filesystem
+### STRINGS
 
 ```json
-# Use relative pahts
-jq .foo,.bar
+# Example 1: raw input string
+jq -R 'split(" ")'
+non arcu risus quis varius quam quisque id diam vel
+
+# Example 2
+jq .[5:10]
+"less interesting data"
+```
+
+### URL
+
+```json
+# Example 1
+jq '.[0] | {message: .commit.message, name: .commit.committer.name}'
+https://api.github.com/repos/stedolan/jq/commits?per_page=5
+```
+
+### FILE
+
+```json
+# Example 1: relative pahts
+jq '.foo,.bar'
 ../files/example.json
 
-# Use absolute pahts
-jq .foo,.bar
+# Example 2: absolute pahts
+jq '.foo,.bar'
 /home/dev/files/example.json
 
-# Unsaved temporary file
-jq .
+# Example 3: buffer file
+jq '.'
 Untitled-1
+
+# Example 4: workspace file
+jq '.'
+opened-workspace-file-with-data.json
 ```
 
-### Support jq command line options
+### COMMAND_LINE
 
 ```json
-jq --slurp . + [5] + [6]
-[
-  1,
-  2,
-  3
-]
+# Example 1
+jq '.token'
+$ curl -X GET "http://httpbin.org/bearer" -H "accept: application/json" -H "Authorization: Bearer 1234"
 
-# Multi value arguments
-jq --arg var val .value = $var
-{}
-
-jq --raw-input --slurp split("\\n")
-foo\nbar\nbaz
-
-jq -r (map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv
-[
-    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
-    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
-    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
-    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
-]
-
-jq --raw-output "\(.one)\t\(.two)"
-{"one":1,"two":"x"}
+# Example 2
+jq -R -s 'split("\n") | .[] | { file: ., lenght: . | length}'
+$ ls /etc/
 ```
 
-### Multiline query filter (quoted string 'filter...')
+### Multiline jq filter
 
 ```json
-# Multiline query filter
-jq 'if . == 0 then
-    "zero"
-  elif . == 1 then
-    "one"
-  else
-    "many"
-  end
-'
-2
-
-# Multiline query filter
+# Example 1
 jq -r '(map(keys)
   | add
   | unique) as $cols
@@ -150,9 +146,53 @@ jq -r '(map(keys)
     {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
     {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
 ]
+
+# Exampmle 2
+jq 'if . == 0 then
+    "zero"
+  elif . == 1 then
+    "one"
+  else
+    "many"
+  end
+'
+2
 ```
 
-### Use workspace file as command input or query filter
+### Support jq command line options
+
+```json
+# Example 1
+jq --slurp '. + [5] + [6]'
+[
+  1,
+  2,
+  3
+]
+
+# Example 2
+jq --arg var val '.value = $var'
+{}
+
+# Example 3
+jq --raw-input --slurp 'split("\\n")'
+foo\nbar\nbaz
+
+# Example 4
+jq -r '(map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv'
+[
+    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
+    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
+    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
+    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
+]
+
+# Example 5
+jq --raw-output '"\(.one)\t\(.two)"'
+{"one":1,"two":"x"}
+```
+
+## Use workspace file as command input or/and query filter
 
 ```json
 # Opened workspace file as filter
@@ -163,6 +203,8 @@ jq opened-workspace-file-filter.jq
 jq opened-workspace-file-filter.jq
 opened-workspace-file-with-data.json
 ```
+
+## Available commands
 
 ### Open online manual
 
@@ -175,14 +217,6 @@ opened-workspace-file-with-data.json
 ### Execute online query (jqplay)
 
 `ctrl+shift+p → > jqplay → .[] | { id: .userId, title: .title }`
-
-### JSON file from http request
-
-```
-# Example from jq tutorial https://stedolan.github.io/jq/tutorial/
-jq .[0] | {message: .commit.message, name: .commit.committer.name}
-https://api.github.com/repos/stedolan/jq/commits?per_page=5
-```
 
 ## Contributors
 

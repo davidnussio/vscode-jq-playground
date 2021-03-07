@@ -448,7 +448,15 @@ function executeJqCommand(params) {
     if (fs.existsSync(fileName)) {
       jqCommand(fs.readFileSync(fileName).toString()).fork(
         renderError,
-        renderOutput(params.openResult),
+        (out) => {
+          const outFile: string = getFileName(cwd, context, 1)
+
+          if (outFile) {
+            fs.writeFileSync(outFile, out)
+          } else {
+            renderOutput(params.openResult)(out)
+          }
+        },
       )
     }
   } else if (
@@ -513,21 +521,27 @@ function isUrl(context: string): boolean {
   return context.search(/^http(s)?:\/\//) !== -1
 }
 
+function splitRedirectFileNameLine(context: string): string[] {
+  return context.split(/\s*>\s*/).map((fileName) => fileName.trim())
+}
+
 function isFilepath(cwd: string, context: string): boolean {
   if (!context) {
     return false
   }
-  const resolvedPath = getFileName(cwd, context)
+  const files = splitRedirectFileNameLine(context)
+  const resolvedPath = getFileName(cwd, files[0])
   return fs.existsSync(resolvedPath)
 }
 
-function getFileName(cwd: string, context: string): string {
-  if (context.search(/^(\/|[a-z]:\\)/gi) === 0) {
+function getFileName(cwd: string, context: string, type: number = 0): string {
+  const files = splitRedirectFileNameLine(context)
+  if (files[type].search(/^(\/|[a-z]:\\)/gi) === 0) {
     // Resolve absolute unix and window path
-    return path.resolve(context)
+    return path.resolve(files[type])
   } else {
     // Resolve relative path
-    return path.resolve(path.join(cwd, context))
+    return path.resolve(path.join(cwd, files[type]))
   }
 }
 

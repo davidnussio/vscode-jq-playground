@@ -48,18 +48,14 @@ const replaceToken = async (
   }
 }
 
-export function resolveVariables(
-  context: ResolutionContext,
-  input: string,
-): Promise<string>
-export function resolveVariables(
-  context: ResolutionContext,
-  inputs: string[],
-): Promise<string[]>
-export function resolveVariables(
+export interface ResolveVariablesFn {
+  (context: ResolutionContext, input: string): Promise<string>
+  (context: ResolutionContext, inputs: string[]): Promise<string[]>
+}
+export const resolveVariables: ResolveVariablesFn = (
   context: ResolutionContext,
   inputOrInputs: string | string[],
-): Promise<string | string[]> {
+): Promise<any> => {
   return Array.isArray(inputOrInputs)
     ? Promise.all(
         inputOrInputs.map((i) => resolveVariablesForInputAsync(context, i)),

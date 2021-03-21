@@ -17,12 +17,7 @@ import {
   JQLangCompletionItemProvider,
 } from './autocomplete'
 import { Messages } from './messages'
-import {
-  bufferToString,
-  parseJqCommandArgs,
-  spawnCommand,
-  spawnJqPlay,
-} from './command-line'
+import { parseJqCommandArgs, spawnCommand } from './command-line'
 
 const BINARIES = {
   darwin: {
@@ -85,9 +80,6 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('extension.openExamples', openExamples),
   )
   context.subscriptions.push(
-    vscode.commands.registerCommand('extension.openPlay', openPlay),
-  )
-  context.subscriptions.push(
     vscode.commands.registerCommand('extension.runQueryOutput', runQueryOutput),
   )
   context.subscriptions.push(
@@ -148,7 +140,7 @@ async function checkEnvironment(
     'davidnussio.vscode-jq-playground',
   )
   const currentVersion = jqPlayground.packageJSON.version
-  let previousVersion = context.globalState.get<string>(
+  const previousVersion = context.globalState.get<string>(
     CONFIGS.JQ_PLAYGROUND_VERSION,
   )
   if (previousVersion === currentVersion) {
@@ -192,18 +184,6 @@ function openExamples() {
   })
 }
 
-function openPlay() {
-  vscode.window
-    .showInputBox({ prompt: 'jq query', value: '.' })
-    .then((query) => {
-      spawnJqPlay(
-        vscode,
-        [query],
-        vscode.window.activeTextEditor.document.getText(),
-      ).fork()
-    })
-}
-
 function runQueryOutput() {
   doRunQuery('output')
 }
@@ -214,6 +194,21 @@ function runQueryEditor() {
 
 function doRunQuery(openResult) {
   const editor = vscode.window.activeTextEditor
+
+  const variables = {}
+  for (let i = 0; i < editor.document.lineCount; i++) {
+    const lineText = editor.document.lineAt(i).text.trim()
+    if (lineText.startsWith('jq')) {
+      break
+    }
+    if (lineText.startsWith('#')) {
+      continue
+    }
+    const [varName, varValue] = lineText.split('=')
+    if (varName && varValue) {
+      variables[varName.trim()] = varValue.trim()
+    }
+  }
 
   let line = editor.selection.start.line
   let queryLine = ''
@@ -234,7 +229,7 @@ function doRunQuery(openResult) {
   }
 
   if (queryLine.startsWith('jq')) {
-    executeJqCommand(match)
+    executeJqCommand(match, variables)
   } else {
     vscode.window.showWarningMessage(
       'Current line does not contain jq query string',
@@ -315,12 +310,6 @@ function provideCodeLenses(document: vscode.TextDocument) {
           command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [{ ...match, openResult: 'editor' }],
         }),
-        // TODO: Disabled
-        // new vscode.CodeLens(match.range, {
-        //   title: '🔗 jqplay',
-        //   command: CONFIGS.EXECUTE_JQ_COMMAND,
-        //   arguments: [{ ...match, openResult: 'jqplay' }],
-        // }),
       ]
     })
     .reduce((a, b) => a.concat(b))
@@ -378,7 +367,7 @@ function renderError(data) {
   vscode.window.showErrorMessage(data)
 }
 
-function executeJqCommand(params) {
+function executeJqCommand(params, variables) {
   const document: vscode.TextDocument = params.document
   const cwd = path.join(vscode.window.activeTextEditor.document.fileName, '..')
 
@@ -406,12 +395,30 @@ function executeJqCommand(params) {
     }
     args[args.length - 1] = queryLineWithoutOpts.slice(1, -1)
   }
-  const contextLine = Math.min(
+  let contextLine = Math.min(
     params.range.start.line + lineOffset,
     document.lineCount - 1,
   )
+  let outputFile = ''
+  if (document.lineAt(contextLine)?.text?.startsWith('> ')) {
+    outputFile = document.lineAt(contextLine).text.replace('> ', '').trim()
+    contextLine++
+    lineOffset++
+  }
   const context: string = document.lineAt(contextLine)?.text
   lineOffset++
+
+  const renderOutputDecotator = (out) => {
+    const outFile: string | boolean = outputFile
+      ? getFileName(cwd, outputFile)
+      : false
+
+    if (outFile) {
+      fs.writeFileSync(outFile, out)
+    } else {
+      renderOutput(params.openResult)(out)
+    }
+  }
 
   if (isWorkspaceFile(queryLineWithoutOpts, vscode.workspace.textDocuments)) {
     args[args.length - 1] = getWorkspaceFile(
@@ -420,19 +427,14 @@ function executeJqCommand(params) {
     )
   }
 
-  let jqCommand
-  if (params.openResult === 'jqplay') {
-    jqCommand = spawnJqPlay(vscode, args).map(bufferToString)
-  } else {
-    jqCommand = spawnCommand(CONFIGS.FILEPATH, args, { cwd })
-  }
+  let jqCommand = spawnCommand(CONFIGS.FILEPATH, args, {
+    cwd,
+  })
 
   if (isUrl(context)) {
     fetch(context)
       .then((data) => data.text())
-      .then((data) =>
-        jqCommand(data).fork(renderError, renderOutput(params.openResult)),
-      )
+      .then((data) => jqCommand(data).fork(renderError, renderOutputDecotator))
       .catch((err) => {
         Logger.append(err)
         Logger.show()
@@ -442,13 +444,13 @@ function executeJqCommand(params) {
       context,
       vscode.workspace.textDocuments,
     )
-    jqCommand(text).fork(renderError, renderOutput(params.openResult))
+    jqCommand(text).fork(renderError, renderOutputDecotator)
   } else if (isFilepath(cwd, context)) {
     const fileName: string = getFileName(cwd, context)
     if (fs.existsSync(fileName)) {
       jqCommand(fs.readFileSync(fileName).toString()).fork(
         renderError,
-        renderOutput(params.openResult),
+        renderOutputDecotator,
       )
     }
   } else if (
@@ -456,14 +458,17 @@ function executeJqCommand(params) {
       /^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find)(?:\.exe)? /,
     )
   ) {
-    const [httpCli, ...httpCliOptions] = parse(context.replace('$ ', ''))
+    const [httpCli, ...httpCliOptions] = parse(context.replace('$ ', ''), {
+      ...process.env,
+      ...variables,
+    })
     // @TODO: check this out
     if (httpCli === 'http') {
       httpCliOptions.unshift('--ignore-stdin')
     }
     spawnCommand(httpCli, httpCliOptions, { cwd }, '')
       .chain(jqCommand)
-      .fork(renderError, renderOutput(params.openResult))
+      .fork(renderError, renderOutputDecotator)
   } else {
     const contextLines = [context]
     let line = params.range.start.line + lineOffset
@@ -474,10 +479,7 @@ function executeJqCommand(params) {
       }
       contextLines.push(lineText + '\n')
     }
-    jqCommand(contextLines.join(' ')).fork(
-      renderError,
-      renderOutput(params.openResult),
-    )
+    jqCommand(contextLines.join(' ')).fork(renderError, renderOutputDecotator)
   }
 }
 

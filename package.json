@@ -41,7 +41,8 @@
     "onCommand:extension.openTutorial",
     "onCommand:extension.openPlay",
     "onCommand:extension.runQueryOutput",
-    "onCommand:extension.runQueryEditor"
+    "onCommand:extension.runQueryEditor",
+    "onCommand:extension.executeJqInputCommand"
   ],
   "main": "./dist/extension",
   "contributes": {

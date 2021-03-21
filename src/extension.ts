@@ -406,12 +406,30 @@ function executeJqCommand(params) {
     }
     args[args.length - 1] = queryLineWithoutOpts.slice(1, -1)
   }
-  const contextLine = Math.min(
+  let contextLine = Math.min(
     params.range.start.line + lineOffset,
     document.lineCount - 1,
   )
+  let outputFile = ''
+  if (document.lineAt(contextLine)?.text?.startsWith('> ')) {
+    outputFile = document.lineAt(contextLine).text.replace('> ', '').trim()
+    contextLine++
+    lineOffset++
+  }
   const context: string = document.lineAt(contextLine)?.text
   lineOffset++
+
+  const renderOutputDecotator = (out) => {
+    const outFile: string | boolean = outputFile
+      ? getFileName(cwd, outputFile)
+      : false
+
+    if (outFile) {
+      fs.writeFileSync(outFile, out)
+    } else {
+      renderOutput(params.openResult)(out)
+    }
+  }
 
   if (isWorkspaceFile(queryLineWithoutOpts, vscode.workspace.textDocuments)) {
     args[args.length - 1] = getWorkspaceFile(
@@ -430,9 +448,7 @@ function executeJqCommand(params) {
   if (isUrl(context)) {
     fetch(context)
       .then((data) => data.text())
-      .then((data) =>
-        jqCommand(data).fork(renderError, renderOutput(params.openResult)),
-      )
+      .then((data) => jqCommand(data).fork(renderError, renderOutputDecotator))
       .catch((err) => {
         Logger.append(err)
         Logger.show()
@@ -442,21 +458,13 @@ function executeJqCommand(params) {
       context,
       vscode.workspace.textDocuments,
     )
-    jqCommand(text).fork(renderError, renderOutput(params.openResult))
+    jqCommand(text).fork(renderError, renderOutputDecotator)
   } else if (isFilepath(cwd, context)) {
     const fileName: string = getFileName(cwd, context)
     if (fs.existsSync(fileName)) {
       jqCommand(fs.readFileSync(fileName).toString()).fork(
         renderError,
-        (out) => {
-          const outFile: string = getFileName(cwd, context, 1)
-
-          if (outFile) {
-            fs.writeFileSync(outFile, out)
-          } else {
-            renderOutput(params.openResult)(out)
-          }
-        },
+        renderOutputDecotator,
       )
     }
   } else if (
@@ -471,7 +479,7 @@ function executeJqCommand(params) {
     }
     spawnCommand(httpCli, httpCliOptions, { cwd }, '')
       .chain(jqCommand)
-      .fork(renderError, renderOutput(params.openResult))
+      .fork(renderError, renderOutputDecotator)
   } else {
     const contextLines = [context]
     let line = params.range.start.line + lineOffset
@@ -482,10 +490,7 @@ function executeJqCommand(params) {
       }
       contextLines.push(lineText + '\n')
     }
-    jqCommand(contextLines.join(' ')).fork(
-      renderError,
-      renderOutput(params.openResult),
-    )
+    jqCommand(contextLines.join(' ')).fork(renderError, renderOutputDecotator)
   }
 }
 
@@ -521,27 +526,21 @@ function isUrl(context: string): boolean {
   return context.search(/^http(s)?:\/\//) !== -1
 }
 
-function splitRedirectFileNameLine(context: string): string[] {
-  return context.split(/\s*>\s*/).map((fileName) => fileName.trim())
-}
-
 function isFilepath(cwd: string, context: string): boolean {
   if (!context) {
     return false
   }
-  const files = splitRedirectFileNameLine(context)
-  const resolvedPath = getFileName(cwd, files[0])
+  const resolvedPath = getFileName(cwd, context)
   return fs.existsSync(resolvedPath)
 }
 
-function getFileName(cwd: string, context: string, type: number = 0): string {
-  const files = splitRedirectFileNameLine(context)
-  if (files[type].search(/^(\/|[a-z]:\\)/gi) === 0) {
+function getFileName(cwd: string, context: string): string {
+  if (context.search(/^(\/|[a-z]:\\)/gi) === 0) {
     // Resolve absolute unix and window path
-    return path.resolve(files[type])
+    return path.resolve(context)
   } else {
     // Resolve relative path
-    return path.resolve(path.join(cwd, files[type]))
+    return path.resolve(path.join(cwd, context))
   }
 }
 

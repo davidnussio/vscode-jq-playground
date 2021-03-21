@@ -140,7 +140,7 @@ async function checkEnvironment(
     'davidnussio.vscode-jq-playground',
   )
   const currentVersion = jqPlayground.packageJSON.version
-  let previousVersion = context.globalState.get<string>(
+  const previousVersion = context.globalState.get<string>(
     CONFIGS.JQ_PLAYGROUND_VERSION,
   )
   if (previousVersion === currentVersion) {

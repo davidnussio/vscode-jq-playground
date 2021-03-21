@@ -17,12 +17,7 @@ import {
   JQLangCompletionItemProvider,
 } from './autocomplete'
 import { Messages } from './messages'
-import {
-  bufferToString,
-  parseJqCommandArgs,
-  spawnCommand,
-  spawnJqPlay,
-} from './command-line'
+import { parseJqCommandArgs, spawnCommand } from './command-line'
 
 const BINARIES = {
   darwin: {
@@ -83,9 +78,6 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
   )
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.openExamples', openExamples),
-  )
-  context.subscriptions.push(
-    vscode.commands.registerCommand('extension.openPlay', openPlay),
   )
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.runQueryOutput', runQueryOutput),
@@ -192,18 +184,6 @@ function openExamples() {
   })
 }
 
-function openPlay() {
-  vscode.window
-    .showInputBox({ prompt: 'jq query', value: '.' })
-    .then((query) => {
-      spawnJqPlay(
-        vscode,
-        [query],
-        vscode.window.activeTextEditor.document.getText(),
-      ).fork()
-    })
-}
-
 function runQueryOutput() {
   doRunQuery('output')
 }
@@ -214,6 +194,21 @@ function runQueryEditor() {
 
 function doRunQuery(openResult) {
   const editor = vscode.window.activeTextEditor
+
+  const variables = {}
+  for (let i = 0; i < editor.document.lineCount; i++) {
+    const lineText = editor.document.lineAt(i).text.trim()
+    if (lineText.startsWith('jq')) {
+      break
+    }
+    if (lineText.startsWith('#')) {
+      continue
+    }
+    const [varName, varValue] = lineText.split('=')
+    if (varName && varValue) {
+      variables[varName.trim()] = varValue.trim()
+    }
+  }
 
   let line = editor.selection.start.line
   let queryLine = ''
@@ -234,7 +229,7 @@ function doRunQuery(openResult) {
   }
 
   if (queryLine.startsWith('jq')) {
-    executeJqCommand(match)
+    executeJqCommand(match, variables)
   } else {
     vscode.window.showWarningMessage(
       'Current line does not contain jq query string',
@@ -315,12 +310,6 @@ function provideCodeLenses(document: vscode.TextDocument) {
           command: CONFIGS.EXECUTE_JQ_COMMAND,
           arguments: [{ ...match, openResult: 'editor' }],
         }),
-        // TODO: Disabled
-        // new vscode.CodeLens(match.range, {
-        //   title: '🔗 jqplay',
-        //   command: CONFIGS.EXECUTE_JQ_COMMAND,
-        //   arguments: [{ ...match, openResult: 'jqplay' }],
-        // }),
       ]
     })
     .reduce((a, b) => a.concat(b))
@@ -378,7 +367,7 @@ function renderError(data) {
   vscode.window.showErrorMessage(data)
 }
 
-function executeJqCommand(params) {
+function executeJqCommand(params, variables) {
   const document: vscode.TextDocument = params.document
   const cwd = path.join(vscode.window.activeTextEditor.document.fileName, '..')
 
@@ -438,12 +427,9 @@ function executeJqCommand(params) {
     )
   }
 
-  let jqCommand
-  if (params.openResult === 'jqplay') {
-    jqCommand = spawnJqPlay(vscode, args).map(bufferToString)
-  } else {
-    jqCommand = spawnCommand(CONFIGS.FILEPATH, args, { cwd })
-  }
+  let jqCommand = spawnCommand(CONFIGS.FILEPATH, args, {
+    cwd,
+  })
 
   if (isUrl(context)) {
     fetch(context)
@@ -472,7 +458,10 @@ function executeJqCommand(params) {
       /^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find)(?:\.exe)? /,
     )
   ) {
-    const [httpCli, ...httpCliOptions] = parse(context.replace('$ ', ''))
+    const [httpCli, ...httpCliOptions] = parse(context.replace('$ ', ''), {
+      ...process.env,
+      ...variables,
+    })
     // @TODO: check this out
     if (httpCli === 'http') {
       httpCliOptions.unshift('--ignore-stdin')

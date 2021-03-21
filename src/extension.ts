@@ -24,6 +24,7 @@ import {
   spawnJqPlay,
 } from './command-line'
 import { buildJqCommandArgs, JqOptions } from './jq-options'
+import { resolveVariables } from './variable-resolver'
 
 const BINARIES = {
   darwin: {
@@ -399,8 +400,12 @@ async function executeJqInputCommand({ cwd, env, rawArgs, ...params }: JqOptions
       args.push(params.input)
     }
 
-    console.log('running jq with args and input', args, input)
-    const result = await spawnCommand(CONFIGS.FILEPATH, args, { cwd, env }, input).toPromise()
+    const context = { cwd, env }
+    const resolvedArgs = await resolveVariables(context, args)
+    const resolvedInput = await resolveVariables(context, input)
+    
+    console.log('running jq with args and input', resolvedArgs, resolvedInput)
+    const result = await spawnCommand(CONFIGS.FILEPATH, resolvedArgs, { cwd, env }, resolvedInput).toPromise()
     renderOutput(null)(result)
     return result;
   } catch (err) {

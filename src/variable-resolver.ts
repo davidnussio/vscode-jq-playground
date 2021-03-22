@@ -72,6 +72,7 @@ async function resolveVariablesForInputAsync(
     promises.push(replaceToken(context, g1, ...args))
     return ''
   })
+  if (!promises.length) return str
   const results = await Promise.all(promises)
   return str.replace(tokenRe, (match: string) => {
     const result = results.shift()
@@ -79,14 +80,14 @@ async function resolveVariablesForInputAsync(
   })
 }
 
-function getEnv({ env }: ResolutionContext, name: string) {
-  if (!name) return ''
+async function getEnv({ env }: ResolutionContext, name: string) {
+  if (!name) return null
   return (env || process.env)[name] || ''
 }
 
-function getConfig(name: string) {
+async function getConfig(name: string) {
   const config = workspace.getConfiguration()
-  return name ? config.get(name, '') : ''
+  return name ? config.get(name, '') : null
 }
 
 async function getCommand(commandId: string) {
@@ -96,10 +97,10 @@ async function getCommand(commandId: string) {
 
 function getInput(inputId: string) {
   // TODO: implement me
-  return ''
+  return null
 }
 
-function getWorkspaceFolder(root: string) {
+async function getWorkspaceFolder(root: string) {
   const ws =
     root && workspace.workspaceFolders.length > 1
       ? workspace.workspaceFolders.find(
@@ -111,6 +112,6 @@ function getWorkspaceFolder(root: string) {
   return ws ? ws.uri.fsPath : null
 }
 
-function getCwd({ cwd }: ResolutionContext) {
+async function getCwd({ cwd }: ResolutionContext) {
   return cwd || process.cwd()
 }

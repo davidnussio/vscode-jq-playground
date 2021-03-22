@@ -403,11 +403,12 @@ async function executeJqInputCommand({ cwd, env, rawArgs, ...params }: JqOptions
     const context = { cwd, env }
     const resolvedArgs = await resolveVariables(context, args)
     const resolvedInput = await resolveVariables(context, input)
-    
-    console.log('running jq with args and input', resolvedArgs, resolvedInput)
-    const result = await spawnCommand(CONFIGS.FILEPATH, resolvedArgs, { cwd, env }, resolvedInput).toPromise()
+
+    console.log('running jq with args and input', [resolvedArgs, resolvedInput] as const)
+    const result = (await spawnCommand(CONFIGS.FILEPATH, resolvedArgs, context, resolvedInput).toPromise())
+      .slice(0, -1) // remove trailing newline
     renderOutput(null)(result)
-    return result;
+    return result
   } catch (err) {
     renderError(err)
     throw err

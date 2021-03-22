@@ -1,6 +1,6 @@
 import { commands, workspace } from 'vscode'
 
-const tokenRe = /\$\{([._\-a-z0-9]+)(?::([._\-a-z0-9]+))?\}/gi
+const tokenRe = /\$\{([a-z]+)(?::([^}]+))?\}/gi
 
 export interface ResolutionContext {
   cwd?: string
@@ -10,24 +10,23 @@ export interface ResolutionContext {
 // reference: https://code.visualstudio.com/docs/editor/variables-reference
 const replaceToken = async (
   context: ResolutionContext,
-  match: string,
   g1: string,
   ...args: any[]
 ): Promise<string> => {
   const g2 = (args: any[]) => (args.length > 3 ? args[0] : null)
   switch (g1) {
     case 'env':
-      return await getEnv(context, g2(args), match)
+      return await getEnv(context, g2(args))
     case 'config':
-      return await getConfig(g2(args), match)
+      return await getConfig(g2(args))
     case 'command':
-      return await getCommand(g2(args), match)
+      return await getCommand(g2(args))
     case 'input':
-      return await getInput(g2(args), match)
+      return await getInput(g2(args))
     case 'workspaceFolder':
-      return await getWorkspaceFolder(g2(args), match)
+      return await getWorkspaceFolder(g2(args))
     case 'cwd':
-      return await getCwd(context, match)
+      return await getCwd(context)
 
     case 'workspaceFolderBasename':
     case 'file':
@@ -44,7 +43,7 @@ const replaceToken = async (
     case 'defaultBuildTask':
     case 'pathSeparator':
     default:
-      return match
+      return null
   }
 }
 
@@ -67,41 +66,40 @@ async function resolveVariablesForInputAsync(
   context: ResolutionContext,
   str: string,
 ): Promise<string> {
-  if (!str) return str
+  if (!str) return ''
   const promises = []
-  str.replace(tokenRe, (match: string, g1: string, ...args: any[]) => {
-    promises.push(replaceToken(context, match, g1, ...args))
-    return match
+  str.replace(tokenRe, (_: string, g1: string, ...args: any[]) => {
+    promises.push(replaceToken(context, g1, ...args))
+    return ''
   })
   const results = await Promise.all(promises)
-  return str.replace(tokenRe, () => results.shift())
+  return str.replace(tokenRe, (match: string) => {
+    const result = results.shift()
+    return result != null ? result : match
+  })
 }
 
-function getEnv(
-  { env }: ResolutionContext,
-  name: string,
-  defaultValue: string,
-) {
-  const thisEnv = env || process.env || {}
-  return name ? thisEnv[name] : defaultValue
+function getEnv({ env }: ResolutionContext, name: string) {
+  if (!name) return ''
+  return (env || process.env)[name] || ''
 }
 
-function getConfig(name: string, defaultValue: string) {
+function getConfig(name: string) {
   const config = workspace.getConfiguration()
-  return name ? config.get(name, defaultValue) : defaultValue
+  return name ? config.get(name, '') : ''
 }
 
-async function getCommand(commandId: string, defaultValue: string) {
+async function getCommand(commandId: string) {
   const result = commandId ? await commands.executeCommand(commandId) : null
-  return result?.toString() || defaultValue
+  return result?.toString() || ''
 }
 
-async function getInput(inputId: string, defaultValue: string) {
+function getInput(inputId: string) {
   // TODO: implement me
-  return defaultValue
+  return ''
 }
 
-function getWorkspaceFolder(root: string, defaultValue: string) {
+function getWorkspaceFolder(root: string) {
   const ws =
     root && workspace.workspaceFolders.length > 1
       ? workspace.workspaceFolders.find(
@@ -110,10 +108,9 @@ function getWorkspaceFolder(root: string, defaultValue: string) {
             0,
         )
       : workspace.workspaceFolders[0]
-  return ws ? ws.uri.fsPath : defaultValue
+  return ws ? ws.uri.fsPath : null
 }
 
-async function getCwd(context: ResolutionContext, defaultValue: string) {
-  let result = context.cwd ? await resolveVariables(context, context.cwd) : null
-  return result || process.cwd() || defaultValue
+function getCwd({ cwd }: ResolutionContext) {
+  return cwd || process.cwd()
 }

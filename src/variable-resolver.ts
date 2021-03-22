@@ -1,6 +1,6 @@
 import { commands, workspace } from 'vscode'
 
-const tokenRe = /\$\{([a-z]+)(?::([^}]+))?\}/gi
+const tokenRe = /\$\{([a-z]+)(?::([^:{}]+))?\}/gi
 
 export interface ResolutionContext {
   cwd?: string

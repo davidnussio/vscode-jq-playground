@@ -35,6 +35,8 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
   - file
   - workspace buffer and file
   - command line (limited)
+- Redirect output
+- Command lines as input with variables support
 - Highlighting code
 - Autocomplete with documentation and examples
 - Open command filter result in output console or in new buffer
@@ -128,6 +130,21 @@ jq -R -s 'split("\n") | .[] | { file: ., lenght: . | length}'
 $ ls /etc/
 ```
 
+### COMMAND_LINE (with variables)
+
+```json
+TOKEN = 1234
+ENDPOINT = bearer
+
+# Example 1
+jq '.token'
+$ curl -X GET "http://httpbin.org/$ENDPOINT" -H "accept: application/json" -H "Authorization: Bearer $TOKEN"
+
+# Example 2
+jq -R -s 'split("\n") | .[] | { file: ., lenght: . | length}'
+$ ls $HOME
+```
+
 ### Multiline jq filter
 
 ```json
@@ -204,7 +221,17 @@ jq opened-workspace-file-filter.jq
 opened-workspace-file-with-data.json
 ```
 
+## Redirect output's filter
+
+```json
+jq '[.[].url]'
+> tmp.json
+$ curl 'https://api.github.com/repos/stedolan/jq/commits?per_page=5'
+```
+
 ## Available commands
+
+http|curl|wget|cat|echo|ls|dir|grep|tail|head|find
 
 ### Open online manual
 

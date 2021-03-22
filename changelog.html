@@ -55,7 +55,7 @@
         <div class="tile-content">
           <div class="tile-title">
             <span class="h2">Playground</span>
-            <span class="h6 text-gray">v3.3.0</span>
+            <span class="h6 text-gray">v3.4.0</span>
           </div>
           <span class="tile-subtitle text-gray"
             >Create interactive jq filters notebook.</span
@@ -64,6 +64,80 @@
       </div>
 
       <div class="my-2"></div>
+
+      <div class="panel">
+        <div class="panel-header bg-blue">
+          <div class="panel-title text-white">Changelog v3.4.x</div>
+        </div>
+        <div class="panel-body">
+          <ul>
+            <li>Redirect output to file</li>
+            <li>Support command line variables</li>
+          </ul>
+
+          <div class="divider my-2"></div>
+
+          <div class="columns">
+            <!-- CARD 1 -->
+            <div class="column col-md-12 col-6">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title h5 text-dark">
+                    Redirect output to file
+                  </div>
+                  <div class="card-subtitle text-dark">
+                    Add redirect line between jq filter and context data
+                  </div>
+                </div>
+                <div class="card-image">
+                  <img
+                    src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/demo-redirect.gif"
+                    alt="Placeholder image"
+                    class="img-responsive"
+                  />
+                </div>
+
+                <div class="card-body text-dark">
+                  As command line but on new line 😅
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 2 -->
+            <div class="column col-md-12 col-6">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title h5 text-dark">
+                    Use variables and environment variables into commands
+                  </div>
+                  <div class="card-subtitle text-dark">
+                    1. Start line with $ (dollar sign)<br />
+                    2. Write command line and use evnvironment variables or
+                    local variables defined before first jq filter
+                  </div>
+                </div>
+                <div class="card-image">
+                  <img
+                    src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/demo-variables.gif"
+                    alt="Placeholder image"
+                    class="img-responsive"
+                  />
+                </div>
+
+                <div class="card-body text-dark">
+                  <a
+                    class="btn btn-link"
+                    href="https://marketplace.visualstudio.com/items?itemName=jq-syntax-highlighting.jq-syntax-highlighting"
+                    >See more...</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-2"></div>
 
       <div class="panel">
         <div class="panel-header bg-blue">
@@ -98,11 +172,10 @@
                 </div>
 
                 <div class="card-body text-dark">
-                  <http|curl|wget|cat|echo|ls|dir|grep|tail|head|find>
-                    Support some basics commands with hardcoded max execution
-                    timeout
-                    <span class="label">5 seconds</span><br />
-                  http|curl|wget|cat|echo|ls|dir|grep|tail|head|find</p>
+                  Support some basics commands with hardcoded max execution
+                  timeout
+                  <span class="label">5 seconds</span><br />
+                  http|curl|wget|cat|echo|ls|dir|grep|tail|head|find
                 </div>
               </div>
             </div>

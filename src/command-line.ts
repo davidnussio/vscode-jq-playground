@@ -176,15 +176,3 @@ export const spawnCommand = curry(
       })
     }),
 )
-
-export const spawnJqPlay = curry(
-  (vscode, args: ReadonlyArray<string>, input: string) =>
-    Async((rej, res) => {
-      const j = encodeURIComponent(input)
-      const q = encodeURIComponent(args[args.length - 1].replace('"', ''))
-      vscode.env
-        .openExternal(`https://jqplay.org/jq?q=${q}&j=${j}`)
-        .then(res)
-        .catch(rej)
-    }),
-)

@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.0.0]
+
+- Redirect output to file
+- Support command line variables
+- Input variable
+
 ## [3.3.0]
 
 - Use common command line as jq's input (support basic commands: http|curl|wget|cat|echo|ls|dir|grep|tail|head|find)

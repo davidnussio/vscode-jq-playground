@@ -35,6 +35,7 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
   - file
   - workspace buffer and file
   - command line (limited)
+- Support [input variable](https://code.visualstudio.com/docs/editor/variables-reference#_input-variables)
 - Redirect output
 - Command lines as input with variables support
 - Highlighting code
@@ -233,6 +234,46 @@ $ curl 'https://api.github.com/repos/stedolan/jq/commits?per_page=5'
 
 http|curl|wget|cat|echo|ls|dir|grep|tail|head|find
 
+### Input Variable
+
+```json
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "jq test",
+      "type": "shell",
+      "command": "curl",
+      "args": ["-v", "${input:urls}\\&param=${input:param}"],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "urls",
+      "type": "command",
+      "command": "extension.executeJqInputCommand",
+      "args": {
+        "filter": ".[3]",
+        "input": "/home/david/dev/tmp/jqpg-examples/tmp.json"
+      }
+    },
+    {
+      "id": "param",
+      "type": "command",
+      "command": "extension.executeJqInputCommand",
+      "args": {
+        "filter": ".[2]",
+        "input": "[10, 50, 100]",
+        "jsonInput": true
+      }
+    }
+  ]
+}
+```
+
 ### Open online manual
 
 `ctrl+shift+p → > Manual`
@@ -247,7 +288,11 @@ http|curl|wget|cat|echo|ls|dir|grep|tail|head|find
 
 ## Contributors
 
-Thanks for cwd module patching [Joseph Andersen](https://github.com/jpandersen87)
+Thanks for cwd module patching [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=jpandersen87) [Joseph Andersen](https://github.com/jpandersen87)
+
+Thanks for updating deps and binary [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=yozlet) [Yoz Grahame](https://github.com/yozlet)
+
+Thanks for input variable [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=JeffreyMercado) [Jeff Mercado](https://github.com/JeffreyMercado)
 
 ## Thanks
 

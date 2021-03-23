@@ -18,6 +18,8 @@ import {
 } from './autocomplete'
 import { Messages } from './messages'
 import { parseJqCommandArgs, spawnCommand } from './command-line'
+import { buildJqCommandArgs, JqOptions } from './jq-options'
+import { resolveVariables } from './variable-resolver'
 
 const BINARIES = {
   darwin: {
@@ -84,6 +86,12 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
   )
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.runQueryEditor', runQueryEditor),
+  )
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'extension.executeJqInputCommand',
+      executeJqInputCommand,
+    ),
   )
   context.subscriptions.push(
     vscode.commands.registerCommand(
@@ -365,6 +373,35 @@ function renderError(data) {
   Logger.append(data)
   Logger.show(true)
   vscode.window.showErrorMessage(data)
+}
+
+async function executeJqInputCommand({ cwd, env, rawArgs, ...params }: JqOptions) {
+  try {
+    let args: string[] = rawArgs
+      ? parseJqCommandArgs(rawArgs)
+      : buildJqCommandArgs(params)
+    let input: string = null
+    if (params.jsonInput && typeof params.input === 'string') {
+      input = params.input
+    } else if (Array.isArray(params.input)) {
+      args.push(...params.input)
+    } else if (params.input) {
+      args.push(params.input)
+    }
+
+    const context = { cwd, env }
+    const resolvedArgs = await resolveVariables(context, args)
+    const resolvedInput = await resolveVariables(context, input)
+
+    console.log('running jq with args and input', [resolvedArgs, resolvedInput] as const)
+    const result = (await spawnCommand(CONFIGS.FILEPATH, resolvedArgs, context, resolvedInput).toPromise())
+      .slice(0, -1) // remove trailing newline
+    renderOutput(null)(result)
+    return result
+  } catch (err) {
+    renderError(err)
+    throw err
+  }
 }
 
 function executeJqCommand(params, variables) {

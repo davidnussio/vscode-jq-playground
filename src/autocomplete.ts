@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 import * as vscode from 'vscode'
 import { basename } from 'path'
 
@@ -44,7 +44,7 @@ export class JQLangCompletionItemProvider
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken,
-  ): Thenable<vscode.CompletionList> {
+  ): vscode.ProviderResult<vscode.CompletionList> {
     let prefixRange = document.getWordRangeAtPosition(position)
     if (prefixRange == null) {
       return Promise.resolve(new vscode.CompletionList([], true))

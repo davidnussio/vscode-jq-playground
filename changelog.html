@@ -31,19 +31,27 @@
         min-height: 86px;
       }
       .bg-blue {
-        background-color: rgba(52, 156, 178, 0.6);
+        background-color: rgb(62, 180, 205);
       }
       .text-white {
         color: white;
       }
       .panel {
-        padding-bottom: 8px;
+        margin-bottom: 46px;
+      }
+      .column {
+        margin-bottom: 16px;
+      }
+      .card {
+        border: 0;
+        box-shadow: 0 0.25rem 1rem rgb(48 55 66 / 15%);
+        height: 100%;
       }
     </style>
   </head>
 
   <body>
-    <div class="container">
+    <div class="container grid-lg">
       <div class="tile tile-centered">
         <div class="tile-icon">
           <img
@@ -80,7 +88,7 @@
 
           <div class="columns">
             <!-- CARD 1 -->
-            <div class="column col-md-12 col-6">
+            <div class="column col-12">
               <div class="card">
                 <div class="card-header">
                   <div class="card-title h5 text-dark">
@@ -105,7 +113,7 @@
             </div>
 
             <!-- CARD 2 -->
-            <div class="column col-md-12 col-6">
+            <div class="column col-12">
               <div class="card">
                 <div class="card-header">
                   <div class="card-title h5 text-dark">
@@ -136,7 +144,7 @@
             </div>
 
             <!-- CARD 3 -->
-            <div class="column col-md-12 col-6">
+            <div class="column col-12">
               <div class="card">
                 <div class="card-header">
                   <div class="card-title h5 text-dark">Use input variable</div>

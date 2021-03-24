@@ -13,7 +13,7 @@ const replaceToken = async (
   g1: string,
   ...args: any[]
 ): Promise<string> => {
-  const g2 = (args: any[]) => (args.length > 3 ? args[0] : null)
+  const g2 = (args: any[]) => (args.length > 2 ? args[0] : null)
   switch (g1) {
     case 'env':
       return await getEnv(context, g2(args))

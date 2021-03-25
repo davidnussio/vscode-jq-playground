@@ -375,7 +375,12 @@ function renderError(data) {
   vscode.window.showErrorMessage(data)
 }
 
-async function executeJqInputCommand({ cwd, env, rawArgs, ...params }: JqOptions) {
+async function executeJqInputCommand({
+  cwd,
+  env,
+  rawArgs,
+  ...params
+}: JqOptions) {
   try {
     let args: string[] = rawArgs
       ? parseJqCommandArgs(rawArgs)
@@ -393,9 +398,18 @@ async function executeJqInputCommand({ cwd, env, rawArgs, ...params }: JqOptions
     const resolvedArgs = await resolveVariables(context, args)
     const resolvedInput = await resolveVariables(context, input)
 
-    console.log('running jq with args and input', [resolvedArgs, resolvedInput] as const)
-    const result = (await spawnCommand(CONFIGS.FILEPATH, resolvedArgs, context, resolvedInput).toPromise())
-      .slice(0, -1) // remove trailing newline
+    console.log('running jq with args and input', [
+      resolvedArgs,
+      resolvedInput,
+    ] as const)
+    const result = (
+      await spawnCommand(
+        CONFIGS.FILEPATH,
+        resolvedArgs,
+        context,
+        resolvedInput,
+      ).toPromise()
+    ).slice(0, -1) // remove trailing newline
     renderOutput(null)(result)
     return result
   } catch (err) {
@@ -482,14 +496,15 @@ function executeJqCommand(params, variables) {
       vscode.workspace.textDocuments,
     )
     jqCommand(text).fork(renderError, renderOutputDecotator)
-  } else if (isFilepath(cwd, context)) {
-    const fileName: string = getFileName(cwd, context)
-    if (fs.existsSync(fileName)) {
-      jqCommand(fs.readFileSync(fileName).toString()).fork(
-        renderError,
-        renderOutputDecotator,
-      )
-    }
+  } else if (isFilepath(cwd, context.trim())) {
+    spawnCommand(
+      CONFIGS.FILEPATH,
+      args.concat(getFiles(cwd, context.trim())),
+      {
+        cwd,
+      },
+      null,
+    ).fork(renderError, renderOutputDecotator)
   } else if (
     context.match(
       /^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find)(?:\.exe)? /,
@@ -557,7 +572,28 @@ function isFilepath(cwd: string, context: string): boolean {
     return false
   }
   const resolvedPath = getFileName(cwd, context)
-  return fs.existsSync(resolvedPath)
+  const fileExists = fs.existsSync(resolvedPath)
+
+  if (fileExists) {
+    return true
+  }
+  const files = context.split(/\s+/)
+
+  return files.reduce((acc, cur) => {
+    return acc && fs.existsSync(getFileName(cwd, cur))
+  }, true)
+}
+
+function getFiles(cwd: string, context: string): ReadonlyArray<string> {
+  const resolvedPath = getFileName(cwd, context)
+  const fileExists = fs.existsSync(resolvedPath)
+
+  if (fileExists) {
+    return [resolvedPath]
+  }
+  const files = context.split(/\s+/)
+
+  return files.map((file) => getFileName(cwd, file))
 }
 
 function getFileName(cwd: string, context: string): string {

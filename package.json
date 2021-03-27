@@ -42,7 +42,9 @@
     "onCommand:extension.openPlay",
     "onCommand:extension.runQueryOutput",
     "onCommand:extension.runQueryEditor",
-    "onCommand:extension.executeJqInputCommand"
+    "onCommand:extension.executeJqInputCommand",
+    "onCommand:extension.createJqpgFromFilter",
+    "onCommand:extension.jqpgFromFilter"
   ],
   "main": "./dist/extension",
   "contributes": {
@@ -82,32 +84,42 @@
       {
         "command": "extension.openManual",
         "title": "Manual",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.openTutorial",
         "title": "Tutorial",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.openExamples",
         "title": "Examples",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.openPlay",
         "title": "Open online jqplay",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.runQueryOutput",
         "title": "Run query in output",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.runQueryEditor",
         "title": "Run query in editor",
-        "category": "jq playground"
+        "category": "JQPG"
+      },
+      {
+        "command": "extension.createJqpgFromFilter",
+        "title": "Create playground from filter",
+        "category": "JQPG"
+      },
+      {
+        "command": "extension.jqpgFromFilter",
+        "title": "Execute jq filter",
+        "category": "JQPG"
       }
     ],
     "keybindings": [

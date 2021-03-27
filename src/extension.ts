@@ -20,6 +20,7 @@ import { Messages } from './messages'
 import { parseJqCommandArgs, spawnCommand } from './command-line'
 import { buildJqCommandArgs, JqOptions } from './jq-options'
 import { resolveVariables } from './variable-resolver'
+import { currentWorkingDirectory } from './vscode-window'
 
 const BINARIES = {
   darwin: {
@@ -86,6 +87,18 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
   )
   context.subscriptions.push(
     vscode.commands.registerCommand('extension.runQueryEditor', runQueryEditor),
+  )
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'extension.createJqpgFromFilter',
+      createJqpgFromFilter(true),
+    ),
+  )
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'extension.jqpgFromFilter',
+      createJqpgFromFilter(false),
+    ),
   )
   context.subscriptions.push(
     vscode.commands.registerCommand(
@@ -190,6 +203,86 @@ function openExamples() {
         vscode.window.showTextDocument(doc, vscode.ViewColumn.Active),
       )
   })
+}
+
+function createJqpgFromFilter(saveFilterToPlayground: boolean) {
+  let rememberInput = ''
+
+  return () => {
+    var params = {
+      prompt: 'Enter a jq filter',
+      value: rememberInput,
+    } as vscode.InputBoxOptions
+
+    vscode.window.showInputBox(params).then((filter) => {
+      if (filter) {
+        rememberInput = filter
+        const activeTextEditor = vscode.window.activeTextEditor
+        const json = getEditorText(activeTextEditor)
+
+        if (!json) {
+          vscode.window.showErrorMessage('Unable to process text editor data')
+          return
+        }
+
+        try {
+          const cwd = currentWorkingDirectory()
+
+          if (saveFilterToPlayground) {
+            let doc = vscode.workspace.textDocuments.find(
+              (doc) => doc.languageId === 'jqpg' && doc.isUntitled,
+            )
+
+            if (doc) {
+              vscode.window
+                .showTextDocument(doc, vscode.ViewColumn.Two)
+                .then((editor) => {
+                  editor.edit((editorBuilder) => {
+                    editorBuilder.insert(
+                      new vscode.Position(doc.lineCount, 0),
+                      `\n\njq '${filter}'\n${activeTextEditor.document.fileName}`,
+                    )
+                  })
+                  const newPosition = editor.selection.active.with(
+                    doc.lineCount + 4,
+                  )
+                  var newSelection = new vscode.Selection(
+                    newPosition,
+                    newPosition,
+                  )
+                  editor.selection = newSelection
+                })
+            } else {
+              vscode.workspace
+                .openTextDocument({
+                  content: `jq '${filter}'\n${activeTextEditor.document.fileName}`,
+                  language: 'jqpg',
+                })
+
+                .then((doc) =>
+                  vscode.window.showTextDocument(doc, vscode.ViewColumn.Two),
+                )
+            }
+          }
+
+          spawnCommand(
+            CONFIGS.FILEPATH,
+            [filter],
+            {
+              cwd,
+            },
+            json,
+          ).fork(renderError, renderOutput(null))
+        } catch (e) {
+          vscode.window.showErrorMessage(e.message)
+        }
+      }
+    })
+  }
+}
+
+function getEditorText(editor: vscode.TextEditor): string {
+  return editor ? editor.document.getText() : undefined
 }
 
 function runQueryOutput() {
@@ -375,7 +468,12 @@ function renderError(data) {
   vscode.window.showErrorMessage(data)
 }
 
-async function executeJqInputCommand({ cwd, env, rawArgs, ...params }: JqOptions) {
+async function executeJqInputCommand({
+  cwd,
+  env,
+  rawArgs,
+  ...params
+}: JqOptions) {
   try {
     let args: string[] = rawArgs
       ? parseJqCommandArgs(rawArgs)
@@ -393,9 +491,18 @@ async function executeJqInputCommand({ cwd, env, rawArgs, ...params }: JqOptions
     const resolvedArgs = await resolveVariables(context, args)
     const resolvedInput = await resolveVariables(context, input)
 
-    console.log('running jq with args and input', [resolvedArgs, resolvedInput] as const)
-    const result = (await spawnCommand(CONFIGS.FILEPATH, resolvedArgs, context, resolvedInput).toPromise())
-      .slice(0, -1) // remove trailing newline
+    console.log('running jq with args and input', [
+      resolvedArgs,
+      resolvedInput,
+    ] as const)
+    const result = (
+      await spawnCommand(
+        CONFIGS.FILEPATH,
+        resolvedArgs,
+        context,
+        resolvedInput,
+      ).toPromise()
+    ).slice(0, -1) // remove trailing newline
     renderOutput(null)(result)
     return result
   } catch (err) {
@@ -406,7 +513,7 @@ async function executeJqInputCommand({ cwd, env, rawArgs, ...params }: JqOptions
 
 function executeJqCommand(params, variables) {
   const document: vscode.TextDocument = params.document
-  const cwd = path.join(vscode.window.activeTextEditor.document.fileName, '..')
+  const cwd = currentWorkingDirectory()
 
   let queryLine: string = document
     .lineAt(params.range.start.line)

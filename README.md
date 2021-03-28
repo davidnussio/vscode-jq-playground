@@ -1,6 +1,6 @@
 # VSCode jq playground
 
-Visual Code jq playground allow to create a notebook with [jq](https://stedolan.github.io/jq/) commands
+Create a notebook with power of [jq](https://stedolan.github.io/jq/) filters and the power of jq plaground extension
 
 Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https://stedolan.github.io/jq/tutorial/)
 

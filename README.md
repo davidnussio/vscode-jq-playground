@@ -117,6 +117,12 @@ Untitled-1
 # Example 4: workspace file
 jq '.'
 opened-workspace-file-with-data.json
+
+# Example 5 (Multifile)
+jq '{
+    (input_filename|rtrimstr(".json")) :
+    .scripts | keys | map(select(. | contains("test"))) }'
+/home/dev/client/package.json /home/dev/server/package.json
 ```
 
 ### COMMAND_LINE

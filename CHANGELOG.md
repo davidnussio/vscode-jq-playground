@@ -1,5 +1,9 @@
 # Change Log
 
+## [4.0.1]
+
+- Support multi input files #49
+
 ## [4.0.0]
 
 - Redirect output to file

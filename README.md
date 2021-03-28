@@ -9,6 +9,9 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 [![Installs](https://vsmarketplacebadge.apphb.com/downloads-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
 [![Rating](https://vsmarketplacebadge.apphb.com/rating-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
 
+[![Open issues](https://img.shields.io/github/issues/davidnussio/vscode-jq-playground)](https://img.shields.io/github/issues/davidnussio/vscode-jq-playground)
+[![Closed issues](https://img.shields.io/github/issues-closed/davidnussio/vscode-jq-playground)](https://img.shields.io/github/issues-closed/davidnussio/vscode-jq-playground)
+
 ## Demo
 
 ### JQ Manual examples

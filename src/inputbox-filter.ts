@@ -60,7 +60,9 @@ export const inputBoxFilter = () => {
   let rememberInput = "";
   return (saveFilterToPlayground: boolean) => {
     return async (): Promise<void> => {
-      const filter = await askFilter(rememberInput);
+      const filter = (await askFilter(rememberInput)) || ".";
+
+      rememberInput = filter;
 
       const activeTextEditor = vscode.window.activeTextEditor;
       const json = getEditorText(activeTextEditor);

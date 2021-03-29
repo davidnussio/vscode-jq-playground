@@ -129,7 +129,7 @@ export const spawnCommand = curry(
     command: string,
     args: string[],
     options: CommonSpawnOptions,
-    input: any,
+    input: string | null,
     timeout = 5000,
   ) =>
     Async((rej, res) => {

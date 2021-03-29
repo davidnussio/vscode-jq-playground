@@ -530,7 +530,7 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
 
 async function checkEnvironment(
   context: vscode.ExtensionContext,
-): Promise<any> {
+): Promise<string | true> {
   const jqPlayground = vscode.extensions.getExtension(
     "davidnussio.vscode-jq-playground",
   );
@@ -539,7 +539,7 @@ async function checkEnvironment(
     CONFIGS.JQ_PLAYGROUND_VERSION,
   );
   if (previousVersion === currentVersion) {
-    return Promise.resolve();
+    return true;
   }
   // Update stored version
   context.globalState.update(CONFIGS.JQ_PLAYGROUND_VERSION, currentVersion);
@@ -555,10 +555,12 @@ async function checkEnvironment(
 
     return showWhatsNewMessage(context, currentVersion);
   }
-  return Promise.resolve();
+  return true;
 }
 
-function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
+async function setupEnvironment(
+  context: vscode.ExtensionContext,
+): Promise<boolean> {
   const config = vscode.workspace.getConfiguration();
 
   CONFIGS.MANUAL_PATH = path.join(context.extensionPath, CONFIGS.MANUAL_PATH);
@@ -568,12 +570,11 @@ function setupEnvironment(context: vscode.ExtensionContext): Promise<any> {
   if (fs.existsSync(userFilePath)) {
     // User configurated binary path
     CONFIGS.FILEPATH = userFilePath;
-    return Promise.resolve();
+    return true;
   }
   // Default path, automatically downloaded from github
   // https://github.com/stedolan/jq
-  // TODO: Fix deprecation globalStoragePath
-  CONFIGS.FILEPATH = path.join(context.globalStoragePath, CONFIGS.FILENAME);
+  CONFIGS.FILEPATH = path.join(context.globalStorageUri.path, CONFIGS.FILENAME);
   return downloadBinary(context);
 }
 
@@ -597,5 +598,4 @@ export function activate(context: vscode.ExtensionContext) {
     });
 }
 
-// tslint:disable-next-line:no-empty
 export function deactivate() {}

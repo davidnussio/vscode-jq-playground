@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import Logger from "./logger";
 
-type RenderOutputType = "output" | "editor";
+export type RenderOutputType = "output" | "editor";
 
 export const renderOutput = (type: RenderOutputType) => (data: string) => {
   if (type === "editor") {

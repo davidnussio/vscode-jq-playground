@@ -1,22 +1,22 @@
 // eslint-disable-next-line no-unused-vars
-import * as vscode from 'vscode'
-import { readFile } from 'fs'
-import { join } from 'path'
+import * as vscode from "vscode";
+import { readFile } from "fs";
+import { join } from "path";
 
 function getWebviewContent(
   context: vscode.ExtensionContext,
   panel: vscode.WebviewPanel,
 ): Promise<any> {
   return new Promise((res, rej) => {
-    readFile(join(context.extensionPath, 'changelog.html'), (err, data) => {
+    readFile(join(context.extensionPath, "changelog.html"), (err, data) => {
       if (err) {
-        panel.webview.html = '<pre>' + JSON.stringify(err, null, 2) + '</pre>'
-        rej(err)
+        panel.webview.html = `<pre>${JSON.stringify(err, null, 2)}</pre>`;
+        rej(err);
       }
-      panel.webview.html = data.toString()
-      res(true)
-    })
-  })
+      panel.webview.html = data.toString();
+      res(true);
+    });
+  });
 }
 
 export class Messages {
@@ -38,16 +38,16 @@ export class Messages {
     //     ),
     //   )
     // }
-    console.log(version)
+    console.log(version);
 
     const panel = vscode.window.createWebviewPanel(
-      'jq-changelog',
+      "jq-changelog",
       `jq Playground ver. ${version}`,
       vscode.ViewColumn.Active,
       {},
-    )
+    );
 
     // And set its HTML content
-    getWebviewContent(context, panel)
+    getWebviewContent(context, panel);
   }
 }

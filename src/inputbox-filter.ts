@@ -4,12 +4,11 @@ import { CONFIGS } from "./configs";
 import { renderError, renderOutput } from "./renderers";
 import { currentWorkingDirectory } from "./vscode-window";
 
-const getEditorText = (editor: vscode.TextEditor): string => {
-  return editor ? editor.document.getText() : undefined;
-};
+const getEditorText = (editor: vscode.TextEditor): string =>
+  editor ? editor.document.getText() : undefined;
 
 const askFilter = async (rememberInput: string) => {
-  var params = {
+  const params = {
     prompt: "Enter a jq filter",
     value: rememberInput,
   } as vscode.InputBoxOptions;
@@ -25,73 +24,73 @@ const insertFilterToJqPlayground = (
   if (saveFilter === false) {
     return Promise.resolve();
   }
-  let doc = vscode.workspace.textDocuments.find(
+  const document = vscode.workspace.textDocuments.find(
     (doc) => doc.languageId === "jqpg" && doc.isUntitled,
   );
 
-  if (doc) {
+  if (document) {
     return vscode.window
-      .showTextDocument(doc, vscode.ViewColumn.Two)
+      .showTextDocument(document, vscode.ViewColumn.Two)
       .then((editor) => {
         editor.edit((editorBuilder) => {
           editorBuilder.insert(
-            new vscode.Position(doc.lineCount, 0),
+            new vscode.Position(document.lineCount, 0),
             `\n\njq '${filter}'\n${activeTextEditor.document.fileName}`,
           );
         });
-        const newPosition = editor.selection.active.with(doc.lineCount + 4);
-        var newSelection = new vscode.Selection(newPosition, newPosition);
+        const newPosition = editor.selection.active.with(
+          document.lineCount + 4,
+        );
+        const newSelection = new vscode.Selection(newPosition, newPosition);
+        // eslint-disable-next-line no-param-reassign
         editor.selection = newSelection;
       });
-  } else {
-    return vscode.workspace
-      .openTextDocument({
-        content: `jq '${filter}'\n${activeTextEditor.document.fileName}`,
-        language: "jqpg",
-      })
-
-      .then((doc) =>
-        vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside),
-      );
   }
+  return vscode.workspace
+    .openTextDocument({
+      content: `jq '${filter}'\n${activeTextEditor.document.fileName}`,
+      language: "jqpg",
+    })
+
+    .then((doc) =>
+      vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside),
+    );
 };
 
-export const inputBoxFilter = () => {
+export default function inputBoxFilter() {
   let rememberInput = "";
-  return (saveFilterToPlayground: boolean) => {
-    return async (): Promise<void> => {
-      const filter = (await askFilter(rememberInput)) || ".";
+  return (saveFilterToPlayground: boolean) => async (): Promise<void> => {
+    const filter = (await askFilter(rememberInput)) || ".";
 
-      rememberInput = filter;
+    rememberInput = filter;
 
-      const activeTextEditor = vscode.window.activeTextEditor;
-      const json = getEditorText(activeTextEditor);
+    const { activeTextEditor } = vscode.window;
+    const json = getEditorText(activeTextEditor);
 
-      if (!json) {
-        vscode.window.showErrorMessage("Unable to process text editor data");
-        return;
-      }
+    if (!json) {
+      vscode.window.showErrorMessage("Unable to process text editor data");
+      return;
+    }
 
-      try {
-        const cwd = currentWorkingDirectory();
+    try {
+      const cwd = currentWorkingDirectory();
 
-        await insertFilterToJqPlayground(
-          saveFilterToPlayground,
-          filter,
-          activeTextEditor,
-        );
+      await insertFilterToJqPlayground(
+        saveFilterToPlayground,
+        filter,
+        activeTextEditor,
+      );
 
-        spawnCommand(
-          CONFIGS.FILEPATH,
-          [filter],
-          {
-            cwd,
-          },
-          json,
-        ).fork(renderError, renderOutput(null));
-      } catch (e) {
-        vscode.window.showErrorMessage(e.message);
-      }
-    };
+      spawnCommand(
+        CONFIGS.FILEPATH,
+        [filter],
+        {
+          cwd,
+        },
+        json,
+      ).fork(renderError, renderOutput(null));
+    } catch (e) {
+      vscode.window.showErrorMessage(e.message);
+    }
   };
-};
+}

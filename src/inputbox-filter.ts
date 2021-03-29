@@ -57,6 +57,7 @@ const insertFilterToJqPlayground = (
     );
 };
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export default function inputBoxFilter() {
   let rememberInput = "";
   return (saveFilterToPlayground: boolean) => async (): Promise<void> => {

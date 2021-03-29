@@ -35,7 +35,7 @@ const isContent = not(isEmpty);
 const getContent = (context) => `getting content → ${context}`;
 
 // fetchContent :: String -> Maybe String
-const fetchContent = (context) =>
+const fetchContent = (context: string): any =>
   options(
     [
       Pair(isUrl, getRemoteContent),

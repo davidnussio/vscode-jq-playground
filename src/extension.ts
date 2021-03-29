@@ -13,7 +13,7 @@ import {
   WorkspaceFilesCompletionItemProvider,
   JQLangCompletionItemProvider,
 } from "./autocomplete";
-import { Messages } from "./messages";
+import showWhatsNewMessage from "./messages";
 import { parseJqCommandArgs, spawnCommand } from "./command-line";
 import { buildJqCommandArgs, JqOptions } from "./jq-options";
 import { resolveVariables } from "./variable-resolver";
@@ -95,7 +95,7 @@ function doRunQuery(openResult: RenderOutputType) {
   };
 
   if (queryLine.startsWith("jq")) {
-    // eslint-disable-next-line no-use-before-define
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     executeJqCommand(match, variables);
   } else {
     vscode.window.showWarningMessage(
@@ -112,7 +112,7 @@ function md5sum(filename) {
   return fs.existsSync(filename) ? md5.sync(filename) : "";
 }
 
-function downloadBinary(context): Promise<any> {
+function downloadBinary(context): Promise<boolean> {
   const { globalStoragePath } = context;
 
   return new Promise((resolve, reject) => {
@@ -134,7 +134,7 @@ function downloadBinary(context): Promise<any> {
     return fetch(BINARIES[process.platform].file)
       .then((res) => {
         if (!res.ok) {
-          throw new Error(`Unexpected response ${res.statusText}`);
+          reject(new Error(`Unexpected response ${res.statusText}`));
         }
 
         return pipeline(res.body, fs.createWriteStream(CONFIGS.FILEPATH));
@@ -142,7 +142,7 @@ function downloadBinary(context): Promise<any> {
       .then(() => {
         Logger.appendLine("");
         if (md5sum(CONFIGS.FILEPATH) !== BINARIES[process.platform].checksum) {
-          throw new Error("Download file checksum error");
+          reject(new Error("Download file checksum error"));
         }
         if (!/^win32/.test(process.platform)) {
           fs.chmodSync(CONFIGS.FILEPATH, "0755");
@@ -216,7 +216,7 @@ function provideCodeLenses(document: vscode.TextDocument) {
 }
 
 async function executeJqInputCommand({
-  cwd,
+  cwd = currentWorkingDirectory(),
   env,
   rawArgs,
   ...params
@@ -238,10 +238,6 @@ async function executeJqInputCommand({
     const resolvedArgs = await resolveVariables(context, args);
     const resolvedInput = await resolveVariables(context, input);
 
-    console.log("running jq with args and input", [
-      resolvedArgs,
-      resolvedInput,
-    ] as const);
     const result = (
       await spawnCommand(
         CONFIGS.FILEPATH,
@@ -556,7 +552,8 @@ async function checkEnvironment(
     if (showExamples) {
       openExamples();
     }
-    Messages.showWhatsNewMessage(context, currentVersion);
+
+    return showWhatsNewMessage(context, currentVersion);
   }
   return Promise.resolve();
 }

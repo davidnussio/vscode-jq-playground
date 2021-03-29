@@ -16,4 +16,7 @@ module.exports = {
     "prettier",
     "plugin:jest/recommended",
   ],
+  rules: {
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+  },
 };

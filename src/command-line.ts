@@ -118,7 +118,7 @@ export const parseJqCommandArgs = compose(
 );
 
 // bufferToString :: Buffer -> String
-export const bufferToString = (buffer: Buffer) => buffer.toString();
+export const bufferToString = (buffer: Buffer): string => buffer.toString();
 
 // bufferToJSON :: Buffer -> JSON
 export const bufferToJSON = compose(JSON.parse, bufferToString);

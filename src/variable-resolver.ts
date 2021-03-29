@@ -7,26 +7,69 @@ export interface ResolutionContext {
   env?: { [key: string]: string | undefined };
 }
 
+export interface ResolveVariablesFn {
+  (context: ResolutionContext, input: string): Promise<string>;
+  (context: ResolutionContext, inputs: string[]): Promise<string[]>;
+}
+
+async function getEnv({ env }: ResolutionContext, name: string) {
+  if (!name) return null;
+  return (env || process.env)[name] || "";
+}
+
+async function getConfig(name: string) {
+  const config = workspace.getConfiguration();
+  return name ? config.get(name, "") : null;
+}
+
+async function getCommand(commandId: string) {
+  const result = commandId ? await commands.executeCommand(commandId) : null;
+  return result?.toString() || "";
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getInput(inputId: string) {
+  // TODO: implement me
+  return "";
+}
+
+async function getWorkspaceFolder(root: string) {
+  const ws =
+    root && workspace.workspaceFolders.length > 1
+      ? workspace.workspaceFolders.find(
+          (f) =>
+            f.name.localeCompare(root, undefined, { sensitivity: "base" }) ===
+            0,
+        )
+      : workspace.workspaceFolders[0];
+  return ws ? ws.uri.fsPath : null;
+}
+
+async function getCwd({ cwd }: ResolutionContext) {
+  return cwd || process.cwd();
+}
+
 // reference: https://code.visualstudio.com/docs/editor/variables-reference
+const g2 = (args: any[]) => (args.length > 2 ? args[0] : null);
+
 const replaceToken = async (
   context: ResolutionContext,
   g1: string,
   ...args: any[]
 ): Promise<string> => {
-  const g2 = (args: any[]) => (args.length > 2 ? args[0] : null);
   switch (g1) {
     case "env":
-      return await getEnv(context, g2(args));
+      return getEnv(context, g2(args));
     case "config":
-      return await getConfig(g2(args));
+      return getConfig(g2(args));
     case "command":
-      return await getCommand(g2(args));
+      return getCommand(g2(args));
     case "input":
-      return await getInput(g2(args));
+      return getInput(g2(args));
     case "workspaceFolder":
-      return await getWorkspaceFolder(g2(args));
+      return getWorkspaceFolder(g2(args));
     case "cwd":
-      return await getCwd(context);
+      return getCwd(context);
 
     case "workspaceFolderBasename":
     case "file":
@@ -47,20 +90,6 @@ const replaceToken = async (
   }
 };
 
-export interface ResolveVariablesFn {
-  (context: ResolutionContext, input: string): Promise<string>;
-  (context: ResolutionContext, inputs: string[]): Promise<string[]>;
-}
-export const resolveVariables: ResolveVariablesFn = (
-  context: ResolutionContext,
-  inputOrInputs: string | string[],
-): Promise<any> =>
-  Array.isArray(inputOrInputs)
-    ? Promise.all(
-        inputOrInputs.map((i) => resolveVariablesForInputAsync(context, i)),
-      )
-    : resolveVariablesForInputAsync(context, inputOrInputs);
-
 async function resolveVariablesForInputAsync(
   context: ResolutionContext,
   str: string,
@@ -79,38 +108,12 @@ async function resolveVariablesForInputAsync(
   });
 }
 
-async function getEnv({ env }: ResolutionContext, name: string) {
-  if (!name) return null;
-  return (env || process.env)[name] || "";
-}
-
-async function getConfig(name: string) {
-  const config = workspace.getConfiguration();
-  return name ? config.get(name, "") : null;
-}
-
-async function getCommand(commandId: string) {
-  const result = commandId ? await commands.executeCommand(commandId) : null;
-  return result?.toString() || "";
-}
-
-function getInput(inputId: string) {
-  // TODO: implement me
-  return null;
-}
-
-async function getWorkspaceFolder(root: string) {
-  const ws =
-    root && workspace.workspaceFolders.length > 1
-      ? workspace.workspaceFolders.find(
-          (f) =>
-            f.name.localeCompare(root, undefined, { sensitivity: "base" }) ===
-            0,
-        )
-      : workspace.workspaceFolders[0];
-  return ws ? ws.uri.fsPath : null;
-}
-
-async function getCwd({ cwd }: ResolutionContext) {
-  return cwd || process.cwd();
-}
+export const resolveVariables: ResolveVariablesFn = (
+  context: ResolutionContext,
+  inputOrInputs: string | string[],
+): Promise<any> =>
+  Array.isArray(inputOrInputs)
+    ? Promise.all(
+        inputOrInputs.map((i) => resolveVariablesForInputAsync(context, i)),
+      )
+    : resolveVariablesForInputAsync(context, inputOrInputs);

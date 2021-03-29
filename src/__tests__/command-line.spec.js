@@ -60,6 +60,7 @@ describe("Spawn jq command line", () => {
     ]);
   });
 
+  // eslint-disable-next-line jest/no-done-callback
   test("should execute command", (done) => {
     const jqCommand = spawnCommand("/usr/bin/jq");
 

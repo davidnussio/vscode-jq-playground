@@ -10,8 +10,9 @@ import { parse } from "shell-quote";
 import * as builtins from "./builtins.json";
 
 import {
-  WorkspaceFilesCompletionItemProvider,
-  JQLangCompletionItemProvider,
+  workspaceFilesCompletionItemProvider,
+  jqLangCompletionItemProvider,
+  // jqOptionsCompletionItemProvider,
 } from "./autocomplete";
 import showWhatsNewMessage from "./messages";
 import { parseJqCommandArgs, spawnCommand } from "./command-line";
@@ -124,13 +125,13 @@ function downloadBinary(context): Promise<boolean> {
       return resolve(true);
     }
     Logger.appendLine(`Download jq binary for platform (${process.platform})`);
-    Logger.appendLine(`  - form url ${BINARIES[process.platform].file}`);
-    Logger.appendLine(`  - to dir ${globalStoragePath}`);
+    Logger.appendLine(`  🌌 form url ${BINARIES[process.platform].file}`);
+    Logger.appendLine(`  📂 to dir ${globalStoragePath}`);
     if (fs.existsSync(globalStoragePath) === false) {
       fs.mkdirSync(globalStoragePath);
-      Logger.appendLine(`  - dir does not exists: created`);
+      Logger.appendLine(`  ✅ dir does not exists: created`);
     }
-    Logger.appendLine("  - start downloading...");
+    Logger.appendLine("  💤 start downloading...");
     return fetch(BINARIES[process.platform].file)
       .then((res) => {
         if (!res.ok) {
@@ -147,14 +148,14 @@ function downloadBinary(context): Promise<boolean> {
         if (!/^win32/.test(process.platform)) {
           fs.chmodSync(CONFIGS.FILEPATH, "0755");
         }
-        Logger.appendLine("  - [ OK ]");
+        Logger.appendLine("  ✅ [ OK ]");
         Logger.show();
         resolve(true);
       })
       .catch((err) => {
         Logger.appendLine("");
-        Logger.appendLine("  - [ ERROR ]");
-        Logger.appendLine(`  - ${err}`);
+        Logger.appendLine("  💥 [ ERROR ]");
+        Logger.appendLine(`  💥 ${err}`);
         Logger.show();
         reject(
           new Error(
@@ -514,18 +515,10 @@ function configureSubscriptions(context: vscode.ExtensionContext) {
       provideCodeLenses,
     }),
   );
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      CONFIGS.LANGUAGES,
-      new WorkspaceFilesCompletionItemProvider(),
-    ),
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      CONFIGS.LANGUAGES,
-      new JQLangCompletionItemProvider(builtins),
-    ),
-  );
+
+  context.subscriptions.push(workspaceFilesCompletionItemProvider());
+  context.subscriptions.push(jqLangCompletionItemProvider(builtins));
+  // context.subscriptions.push(jqOptionsCompletionItemProvider());
 }
 
 async function checkEnvironment(

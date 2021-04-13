@@ -567,7 +567,10 @@ async function setupEnvironment(
   }
   // Default path, automatically downloaded from github
   // https://github.com/stedolan/jq
-  CONFIGS.FILEPATH = path.join(context.globalStorageUri.path, CONFIGS.FILENAME);
+  CONFIGS.FILEPATH = path.join(
+    context.globalStorageUri.fsPath,
+    CONFIGS.FILENAME,
+  );
   return downloadBinary(context);
 }
 

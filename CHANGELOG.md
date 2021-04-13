@@ -1,5 +1,11 @@
 # Change Log
 
+## [4.1.0]
+
+- Filter json with input box on the fly
+- Filter json with input box on the fly and add filter to playground
+- Miror fix jq filter autocomplete
+
 ## [4.0.1]
 
 - Support multi input files #49

@@ -1,3 +1,5 @@
+// TODO: Not used :/ need to be implemented
+
 import {
   applyTo,
   compose,
@@ -9,33 +11,33 @@ import {
   safeLift,
   not,
   Pair,
-} from 'crocks'
+} from "crocks";
 
 // options :: [ Strategy ] -> a -> b
 const options = flip((x) =>
   mreduceMap(First, compose(applyTo(x), merge(safeLift))),
-)
+);
 
 // isUrl :: String -> Boolean
-const isUrl = (context) => context.search(/^http(s)?/) !== -1
+const isUrl = (context) => context.search(/^http(s)?/) !== -1;
 
 // getRemoteContent :: String -> IO
-const getRemoteContent = (context) => `getting remote content → ${context}`
+const getRemoteContent = (context) => `getting remote content → ${context}`;
 
 // isFile :: String -> Boolean
-const isFile = (context) => context.search(/^(\/|\.{1,2}\/|~\/)/) !== -1
+const isFile = (context) => context.search(/^(\/|\.{1,2}\/|~\/)/) !== -1;
 
 // getFileContent :: String -> IO
-const getFileContent = (context) => `getting file → ${context}`
+const getFileContent = (context) => `getting file → ${context}`;
 
 // isContent :: String -> Boolean
-const isContent = not(isEmpty)
+const isContent = not(isEmpty);
 
 // getContent :: String -> IO
-const getContent = (context) => `getting content → ${context}`
+const getContent = (context) => `getting content → ${context}`;
 
 // fetchContent :: String -> Maybe String
-const fetchContent = (context) =>
+const fetchContent = (context: string): any =>
   options(
     [
       Pair(isUrl, getRemoteContent),
@@ -43,6 +45,6 @@ const fetchContent = (context) =>
       Pair(isContent, getContent),
     ],
     context,
-  )
+  );
 
-export { fetchContent }
+export default fetchContent;

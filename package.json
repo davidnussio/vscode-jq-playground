@@ -42,7 +42,9 @@
     "onCommand:extension.openPlay",
     "onCommand:extension.runQueryOutput",
     "onCommand:extension.runQueryEditor",
-    "onCommand:extension.executeJqInputCommand"
+    "onCommand:extension.executeJqInputCommand",
+    "onCommand:extension.createJqpgFromFilter",
+    "onCommand:extension.jqpgFromFilter"
   ],
   "main": "./dist/extension",
   "contributes": {
@@ -82,32 +84,42 @@
       {
         "command": "extension.openManual",
         "title": "Manual",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.openTutorial",
         "title": "Tutorial",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.openExamples",
         "title": "Examples",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.openPlay",
         "title": "Open online jqplay",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.runQueryOutput",
         "title": "Run query in output",
-        "category": "jq playground"
+        "category": "JQPG"
       },
       {
         "command": "extension.runQueryEditor",
         "title": "Run query in editor",
-        "category": "jq playground"
+        "category": "JQPG"
+      },
+      {
+        "command": "extension.createJqpgFromFilter",
+        "title": "Create playground from filter",
+        "category": "JQPG"
+      },
+      {
+        "command": "extension.jqpgFromFilter",
+        "title": "Execute jq filter",
+        "category": "JQPG"
       }
     ],
     "keybindings": [
@@ -142,31 +154,35 @@
     "test:watch": "jest --watch"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/preset-env": "^7.12.16",
-    "@babel/preset-typescript": "^7.12.16",
+    "@babel/core": "^7.13.15",
+    "@babel/preset-env": "^7.13.15",
+    "@babel/preset-typescript": "^7.13.0",
     "@types/glob": "7.1.3",
-    "@types/jest": "^26.0.20",
-    "@types/node": "^14.14.27",
-    "@types/ramda": "^0.27.38",
-    "@types/vscode": "^1.53.0",
-    "@typescript-eslint/eslint-plugin": "^4.15.0",
-    "@typescript-eslint/parser": "^4.15.0",
+    "@types/jest": "^26.0.22",
+    "@types/node": "^14.14.37",
+    "@types/ramda": "^0.27.40",
+    "@types/vscode": "^1.55.0",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
     "babel-jest": "^26.6.3",
     "clean-webpack-plugin": "^3.0.0",
-    "eslint": "^7.20.0",
-    "eslint-config-prettier": "^7.2.0",
+    "eslint": "^7.24.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.3.4",
     "eslint-plugin-prettier": "^3.3.1",
     "glob": "^7.1.6",
-    "mocha": "^8.3.0",
+    "jest": "^26.6.3",
+    "lint-staged": "^10.5.4",
+    "simple-git-hooks": "^2.3.1",
     "terser-webpack-plugin": "^5.1.1",
-    "ts-jest": "^26.5.1",
-    "ts-loader": "^8.0.17",
-    "typescript": "^4.1.5",
-    "vscode-test": "^1.5.0",
-    "webpack": "^5.21.2",
-    "webpack-cli": "^4.5.0",
-    "yaml": "1.10.0"
+    "ts-jest": "^26.5.4",
+    "ts-loader": "^8.1.0",
+    "typescript": "^4.2.4",
+    "webpack": "^5.31.2",
+    "webpack-cli": "^4.6.0",
+    "yaml": "^1.10.2"
   },
   "dependencies": {
     "crocks": "^0.12.4",
@@ -186,9 +202,15 @@
     ]
   },
   "prettier": {
-    "singleQuote": true,
-    "semi": false,
+    "semi": true,
+    "singleQuote": false,
     "printWidth": 80,
     "trailingComma": "all"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix"
   }
 }

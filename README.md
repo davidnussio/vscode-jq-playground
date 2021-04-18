@@ -20,13 +20,24 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ### Usage example
 
+#### Create playground from filter
+
+![vscode-jq-payground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-1.gif)
+
+#### Filter json on the fly
+
+![vscode-jq-payground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-2.gif)
+
 ![vscode-jq-payground](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/example_multiline.gif)
 
 ![vscode-jq-playground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/buffers-examples.gif)
 
-### Autocomplete with inline documentation
+
+#### Autocomplete with inline documentation
 
 ![Autocomplete](https://media.giphy.com/media/eHFSm80lXQnxQe2D64/giphy.gif)
+
+[*** More examples ***](https://davidnussio.github.io/vscode-jq-playground/)
 
 ## Main Features
 

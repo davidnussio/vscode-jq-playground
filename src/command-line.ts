@@ -130,7 +130,7 @@ export const spawnCommand = curry(
     args: string[],
     options: CommonSpawnOptions,
     input: string | null,
-    timeout = 5000,
+    timeout = 10000,
   ) =>
     Async((rej, res) => {
       const result = { stdout: [], stderr: [] };
@@ -174,7 +174,11 @@ export const spawnCommand = curry(
       proc.on("close", (code) => {
         clearTimeout(commandTimeout);
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        code === 0 ? res(result.stdout.join("")) : rej(result.stderr.join(""));
+        if (code === 0) {
+          res([result.stderr.join(""), result.stdout.join("")]);
+        } else {
+          rej(result.stderr.join(""));
+        }
       });
     }),
 );

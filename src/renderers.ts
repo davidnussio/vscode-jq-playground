@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import Logger from "./logger";
+import { Logger } from "./logger";
 
 export type RenderOutputType = "output" | "editor";
 

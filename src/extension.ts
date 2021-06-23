@@ -20,7 +20,7 @@ import { buildJqCommandArgs, JqOptions } from "./jq-options";
 import { resolveVariables } from "./variable-resolver";
 import { currentWorkingDirectory } from "./vscode-window";
 import { renderError, renderOutput, RenderOutputType } from "./renderers";
-import Logger from "./logger";
+import { Logger, Debug } from "./logger";
 import { CONFIGS, BINARIES } from "./configs";
 import inputBoxFilter from "./inputbox-filter";
 
@@ -364,10 +364,15 @@ function executeJqCommand(params, variables) {
   const context: string = document.lineAt(contextLine)?.text;
   lineOffset++;
 
-  const renderOutputDecotator = (out) => {
+  const renderOutputDecotator = ([debug, out]) => {
     const outFile: string | boolean = outputFile
       ? getFileName(cwd, outputFile)
       : false;
+
+    if (debug) {
+      Debug.append(debug);
+      // Debug.show(true);
+    }
 
     if (outFile) {
       fs.writeFileSync(outFile, out);

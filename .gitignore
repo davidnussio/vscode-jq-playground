@@ -65,3 +65,4 @@ bin
 
 dist/**
 build/**
+.vscode/numbered-bookmarks.json

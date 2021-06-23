@@ -1,5 +1,9 @@
 # Change Log
 
+## [4.2.0]
+
+- Log debug to OUTPUT jqpg debug console
+
 ## [4.1.0]
 
 - Filter json with input box on the fly

@@ -20,4 +20,3 @@ babel.config.js
 node_modules
 
 images
-!images/icon.png

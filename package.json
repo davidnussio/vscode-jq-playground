@@ -190,7 +190,7 @@
     "md5-file": "^5.0.0",
     "node-fetch": "2.6.1",
     "ramda": "0.27.1",
-    "shell-quote": "1.7.2",
+    "shell-quote": "1.7.3",
     "which": "2.0.2"
   },
   "extensionDependencies": [

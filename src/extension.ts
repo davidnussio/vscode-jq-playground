@@ -37,7 +37,7 @@ const inputBoxFilterHandler = inputBoxFilter();
 function openManual() {
   vscode.commands.executeCommand(
     "vscode.open",
-    vscode.Uri.parse("https://stedolan.github.io/jq/manual/"),
+    vscode.Uri.parse("https://stedolan.github.io/jq/manual/v1.6/"),
   );
 }
 
@@ -564,7 +564,9 @@ async function setupEnvironment(
   CONFIGS.MANUAL_PATH = path.join(context.extensionPath, CONFIGS.MANUAL_PATH);
 
   // Use user configurated executable or auto downloaded
-  const userFilePath: fs.PathLike = config.get("jqPlayground.binaryPath");
+  const userFilePath: fs.PathLike = path.normalize(
+    config.get("jqPlayground.binaryPath"),
+  );
   if (fs.existsSync(userFilePath)) {
     // User configurated binary path
     CONFIGS.FILEPATH = userFilePath;

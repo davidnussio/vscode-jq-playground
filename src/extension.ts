@@ -361,6 +361,13 @@ function executeJqCommand(params, variables) {
     contextLine++;
     lineOffset++;
   }
+  let appendToOutputFile = true;
+  if (document.lineAt(contextLine)?.text?.startsWith(">> ")) {
+    outputFile = document.lineAt(contextLine).text.replace(">> ", "").trim();
+    appendToOutputFile = true;
+    contextLine++;
+    lineOffset++;
+  }
   const context: string = document.lineAt(contextLine)?.text;
   lineOffset++;
 
@@ -375,7 +382,11 @@ function executeJqCommand(params, variables) {
     }
 
     if (outFile) {
-      fs.writeFileSync(outFile, out);
+      if (appendToOutputFile) {
+        fs.appendFileSync(outFile, out);
+      } else {
+        fs.writeFileSync(outFile, out);
+      }
     } else {
       renderOutput(params.openResult)(out);
     }

@@ -2,7 +2,7 @@
 
 Create a notebook with power of [jq](https://stedolan.github.io/jq/) filters and the power of jq playground extension
 
-Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https://stedolan.github.io/jq/tutorial/)
+Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https://stedolan.github.io/jq/manual/v1.6/)
 
 [![Latest Release](https://vsmarketplacebadge.apphb.com/version-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
 [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
@@ -32,12 +32,11 @@ Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https:/
 
 ![vscode-jq-playground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/buffers-examples.gif)
 
-
 #### Autocomplete with inline documentation
 
 ![Autocomplete](https://media.giphy.com/media/eHFSm80lXQnxQe2D64/giphy.gif)
 
-[*** More examples ***](https://davidnussio.github.io/vscode-jq-playground/)
+[**_ More examples _**](https://davidnussio.github.io/vscode-jq-playground/)
 
 ## Main Features
 
@@ -313,6 +312,8 @@ Thanks for cwd module patching [💻](https://github.com/davidnussio/vscode-jq-p
 Thanks for updating deps and binary [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=yozlet) [Yoz Grahame](https://github.com/yozlet)
 
 Thanks for input variable [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=JeffreyMercado) [Jeff Mercado](https://github.com/JeffreyMercado)
+
+Thanks for input variable [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=leonelgalan) [Leonel Galán](https://github.com/leonelgalan)
 
 ## Thanks
 

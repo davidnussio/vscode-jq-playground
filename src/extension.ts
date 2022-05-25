@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
@@ -439,9 +438,13 @@ function executeJqCommand(params, variables) {
     if (httpCli === "http") {
       httpCliOptions.unshift("--ignore-stdin");
     }
-    spawnCommand(httpCli, httpCliOptions, { cwd }, "")
-      .chain(jqCommand)
-      .fork(renderError, renderOutputDecotator);
+    spawnCommand(httpCli, httpCliOptions, { cwd }, null).fork(
+      renderError,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ([_, out]) => {
+        jqCommand(out).fork(renderError, renderOutputDecotator);
+      },
+    );
   } else {
     const contextLines = [context];
     let line = params.range.start.line + lineOffset;

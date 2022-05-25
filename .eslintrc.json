@@ -14,9 +14,11 @@
     "plugin:@typescript-eslint/recommended",
     "airbnb-typescript/base",
     "prettier",
+    "plugin:import/recommended",
     "plugin:jest/recommended"
   ],
   "rules": {
+    "import/no-unresolved": ["warn", { "ignore": ["vscode"] }],
     "@typescript-eslint/explicit-module-boundary-types": "off"
   }
 }

@@ -1,5 +1,10 @@
 # Change Log
 
+## [4.3.0]
+
+- Adds append to redirect output (leonelgalan)
+- fix execute command
+
 ## [4.2.0]
 
 - Log debug to OUTPUT jqpg debug console

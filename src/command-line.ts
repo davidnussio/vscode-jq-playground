@@ -173,7 +173,6 @@ export const spawnCommand = curry(
 
       proc.on("close", (code) => {
         clearTimeout(commandTimeout);
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         if (code === 0) {
           res([result.stderr.join(""), result.stdout.join("")]);
         } else {

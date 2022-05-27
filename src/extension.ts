@@ -202,12 +202,12 @@ function provideCodeLenses(document: vscode.TextDocument) {
   return matches
     .map((match, index) => [
       new vscode.CodeLens(match.range, {
-        title: "⚡ console (ctrl+enter)",
+        title: CONFIGS.EXECUTE_JQ_COMMAND_CONSOLE_TITLE,
         command: CONFIGS.EXECUTE_JQ_COMMAND,
         arguments: [{ ...match, index, openResult: "output" }],
       }),
       new vscode.CodeLens(match.range, {
-        title: "⚡ editor (shift+enter)",
+        title: CONFIGS.EXECUTE_JQ_COMMAND_EDITOR_TITLE,
         command: CONFIGS.EXECUTE_JQ_COMMAND,
         arguments: [{ ...match, index, openResult: "editor" }],
       }),

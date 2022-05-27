@@ -301,10 +301,6 @@ http|curl|wget|cat|echo|ls|dir|grep|tail|head|find
 
 `ctrl+shift+p → > Tutorial`
 
-### Execute online query (jqplay)
-
-`ctrl+shift+p → > jqplay → .[] | { id: .userId, title: .title }`
-
 ## Contributors
 
 Thanks for cwd module patching [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=jpandersen87) [Joseph Andersen](https://github.com/jpandersen87)

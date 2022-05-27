@@ -97,11 +97,6 @@
         "category": "JQPG"
       },
       {
-        "command": "extension.openPlay",
-        "title": "Open online jqplay",
-        "category": "JQPG"
-      },
-      {
         "command": "extension.runQueryOutput",
         "title": "Run query in output",
         "category": "JQPG"

@@ -21,8 +21,8 @@ export const CONFIGS = {
   LANGUAGES: ["jqpg", "jq"],
   EXECUTE_JQ_COMMAND: "extension.executeJqCommand",
   EXECUTE_JQ_COMMAND_CONSOLE_TITLE: /^darwin/.test(process.platform)
-    ? "⚡ console (ctrl+enter)"
-    : "⚡ console (cmd+enter)",
+    ? "⚡ console (cmd+enter)"
+    : "⚡ console (ctrl+enter)",
   EXECUTE_JQ_COMMAND_EDITOR_TITLE: "⚡ editor (shift+enter)",
   CODE_LENS_TITLE: "jq",
   JQ_PLAYGROUND_VERSION: "vscode-jq-playground.version",

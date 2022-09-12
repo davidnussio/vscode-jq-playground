@@ -360,7 +360,7 @@ function executeJqCommand(params, variables) {
     contextLine++;
     lineOffset++;
   }
-  let appendToOutputFile = true;
+  let appendToOutputFile = false;
   if (document.lineAt(contextLine)?.text?.startsWith(">> ")) {
     outputFile = document.lineAt(contextLine).text.replace(">> ", "").trim();
     appendToOutputFile = true;

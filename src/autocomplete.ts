@@ -1,8 +1,6 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable max-classes-per-file */
-/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
-import * as vscode from "vscode";
 import { basename } from "path";
+import * as vscode from "vscode";
+import { workspace } from "vscode";
 
 type Builtins = { [key: string]: { ["documentation"]: string } };
 
@@ -19,24 +17,22 @@ const TYPES: string[] = ["json", "plaintext"];
 // ])
 
 export function workspaceFilesCompletionItemProvider() {
+  const TYPES: string[] = ["json", "plaintext"];
   return vscode.languages.registerCompletionItemProvider("jqpg", {
     provideCompletionItems(
       document: vscode.TextDocument,
       position: vscode.Position,
       token: vscode.CancellationToken,
-      context: vscode.CompletionContext,
+      context: vscode.CompletionContext
     ) {
-      const completionItems: vscode.CompletionItem[] = vscode.workspace.textDocuments
+      const completionItems: vscode.CompletionItem[] = workspace.textDocuments
+        .filter((doc) => TYPES.includes(doc.languageId))
         .map((doc) => {
-          if (TYPES.includes(doc.languageId)) {
-            const item = new vscode.CompletionItem(basename(doc.fileName));
-            item.kind = vscode.CompletionItemKind.File;
-            item.insertText = doc.fileName;
-            return item;
-          }
-          return undefined;
-        })
-        .filter((item) => item);
+          const item = new vscode.CompletionItem(basename(doc.fileName));
+          item.kind = vscode.CompletionItemKind.File;
+          item.insertText = doc.fileName;
+          return item;
+        });
 
       return completionItems;
     },
@@ -49,7 +45,7 @@ export function jqLangCompletionItemProvider(builtins: Builtins) {
       document: vscode.TextDocument,
       position: vscode.Position,
       token: vscode.CancellationToken,
-      context: vscode.CompletionContext,
+      context: vscode.CompletionContext
     ) {
       return new vscode.CompletionList(
         Object.keys(builtins)
@@ -63,7 +59,7 @@ export function jqLangCompletionItemProvider(builtins: Builtins) {
             item.kind = vscode.CompletionItemKind.Function;
             return item;
           }),
-        true,
+        true
       );
     },
   });

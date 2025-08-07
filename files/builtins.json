@@ -8,6 +8,9 @@
   "JOIN": {
     "documentation": ""
   },
+  "abs": {
+    "documentation": ""
+  },
   "acos": {
     "documentation": ""
   },
@@ -209,6 +212,12 @@
   "has": {
     "documentation": ""
   },
+  "have_decnum": {
+    "documentation": ""
+  },
+  "have_literal_numbers": {
+    "documentation": ""
+  },
   "hypot": {
     "documentation": ""
   },
@@ -284,9 +293,6 @@
   "ldexp": {
     "documentation": ""
   },
-  "leaf_paths": {
-    "documentation": ""
-  },
   "length": {
     "documentation": ""
   },
@@ -315,6 +321,9 @@
     "documentation": ""
   },
   "logb": {
+    "documentation": ""
+  },
+  "ltrim": {
     "documentation": ""
   },
   "ltrimstr": {
@@ -389,19 +398,16 @@
   "paths": {
     "documentation": ""
   },
-  "pow": {
+  "pick": {
     "documentation": ""
   },
-  "pow10": {
+  "pow": {
     "documentation": ""
   },
   "range": {
     "documentation": ""
   },
   "recurse": {
-    "documentation": ""
-  },
-  "recurse_down": {
     "documentation": ""
   },
   "remainder": {
@@ -422,13 +428,13 @@
   "round": {
     "documentation": ""
   },
+  "rtrim": {
+    "documentation": ""
+  },
   "rtrimstr": {
     "documentation": ""
   },
   "scalars": {
-    "documentation": ""
-  },
-  "scalars_or_empty": {
     "documentation": ""
   },
   "scalb": {
@@ -453,6 +459,9 @@
     "documentation": ""
   },
   "sinh": {
+    "documentation": ""
+  },
+  "skip": {
     "documentation": ""
   },
   "sort": {
@@ -506,6 +515,9 @@
   "to_entries": {
     "documentation": ""
   },
+  "toboolean": {
+    "documentation": ""
+  },
   "todate": {
     "documentation": ""
   },
@@ -525,6 +537,12 @@
     "documentation": ""
   },
   "transpose": {
+    "documentation": ""
+  },
+  "trim": {
+    "documentation": ""
+  },
+  "trimstr": {
     "documentation": ""
   },
   "trunc": {

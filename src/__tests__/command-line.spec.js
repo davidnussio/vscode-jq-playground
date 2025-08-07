@@ -1,7 +1,6 @@
-// import { Rejected } from "crocks/Async";
 import {
-  bufferToString,
   bufferToJSON,
+  bufferToString,
   parseCommandArgs,
   spawnCommand,
 } from "../command-line";
@@ -22,8 +21,8 @@ describe("Spawn jq command line", () => {
     ]);
     expect(
       parseCommandArgs(
-        "[.[] | {message: .commit.message, name: .commit.committer.name, parents: [.parents[].html_url]}]",
-      ),
+        "[.[] | {message: .commit.message, name: .commit.committer.name, parents: [.parents[].html_url]}]"
+      )
     ).toEqual([
       "[.[] | {message: .commit.message, name: .commit.committer.name, parents: [.parents[].html_url]}]",
     ]);
@@ -49,7 +48,7 @@ describe("Spawn jq command line", () => {
     ]);
 
     expect(
-      parseCommandArgs("-M --only-for-plugin-test-purpose . | .[]"),
+      parseCommandArgs("-M --only-for-plugin-test-purpose . | .[]")
     ).toEqual(["-M", "--only-for-plugin-test-purpose", ". | .[]"]);
 
     expect(parseCommandArgs("--arg var val '.value = $var'")).toEqual([
@@ -78,56 +77,56 @@ describe("Spawn jq command line", () => {
 
     jqCommand(
       parseCommandArgs('. / ", "'),
-      { env: __dirname },
-      '"a, b,c,d, e"',
+      { env: import.meta.dirname },
+      '"a, b,c,d, e"'
     ).fork(renderError, expectJson(["a", "b,c,d", "e"]));
 
     jqCommand(
       parseCommandArgs('--arg var "val 212" .value = $var'),
-      { env: __dirname },
-      "{}",
+      { env: import.meta.dirname },
+      "{}"
     ).fork(renderError, expectJson({ value: "val 212" }));
 
     jqCommand(
       parseCommandArgs("--arg var val .value = $var"),
-      { env: __dirname },
-      "{}",
+      { env: import.meta.dirname },
+      "{}"
     ).fork(renderError, expectJson({ value: "val" }));
 
     jqCommand(
       parseCommandArgs('{"k": {"a": 1, "b": 2}} * {"k": {"a": 0,"c": 3}}'),
-      { env: __dirname },
-      "null",
+      { env: import.meta.dirname },
+      "null"
     ).fork(renderError, expectJson({ k: { a: 0, b: 2, c: 3 } }));
 
     jqCommand(
       parseCommandArgs(".[] | (1 / .)?"),
-      { env: __dirname },
-      "[1,0,-1]",
+      { env: import.meta.dirname },
+      "[1,0,-1]"
     ).fork(renderError, expectText("1\n-1\n"));
 
     jqCommand(
       parseCommandArgs("--compact-output .[] | (1 / .)?"),
-      { env: __dirname },
-      "[1,0,-1]",
+      { env: import.meta.dirname },
+      "[1,0,-1]"
     ).fork(renderError, expectText("1\n-1\n"));
 
     jqCommand(
       parseCommandArgs('[getpath(["a","b"], ["a","c"])]'),
-      { env: __dirname },
-      '{"a":{"b":0, "c":1}}',
+      { env: import.meta.dirname },
+      '{"a":{"b":0, "c":1}}'
     ).fork(renderError, expectJson([0, 1]));
 
     jqCommand(
       parseCommandArgs('with_entries(.key |= "KEY_" + .)'),
-      { env: __dirname },
-      '{"a": 1, "b": 2}',
+      { env: import.meta.dirname },
+      '{"a": 1, "b": 2}'
     ).fork(
       renderError,
       expectJson({
         KEY_a: 1,
         KEY_b: 2,
-      }),
+      })
     );
   });
 });

@@ -1,3 +1,4 @@
+// TODO: delete?
 import { commands, workspace } from "vscode";
 
 const tokenRe = /\$\{([a-z]+)(?::([^:{}]+))?\}/gi;
@@ -13,7 +14,9 @@ export interface ResolveVariablesFn {
 }
 
 async function getEnv({ env }: ResolutionContext, name: string) {
-  if (!name) return null;
+  if (!name) {
+    return null;
+  }
   return (env || process.env)[name] || "";
 }
 
@@ -27,7 +30,6 @@ async function getCommand(commandId: string) {
   return result?.toString() || "";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getInput(inputId: string) {
   // TODO: implement me
   return "";
@@ -38,8 +40,7 @@ async function getWorkspaceFolder(root: string) {
     root && workspace.workspaceFolders.length > 1
       ? workspace.workspaceFolders.find(
           (f) =>
-            f.name.localeCompare(root, undefined, { sensitivity: "base" }) ===
-            0,
+            f.name.localeCompare(root, undefined, { sensitivity: "base" }) === 0
         )
       : workspace.workspaceFolders[0];
   return ws ? ws.uri.fsPath : null;
@@ -92,15 +93,19 @@ const replaceToken = async (
 
 async function resolveVariablesForInputAsync(
   context: ResolutionContext,
-  str: string,
+  str: string
 ): Promise<string> {
-  if (!str) return "";
+  if (!str) {
+    return "";
+  }
   const promises = [];
   str.replace(tokenRe, (_: string, g1: string, ...args: any[]) => {
     promises.push(replaceToken(context, g1, ...args));
     return "";
   });
-  if (!promises.length) return str;
+  if (!promises.length) {
+    return str;
+  }
   const results = await Promise.all(promises);
   return str.replace(tokenRe, (match: string) => {
     const result = results.shift();
@@ -110,10 +115,10 @@ async function resolveVariablesForInputAsync(
 
 export const resolveVariables: ResolveVariablesFn = (
   context: ResolutionContext,
-  inputOrInputs: string | string[],
+  inputOrInputs: string | string[]
 ): Promise<any> =>
   Array.isArray(inputOrInputs)
     ? Promise.all(
-        inputOrInputs.map((i) => resolveVariablesForInputAsync(context, i)),
+        inputOrInputs.map((i) => resolveVariablesForInputAsync(context, i))
       )
     : resolveVariablesForInputAsync(context, inputOrInputs);

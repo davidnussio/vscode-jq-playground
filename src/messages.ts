@@ -1,8 +1,10 @@
 /* eslint-disable no-param-reassign */
 // eslint-disable-next-line no-unused-vars
 import * as vscode from "vscode";
-import { readFile } from "fs";
-import { join } from "path";
+import { readFile } from "node:fs";
+import { join } from "node:path";
+
+// export const 
 
 function getWebviewContent(
   context: vscode.ExtensionContext,

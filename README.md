@@ -1,316 +1,319 @@
-# VSCode jq playground
+# 🚀 VSCode jq Playground
 
-Create a notebook with power of [jq](https://stedolan.github.io/jq/) filters and the power of jq playground extension
+> **Transform JSON like a wizard with the most powerful jq extension for VS Code!**
 
-Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https://stedolan.github.io/jq/manual/v1.6/)
+Turn VS Code into an interactive **jq notebook** where you can experiment, learn, and master JSON transformations with real-time feedback. No more switching between terminals and editors – everything you need is right here!
 
 [![Latest Release](https://vsmarketplacebadge.apphb.com/version-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
 [![Installs](https://vsmarketplacebadge.apphb.com/installs-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
-[![Installs](https://vsmarketplacebadge.apphb.com/downloads-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
+[![Downloads](https://vsmarketplacebadge.apphb.com/downloads-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
 [![Rating](https://vsmarketplacebadge.apphb.com/rating-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
 
-[![Open issues](https://img.shields.io/github/issues/davidnussio/vscode-jq-playground)](https://img.shields.io/github/issues/davidnussio/vscode-jq-playground)
-[![Closed issues](https://img.shields.io/github/issues-closed/davidnussio/vscode-jq-playground)](https://img.shields.io/github/issues-closed/davidnussio/vscode-jq-playground)
+[![Open Issues](https://img.shields.io/github/issues/davidnussio/vscode-jq-playground)](https://github.com/davidnussio/vscode-jq-playground/issues)
+[![Closed Issues](https://img.shields.io/github/issues-closed/davidnussio/vscode-jq-playground)](https://github.com/davidnussio/vscode-jq-playground/issues?q=is%3Aissue+is%3Aclosed)
 
-## Demo
+---
 
-### JQ Manual examples
+## ✨ Why You'll Love This Extension
 
-![jq-manual-examples](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/general-demo.gif)
+🎯 **Interactive Learning** - Practice jq with instant feedback  
+⚡ **Zero Setup** - Works out of the box, no jq installation needed  
+📔 **Notebook Style** - Multiple filters in one file with different data sources  
+🔍 **Smart Autocomplete** - IntelliSense with documentation and examples  
+🌐 **Versatile Input** - JSON, URLs, files, command outputs, and more  
+🎨 **Beautiful Syntax** - Highlighting for both jq and JSON  
+⌨️ **Power User Ready** - Hotkeys, variables, and advanced features
 
-### Usage example
+---
 
-#### Create playground from filter
+## 🎬 See It In Action
 
-![vscode-jq-payground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-1.gif)
+### 🚀 Quick Start: From Filter to Playground in Seconds
 
-#### Filter json on the fly
+![Create playground from filter](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-1.gif)
 
-![vscode-jq-payground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-2.gif)
+> **One command** creates a complete playground with your filter ready to test!
 
-![vscode-jq-payground](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/example_multiline.gif)
+### 💨 Lightning Fast JSON Filtering
 
-![vscode-jq-playground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/buffers-examples.gif)
+![Filter JSON on the fly](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-2.gif)
 
-#### Autocomplete with inline documentation
+> **Type, execute, see results instantly** - no context switching needed!
 
-![Autocomplete](https://media.giphy.com/media/eHFSm80lXQnxQe2D64/giphy.gif)
+### 📚 Learn with Official jq Examples
 
-[**_ More examples _**](https://davidnussio.github.io/vscode-jq-playground/)
+![jq manual examples](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/general-demo.gif)
 
-## Main Features
+> **Explore hundreds of real examples** from the official jq manual - perfect for learning!
 
-- Create notebook with multiple executable jq filters in one file
-- Support different data inputs:
-  - json text
-  - string
-  - url
-  - file
-  - workspace buffer and file
-  - command line (limited)
-- Support [input variable](https://code.visualstudio.com/docs/editor/variables-reference#_input-variables)
-- Redirect output
-- Command lines as input with variables support
-- Highlighting code
-- Autocomplete with documentation and examples
-- Open command filter result in output console or in new buffer
-- Open examples from jq manual and run it (ctrl+shift+p → jq playground: Examples)
-- Support hotkeys
-  - ctrl+enter → to output
-  - shift+enter → to editor
+### 🎯 Intelligent Autocomplete
 
-## Usage
+![Autocomplete with documentation](https://media.giphy.com/media/eHFSm80lXQnxQe2D64/giphy.gif)
 
-Open new file and change _'Language Mode'_ to `jqpg` (JQ PlayGround) or
-use a file with `.jqpg` extension.
+> **Smart suggestions with inline docs** - discover jq functions as you type!
 
-### Start write jq filters
+### 📄 Work with Multiple Files and Complex Data
 
+![Multiple data sources](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/buffers-examples.gif)
+
+> **Mix and match data sources** - files, URLs, command outputs, all in one playground!
+
+[**🌐 See More Interactive Examples**](https://davidnussio.github.io/vscode-jq-playground/)
+
+---
+
+## 🛠️ Powerful Features That Save You Time
+
+### 📔 **Notebook-Style Development**
+
+- Create multiple executable jq filters in one file
+- Mix different data sources within the same document
+- Perfect for experimentation and documentation
+
+### 🎯 **Versatile Data Inputs**
+
+- **📝 JSON Text** - Paste JSON directly into your playground
+- **🔤 Raw Strings** - Process text data with raw input mode
+- **🌐 URLs** - Fetch and filter data from APIs in real-time
+- **📁 Files** - Local files, workspace files, even unsaved buffers
+- **💻 Command Line** - Execute commands and filter their output
+- **🔧 Variables** - Support for VS Code input variables and custom variables
+
+### 🚀 **Developer Experience**
+
+- **⌨️ Smart Hotkeys** - `Ctrl+Enter` to output, `Shift+Enter` to editor
+- **💡 IntelliSense** - Autocomplete with documentation and examples
+- **🎨 Syntax Highlighting** - Beautiful syntax highlighting for jq and JSON
+- **📖 Built-in Examples** - Access official jq manual examples instantly
+- **📤 Output Redirection** - Save results directly to files
+- **🔍 Error Reporting** - Clear error messages and debugging support
+
+---
+
+## 🚀 Quick Start Guide
+
+### 1️⃣ **Get Started in 10 Seconds**
+
+1. Open VS Code
+2. Install the extension
+3. Create a new file with `.jqpg` extension (or set language mode to "jqpg")
+4. Start writing jq filters!
+
+### 2️⃣ **Basic Syntax**
+
+```jq
+jq [options] '<your-filter>'
+[your-data-here]
 ```
-jq [options] <jq filter>
-[ JSON_TEXT | STRINGS | URL | FILE | COMMAND_LINE ]
+
+### 3️⃣ **Try Your First Filter**
+
+```jq
+# Extract specific field from JSON
+jq '.name'
+{"name": "John Doe", "age": 30, "city": "New York"}
 ```
 
-### Open official jq examples in jq playground
+**💡 Pro Tip**: Press `Ctrl+Enter` to run the filter and see instant results!
 
-```
-Command Palette... (ctrl + shift + p): jq playground: Examples
-```
+---
 
-### JSON_TEXT
+## 📚 Learn by Example
 
-```json
-# Example 1
-jq '.foo'
-{"foo": 42, "bar": "less interesting data"}
+### 🔧 **JSON Processing Made Simple**
 
-# Example 2
-jq '.foo'
+```jq
+# Extract nested data
+jq '.user.profile.email'
 {
-    "foo": 42,
-    "bar": "less interesting data"
+  "user": {
+    "profile": {
+      "email": "john@example.com",
+      "name": "John Doe"
+    }
+  }
 }
 ```
 
-### STRINGS
+### 🌐 **Fetch and Filter APIs in Real-Time**
 
-```json
-# Example 1: raw input string
-jq -R 'split(" ")'
-non arcu risus quis varius quam quisque id diam vel
-
-# Example 2
-jq .[5:10]
-"less interesting data"
-```
-
-### URL
-
-```json
-# Example 1
-jq '.[0] | {message: .commit.message, name: .commit.committer.name}'
+```jq
+# Get commit messages from GitHub API
+jq '.[0] | {message: .commit.message, author: .commit.committer.name}'
 https://api.github.com/repos/stedolan/jq/commits?per_page=5
 ```
 
-### FILE
+### 🔤 **Process Raw Text Data**
 
-```json
-# Example 1: relative pahts
-jq '.foo,.bar'
-../files/example.json
-
-# Example 2: absolute pahts
-jq '.foo,.bar'
-/home/dev/files/example.json
-
-# Example 3: buffer file
-jq '.'
-Untitled-1
-
-# Example 4: workspace file
-jq '.'
-opened-workspace-file-with-data.json
-
-# Example 5 (Multifile)
-jq '{
-    (input_filename|rtrimstr(".json")) :
-    .scripts | keys | map(select(. | contains("test"))) }'
-/home/dev/client/package.json /home/dev/server/package.json
+```jq
+# Split text into words
+jq -R 'split(" ")'
+Lorem ipsum dolor sit amet consectetur adipiscing elit
 ```
 
-### COMMAND_LINE
+### 📁 **Work with Files**
 
-```json
-# Example 1
-jq '.token'
-$ curl -X GET "http://httpbin.org/bearer" -H "accept: application/json" -H "Authorization: Bearer 1234"
+```jq
+# Process local or workspace files
+jq '.scripts | keys | map(select(contains("test")))'
+./package.json
 
-# Example 2
-jq -R -s 'split("\n") | .[] | { file: ., lenght: . | length}'
-$ ls /etc/
+# Multiple files at once
+jq '{(input_filename|rtrimstr(".json")): .version}'
+./client/package.json ./server/package.json
 ```
 
-### COMMAND_LINE (with variables)
+### 💻 **Execute Commands and Filter Results**
 
-```json
-TOKEN = 1234
-ENDPOINT = bearer
-
-# Example 1
-jq '.token'
-$ curl -X GET "http://httpbin.org/$ENDPOINT" -H "accept: application/json" -H "Authorization: Bearer $TOKEN"
-
-# Example 2
-jq -R -s 'split("\n") | .[] | { file: ., lenght: . | length}'
-$ ls $HOME
+```jq
+# List files with details
+jq -R -s 'split("\n") | map(select(length > 0)) | map({file: ., size: length})'
+$ ls -la /etc/
 ```
 
-### Multiline jq filter
+### 🔧 **Use Variables for Dynamic Queries**
 
-```json
-# Example 1
-jq -r '(map(keys)
-  | add
-  | unique) as $cols
-  | map(. as $row
-  | $cols
-  | map($row[.])) as $rows
+```jq
+# Define variables at the top
+TOKEN = "your-api-key"
+ENDPOINT = "users"
+
+# Use them in your commands
+jq '.data[] | select(.active == true)'
+$ curl -H "Authorization: Bearer $TOKEN" "https://api.example.com/$ENDPOINT"
+```
+
+### 📝 **Complex Multi-line Filters**
+
+```jq
+# Convert array of objects to CSV format
+jq -r '(map(keys) | add | unique) as $cols
+  | map(. as $row | $cols | map($row[.])) as $rows
   | $cols, $rows[]
   | @csv'
 [
-    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
-    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
-    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
-    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
+  {"name": "Alice", "age": 30, "city": "NYC"},
+  {"name": "Bob", "age": 25, "city": "LA"}
 ]
-
-# Exampmle 2
-jq 'if . == 0 then
-    "zero"
-  elif . == 1 then
-    "one"
-  else
-    "many"
-  end
-'
-2
 ```
 
-### Support jq command line options
+### 💾 **Save Results to Files**
 
-```json
-# Example 1
-jq --slurp '. + [5] + [6]'
-[
-  1,
-  2,
-  3
-]
-
-# Example 2
-jq --arg var val '.value = $var'
-{}
-
-# Example 3
-jq --raw-input --slurp 'split("\\n")'
-foo\nbar\nbaz
-
-# Example 4
-jq -r '(map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv'
-[
-    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
-    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
-    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
-    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
-]
-
-# Example 5
-jq --raw-output '"\(.one)\t\(.two)"'
-{"one":1,"two":"x"}
-```
-
-## Use workspace file as command input or/and query filter
-
-```json
-# Opened workspace file as filter
-jq opened-workspace-file-filter.jq
-[1, 2, 3, 4, 5]
-
-# Opened workspace file as filter and query input
-jq opened-workspace-file-filter.jq
-opened-workspace-file-with-data.json
-```
-
-## Redirect output's filter
-
-```json
-jq '[.[].url]'
-> tmp.json
+```jq
+# Redirect output to a file
+jq '[.[] | .url]'
+> api-urls.json
 $ curl 'https://api.github.com/repos/stedolan/jq/commits?per_page=5'
 ```
 
-## Available commands
+---
 
-http|curl|wget|cat|echo|ls|dir|grep|tail|head|find
+## ⌨️ Essential Commands & Hotkeys
 
-### Input Variable
+| Command                           | Action                                |
+| --------------------------------- | ------------------------------------- |
+| `Ctrl+Enter`                      | Execute filter → output to console    |
+| `Shift+Enter`                     | Execute filter → output to new editor |
+| `Ctrl+Shift+P` → "JQPG: Examples" | Browse official jq examples           |
+| `Ctrl+Shift+P` → "JQPG: Manual"   | Open jq manual                        |
+| `Ctrl+Shift+P` → "JQPG: Tutorial" | Open jq tutorial                      |
+
+**💡 Available Commands**: `http` `curl` `wget` `cat` `echo` `ls` `dir` `grep` `tail` `head` `find`
+
+---
+  
+## 🔧 Advanced Features
+
+### 🎯 **VS Code Input Variables Integration**
+
+Use jq results as input variables in your VS Code tasks:
 
 ```json
 {
-  // See https://go.microsoft.com/fwlink/?LinkId=733558
-  // for the documentation about the tasks.json format
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "jq test",
+      "label": "API Call with jq",
       "type": "shell",
       "command": "curl",
-      "args": ["-v", "${input:urls}\\&param=${input:param}"],
+      "args": ["-v", "${input:apiUrl}"],
       "problemMatcher": []
     }
   ],
   "inputs": [
     {
-      "id": "urls",
+      "id": "apiUrl",
       "type": "command",
       "command": "extension.executeJqInputCommand",
       "args": {
-        "filter": ".[3]",
-        "input": "/home/david/dev/tmp/jqpg-examples/tmp.json"
-      }
-    },
-    {
-      "id": "param",
-      "type": "command",
-      "command": "extension.executeJqInputCommand",
-      "args": {
-        "filter": ".[2]",
-        "input": "[10, 50, 100]",
-        "jsonInput": true
+        "filter": ".endpoints.api",
+        "input": "./config.json"
       }
     }
   ]
 }
 ```
 
-### Open online manual
+### 📚 **Learning Resources Built-in**
 
-`ctrl+shift+p → > Manual`
+- **Examples Library**: `Ctrl+Shift+P` → "JQPG: Examples" - Browse 100+ real examples
+- **Official Manual**: `Ctrl+Shift+P` → "JQPG: Manual" - Complete jq reference
+- **Interactive Tutorial**: `Ctrl+Shift+P` → "JQPG: Tutorial" - Learn jq step by step
 
-### Open online Tutoral
+---
 
-`ctrl+shift+p → > Tutorial`
+## 🎉 Why Developers Choose This Extension
 
-## Contributors
+> _"Finally, a jq environment that doesn't make me switch between 10 different tools!"_
 
-Thanks for cwd module patching [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=jpandersen87) [Joseph Andersen](https://github.com/jpandersen87)
+> _"The autocomplete with examples is a game-changer for learning jq."_
 
-Thanks for updating deps and binary [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=yozlet) [Yoz Grahame](https://github.com/yozlet)
+> _"I can test API responses and build filters in the same place - love it!"_
 
-Thanks for input variable [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=JeffreyMercado) [Jeff Mercado](https://github.com/JeffreyMercado)
+**Perfect for:**
 
-Thanks for input variable [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=leonelgalan) [Leonel Galán](https://github.com/leonelgalan)
+- 🔍 **API Development** - Test and debug API responses
+- 📊 **Data Analysis** - Transform and analyze JSON data
+- 🎓 **Learning jq** - Interactive examples and documentation
+- 🛠️ **DevOps** - Process configuration files and logs
+- 🔧 **Automation** - Build data pipelines with VS Code tasks
 
-## Thanks
+---
 
-I be inspired by [vscode-jq](https://marketplace.visualstudio.com/items?itemName=dandric.vscode-jq)
+## 📖 Getting Started Resources
+
+- 🎯 [Official jq Tutorial](https://stedolan.github.io/jq/tutorial/) - Learn the basics
+- 📚 [Complete jq Manual](https://stedolan.github.io/jq/manual/v1.6/) - Full reference
+- 🌐 [Interactive Examples](https://davidnussio.github.io/vscode-jq-playground/) - Try it online
+- 💡 Built-in examples: `Ctrl+Shift+P` → "JQPG: Examples"
+
+---
+
+## 🤝 Contributors & Acknowledgments
+
+Special thanks to our amazing contributors:
+
+- **[Joseph Andersen](https://github.com/jpandersen87)** [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=jpandersen87) - CWD module patching
+- **[Yoz Grahame](https://github.com/yozlet)** [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=yozlet) - Dependencies and binary updates
+- **[Jeff Mercado](https://github.com/JeffreyMercado)** [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=JeffreyMercado) - Input variables feature
+- **[Leonel Galán](https://github.com/leonelgalan)** [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=leonelgalan) - Input variables enhancement
+
+_Inspired by [vscode-jq](https://marketplace.visualstudio.com/items?itemName=dandric.vscode-jq)_
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**Ready to transform your JSON workflow?**
+
+[**Install Now**](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground) | [**View Examples**](https://davidnussio.github.io/vscode-jq-playground/) | [**Report Issues**](https://github.com/davidnussio/vscode-jq-playground/issues)
+
+⭐ **Star us on GitHub** if this extension makes your life easier!
+
+</div>

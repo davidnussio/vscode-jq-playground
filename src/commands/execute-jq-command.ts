@@ -24,7 +24,12 @@ import type { JqMatch } from "../code-lens";
 import { CONFIGS } from "../configs";
 import { ExtensionConfig, jqPathSetting } from "../extension-config";
 import { parseJqCommandArgs, spawnCommandEffect } from "../lib/command-line";
-import { type RenderOutputType, renderError, renderOutput } from "../renderers";
+import {
+  type RenderOutputType,
+  renderError,
+  renderOutput,
+} from "../renderers";
+import { VariableResolver } from "../lib/variable-resolver";
 
 function getFileName(cwd: string, context: string): string {
   if (context.search(/^(\/|[a-z]:\\)/gi) === 0) {
@@ -212,6 +217,19 @@ const urlProcessor = Effect.fn("processUrlContent")(function* (
   return yield* response.text;
 });
 
+const localFileProcessor = (cwd: string, context: string) =>
+  Effect.if(Effect.succeed(isFilepath(cwd, context.trim())), {
+    onTrue: () =>
+      Effect.tryPromise(() =>
+        Promise.all(
+          getFiles(cwd, context.trim()).map((file) =>
+            fs.promises.readFile(file, "utf-8")
+          )
+        ).then((contents) => contents.join("\n"))
+      ),
+    onFalse: () => Effect.fail("Not a local file path"),
+  });
+
 const workspaceFileProcessor = (
   context: string,
   textDocuments: ReadonlyArray<TextDocument>
@@ -325,6 +343,7 @@ export const executeJqCommand = (params: {
     const { document } = params;
     const editor = yield* activeTextEditor();
     const variables = readEditorVariables(editor);
+    const variableResolver = yield* Effect.service(VariableResolver);
 
     yield* Effect.log(`Loaded variables: ${JSON.stringify(variables)}`);
 
@@ -332,7 +351,9 @@ export const executeJqCommand = (params: {
     const queryLine: string = document
       .lineAt(params.range.start.line)
       .text.replace(/jq\s+/, "");
-    const args = parseJqCommandArgs(queryLine);
+    const args = yield* variableResolver.resolveMany(
+      parseJqCommandArgs(queryLine)
+    );
     let queryLineWithoutOpts = args.at(-1) ?? "";
     let lineOffset = 1;
 
@@ -422,7 +443,7 @@ export const executeJqCommand = (params: {
     const processors = [
       urlProcessor(context),
       workspaceFileProcessor(context, workspace.textDocuments),
-      isFilepath(cwd, context.trim()),
+      localFileProcessor(cwd, context),
       //  gestisciInputDaFilepathLocale(cwd, context, args),
       // /^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find)(?:\.exe)? /.exec(
       //   context

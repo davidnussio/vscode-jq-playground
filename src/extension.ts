@@ -5,9 +5,10 @@ import * as Layer from "effect/Layer";
 import type * as vscode from "vscode";
 import { launch, logger, VsCodeContext } from "./adapters/vscode-adapter";
 import { ExtensionConfig } from "./extension-config";
+import { VariableResolverLive } from "./lib/variable-resolver";
 import { SetupEnvLive } from "./setup-env";
 
-const MainLive = Layer.mergeAll(SetupEnvLive).pipe(
+const MainLive = Layer.mergeAll(SetupEnvLive, VariableResolverLive).pipe(
   Layer.provide(logger("JQ Playground")),
   Layer.provide(ExtensionConfig.Default),
   Layer.provide(FetchHttpClient.layer)

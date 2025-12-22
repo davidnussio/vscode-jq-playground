@@ -21,10 +21,10 @@ import {
   showWarningMessage,
 } from "../adapters/vscode-adapter";
 import type { JqMatch } from "../code-lens";
-import { CONFIGS } from "../configs";
-import { ExtensionConfig, jqPathSetting } from "../extension-config";
-import { parseJqCommandArgs, spawnCommandEffect } from "../lib/command-line";
-import { type RenderOutputType, renderError, renderOutput } from "../renderers";
+import { CONFIGS } from "../config/configs";
+import { ExtensionConfig, jqPathSetting } from "../config/extension-config";
+import { parseJqCommandArgs, spawnCommandEffect } from "../utils/command-line";
+import { type RenderOutputType, renderError, renderOutput } from "../utils/renderers";
 
 function getFileName(cwd: string, context: string): string {
   if (context.search(/^(\/|[a-z]:\\)/gi) === 0) {
@@ -35,20 +35,32 @@ function getFileName(cwd: string, context: string): string {
   return path.resolve(path.join(cwd, context));
 }
 
-function isFilepath(cwd: string, context: string): boolean {
+function isFilepath(cwd: string, context: string): Effect.Effect<string, string> {
   if (!context) {
-    return false;
+    return Effect.fail("Empty context");
   }
   const resolvedPath = getFileName(cwd, context);
   const fileExists = fs.existsSync(resolvedPath);
   if (fileExists) {
-    return true;
+      // Return file content
+     return Effect.try({
+       try: () => fs.readFileSync(resolvedPath, "utf-8"),
+       catch: (e) => String(e)
+     });
   }
   const files = context.split(/\s+/);
-  return files.reduce(
+  const allExist = files.reduce(
     (acc, cur) => acc && fs.existsSync(getFileName(cwd, cur)),
     true
   );
+  if (allExist) {
+       // Concatenate file contents
+       return Effect.try({
+         try: () => files.map(f => fs.readFileSync(getFileName(cwd, f), "utf-8")).join(""),
+         catch: (e) => String(e)
+       });
+  }
+  return Effect.fail("File not found");
 }
 
 function getFiles(cwd: string, context: string): ReadonlyArray<string> {
@@ -146,21 +158,18 @@ function gestisciInputDaFilepathLocale(
   cwd: string,
   context: string,
   args: string[]
-): string {
-  spawnCommand(CONFIGS.FILEPATH, args.concat(getFiles(cwd, context.trim())), {
+): Effect.Effect<string, string> {
+    const files = getFiles(cwd, context.trim());
+    return spawnCommandEffect(CONFIGS.FILEPATH, args.concat(files), {
     cwd,
-  })()
-    .then(([_, out]): [string, string] => {
-      return out;
-    })
-    .catch(renderError);
+  })();
 }
 
 function gestisciInputDaShellCommand(
   context: string,
   variables: Record<string, string>,
   cwd: string
-): void {
+): Effect.Effect<string, string> {
   const [httpCli, ...httpCliOptions] = parse(context.replace("$ ", ""), {
     ...process.env,
     ...variables,
@@ -168,11 +177,7 @@ function gestisciInputDaShellCommand(
   if (httpCli === "http") {
     httpCliOptions.unshift("--ignore-stdin");
   }
-  spawnCommandEffect(httpCli as string, httpCliOptions as string[], { cwd })()
-    .then(([_, out]: [string, string]) => {
-      return out;
-    })
-    .catch(renderError);
+  return spawnCommandEffect(httpCli as string, httpCliOptions as string[], { cwd })();
 }
 
 // ------------------------------------------------------------
@@ -208,14 +213,16 @@ const urlProcessor = Effect.fn("processUrlContent")(function* (
     return yield* Effect.fail("Is not a valid URL");
   }
   const client = yield* HttpClient.HttpClient;
-  const response = yield* client.get(context);
-  return yield* response.text;
+  return yield* client.get(context).pipe(
+    Effect.flatMap((response) => response.text),
+    Effect.mapError((e) => String(e))
+  );
 });
 
 const workspaceFileProcessor = (
   context: string,
   textDocuments: ReadonlyArray<TextDocument>
-) => {
+): Effect.Effect<string, string> => {
   const foundDocument = textDocuments.find(
     (document) =>
       document.fileName === context ||
@@ -223,7 +230,7 @@ const workspaceFileProcessor = (
   );
   return foundDocument
     ? Effect.succeed(foundDocument.getText())
-    : Effect.fail("");
+    : Effect.fail("File not found in workspace");
 };
 
 const inlineJsonProcessor = (
@@ -231,7 +238,7 @@ const inlineJsonProcessor = (
   document: TextDocument,
   context: string,
   lineOffset: number
-) => {
+): Effect.Effect<string, string> => {
   const contextLines = [context];
   let line = params.range.start.line + lineOffset;
   while (line < document.lineCount) {
@@ -289,7 +296,7 @@ export const queryRunner = (openResult: RenderOutputType) =>
       );
     }
 
-    const editor = yield* activeEditor;
+    const editor = yield* Option.fromNullable(activeEditor.value);
 
     const jqQueryLine = findPreviousJqQueryLine(editor);
 
@@ -323,7 +330,9 @@ export const executeJqCommand = (params: {
       `Executing jq command with params: ${JSON.stringify(params, null, 2)}`
     );
     const { document } = params;
-    const editor = yield* activeTextEditor();
+    const editorOption = activeTextEditor();
+    const editor = yield* Option.fromNullable(Option.getOrUndefined(editorOption));
+
     const variables = readEditorVariables(editor);
 
     yield* Effect.log(`Loaded variables: ${JSON.stringify(variables)}`);
@@ -371,13 +380,6 @@ export const executeJqCommand = (params: {
     const context: string = document.lineAt(contextLine)?.text;
     lineOffset++;
 
-    // if (isWorkspaceFile(queryLineWithoutOpts, workspace.textDocuments)) {
-    //   args[args.length - 1] = getWorkspaceFile(
-    //     queryLineWithoutOpts,
-    //     workspace.textDocuments
-    //   );
-    // }
-
     yield* Effect.log(
       `Executing jq command with args: ${JSON.stringify(args)}`
     );
@@ -393,13 +395,6 @@ export const executeJqCommand = (params: {
             )
       ),
       Effect.tapError((message) => showErrorMessage(message))
-      // Effect.map((e) =>
-      //   Option.isSome(e)
-      //     ? e
-      //     : Effect.fail(
-      //         "No jq binary path found. Please configure it in the settings."
-      //       )
-      // )
     );
 
     yield* Effect.log(`Using jq binary at: ${jqExecutablePath}`);
@@ -419,15 +414,11 @@ export const executeJqCommand = (params: {
       cwd
     );
 
-    const processors = [
+    // Normalize processors to Effect<string, string, any> to allow HttpClient dependency
+    const processors: Effect.Effect<string, string, any>[] = [
       urlProcessor(context),
       workspaceFileProcessor(context, workspace.textDocuments),
       isFilepath(cwd, context.trim()),
-      //  gestisciInputDaFilepathLocale(cwd, context, args),
-      // /^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find)(?:\.exe)? /.exec(
-      //   context
-      // ),
-      // gestisciInputDaShellCommand(context, variables, cwd),
       inlineJsonProcessor(params, document, context, lineOffset),
     ];
 

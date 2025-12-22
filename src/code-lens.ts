@@ -1,8 +1,8 @@
 import { Array, Option, pipe } from "effect";
 
 import { CodeLens, Range, type TextDocument } from "vscode";
-import { CONFIGS } from "./configs";
-import type { RenderOutputType } from "./renderers";
+import { CONFIGS } from "./config/configs";
+import { type RenderOutputType } from "./utils/renderers";
 
 export interface JqMatch {
   readonly document: TextDocument;

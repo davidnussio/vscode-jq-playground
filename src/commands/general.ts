@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import * as vscode from "vscode";
-import { executeCommand, thenable } from "./adapters/vscode-adapter";
-import { CONFIGS } from "./configs";
+import { executeCommand, thenable } from "../adapters/vscode-adapter";
+import { CONFIGS } from "../config/configs";
 
 // export function registerCommands(context: vscode.ExtensionContext) {
 //   context.subscriptions.push(

@@ -16,11 +16,11 @@ import { builtins } from "./builtins";
 
 import { jqQueryLenses } from "./code-lens";
 import {
-  notImplemented,
   openExamples,
   openManual,
   openTutorial,
-} from "./commands";
+} from "./commands/general";
+import { inputBoxFilter } from "./commands/inputbox-filter";
 import { executeJqCommand, queryRunner } from "./commands/execute-jq-command";
 
 const SetupCommands = Effect.gen(function* () {
@@ -29,8 +29,11 @@ const SetupCommands = Effect.gen(function* () {
   yield* registerCommand("extension.openExamples", openExamples);
   yield* registerCommand("extension.runQueryOutput", queryRunner("output"));
   yield* registerCommand("extension.runQueryEditor", queryRunner("editor"));
-  yield* registerCommand("extension.createJqpgFromFilter", notImplemented);
-  yield* registerCommand("extension.jqpgFromFilter", notImplemented);
+  // registerCommand expects a function that returns an Effect.
+  // inputBoxFilter(true) returns an Effect.
+  // So we need to wrap it in a thunk: () => inputBoxFilter(true)
+  yield* registerCommand("extension.createJqpgFromFilter", () => inputBoxFilter(true));
+  yield* registerCommand("extension.jqpgFromFilter", () => inputBoxFilter(false));
   yield* registerCommand("extension.executeJqCommand", executeJqCommand);
 });
 

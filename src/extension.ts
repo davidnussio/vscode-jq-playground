@@ -4,7 +4,7 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import type * as vscode from "vscode";
 import { launch, logger, VsCodeContext } from "./adapters/vscode-adapter";
-import { ExtensionConfig } from "./extension-config";
+import { ExtensionConfig } from "./config/extension-config";
 import { SetupEnvLive } from "./setup-env";
 
 const MainLive = Layer.mergeAll(SetupEnvLive).pipe(

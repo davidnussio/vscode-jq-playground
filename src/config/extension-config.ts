@@ -7,7 +7,7 @@ import {
   executeCommand,
   showErrorMessage,
   showInformationMessage,
-} from "./adapters/vscode-adapter";
+} from "../adapters/vscode-adapter";
 
 type SupportedPlatform = "darwin" | "linux" | "win32";
 

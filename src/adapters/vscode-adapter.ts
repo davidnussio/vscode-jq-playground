@@ -266,14 +266,14 @@ export const treeDataProvider =
             )
           );
         },
-        getParent: provider.parent
-          ? (element) =>
+        ...(provider.parent ? {
+          getParent: (element) =>
               Effect.runPromise(
                 Effect.map(provider.parent!(element), Option.getOrUndefined)
               )
-          : undefined,
-        resolveTreeItem: provider.resolve
-          ? (item, element, token) =>
+        } : {}),
+        ...(provider.resolve ? {
+          resolveTreeItem: (item, element, token) =>
               runWithTokenDefault(
                 Effect.map(
                   provider.resolve!(item, element),
@@ -281,7 +281,7 @@ export const treeDataProvider =
                 ),
                 token
               )
-          : undefined,
+        } : {}),
       };
       const context = yield* VsCodeContext;
       context.subscriptions.push(

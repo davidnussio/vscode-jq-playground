@@ -1,14 +1,14 @@
-import * as vscode from "vscode";
-import { Logger } from "./logger";
+import * as vscode from 'vscode';
+import { Logger } from './logger';
 
-export type RenderOutputType = "output" | "editor";
+export type RenderOutputType = 'output' | 'editor';
 
 export const renderOutput = (type: RenderOutputType) => (data: string) => {
-  if (type === "editor") {
+  if (type === 'editor') {
     vscode.workspace
-      .openTextDocument({ content: data, language: "json" })
+      .openTextDocument({ content: data, language: 'json' })
       .then((doc) =>
-        vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside),
+        vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside)
       );
   } else {
     Logger.clear();

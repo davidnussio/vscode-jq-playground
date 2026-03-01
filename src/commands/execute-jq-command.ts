@@ -1,12 +1,12 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { HttpClient } from "@effect/platform";
-import { pipe } from "effect";
-import * as Cause from "effect/Cause";
-import * as Effect from "effect/Effect";
-import * as Option from "effect/Option";
-import * as Schema from "effect/Schema";
-import { parse } from "shell-quote";
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { HttpClient } from '@effect/platform';
+import { pipe } from 'effect';
+import * as Cause from 'effect/Cause';
+import * as Effect from 'effect/Effect';
+import * as Option from 'effect/Option';
+import * as Schema from 'effect/Schema';
+import { parse } from 'shell-quote';
 import {
   Position,
   Range,
@@ -14,17 +14,17 @@ import {
   type TextEditor,
   window,
   workspace,
-} from "vscode";
+} from 'vscode';
 import {
   activeTextEditor,
   showErrorMessage,
   showWarningMessage,
-} from "../adapters/vscode-adapter";
-import type { JqMatch } from "../code-lens";
-import { CONFIGS } from "../configs";
-import { ExtensionConfig, jqPathSetting } from "../extension-config";
-import { parseJqCommandArgs, spawnCommandEffect } from "../lib/command-line";
-import { type RenderOutputType, renderError, renderOutput } from "../renderers";
+} from '../adapters/vscode-adapter';
+import type { JqMatch } from '../code-lens';
+import { CONFIGS } from '../configs';
+import { ExtensionConfig, jqPathSetting } from '../extension-config';
+import { parseJqCommandArgs, spawnCommandEffect } from '../lib/command-line';
+import { type RenderOutputType, renderError, renderOutput } from '../renderers';
 
 function getFileName(cwd: string, context: string): string {
   if (context.search(/^(\/|[a-z]:\\)/gi) === 0) {
@@ -69,7 +69,7 @@ function estraiMultilineQuery(
 ): { query: string; lineOffset: number } {
   let lineOffset = 1;
   for (
-    let line = startLine + lineOffset, documentLine = "";
+    let line = startLine + lineOffset, documentLine = '';
     queryLineWithoutOpts.search(/[^\\]'\s*$/) === -1 &&
     line < document.lineCount;
     line++
@@ -88,7 +88,7 @@ function gestisciRedirezioneOutput(
   document: TextDocument,
   contextLine: number
 ): { outputFile: string; contextLine: number; lineOffset: number } {
-  const outputFile = document.lineAt(contextLine).text.replace("> ", "").trim();
+  const outputFile = document.lineAt(contextLine).text.replace('> ', '').trim();
   return { outputFile, contextLine: contextLine + 1, lineOffset: 1 };
 }
 
@@ -103,7 +103,7 @@ function gestisciRedirezioneOutputAppend(
 } {
   const outputFile = document
     .lineAt(contextLine)
-    .text.replace(">> ", "")
+    .text.replace('>> ', '')
     .trim();
   return {
     outputFile,
@@ -161,12 +161,12 @@ function gestisciInputDaShellCommand(
   variables: Record<string, string>,
   cwd: string
 ): void {
-  const [httpCli, ...httpCliOptions] = parse(context.replace("$ ", ""), {
+  const [httpCli, ...httpCliOptions] = parse(context.replace('$ ', ''), {
     ...process.env,
     ...variables,
   });
-  if (httpCli === "http") {
-    httpCliOptions.unshift("--ignore-stdin");
+  if (httpCli === 'http') {
+    httpCliOptions.unshift('--ignore-stdin');
   }
   spawnCommandEffect(httpCli as string, httpCliOptions as string[], { cwd })()
     .then(([_, out]: [string, string]) => {
@@ -187,12 +187,12 @@ const currentWorkingDirectory = (): string => {
   const cwdActiveFile = pipe(
     Option.fromNullable(window.activeTextEditor),
     Option.map((editor) => editor.document.fileName),
-    Option.map((fileName) => path.join(fileName, ".."))
+    Option.map((fileName) => path.join(fileName, '..'))
   );
   const cwdFirstWorkspace = pipe(
     Option.fromNullable(workspace.workspaceFolders),
     Option.map((folder) => folder[0].uri.path),
-    Option.getOrElse(() => ".")
+    Option.getOrElse(() => '.')
   );
   return Option.getOrElse(cwdActiveFile, () => cwdFirstWorkspace);
 };
@@ -201,11 +201,11 @@ function isUrl(url: string): boolean {
   return Schema.decodeUnknownOption(Schema.URL)(url).pipe(Option.isSome);
 }
 
-const urlProcessor = Effect.fn("processUrlContent")(function* (
+const urlProcessor = Effect.fn('processUrlContent')(function* (
   context: string
 ) {
   if (!isUrl(context)) {
-    return yield* Effect.fail("Is not a valid URL");
+    return yield* Effect.fail('Is not a valid URL');
   }
   const client = yield* HttpClient.HttpClient;
   const response = yield* client.get(context);
@@ -223,7 +223,7 @@ const workspaceFileProcessor = (
   );
   return foundDocument
     ? Effect.succeed(foundDocument.getText())
-    : Effect.fail("");
+    : Effect.fail('');
 };
 
 const inlineJsonProcessor = (
@@ -245,20 +245,20 @@ const inlineJsonProcessor = (
     contextLines.push(`${lineText}\n`);
   }
 
-  return Effect.succeed(contextLines.join(""));
+  return Effect.succeed(contextLines.join(''));
 };
 
 const readEditorVariables = (editor: TextEditor): Map<string, string> => {
   const variables = new Map<string, string>();
   for (let i = 0; i < editor.document.lineCount; i++) {
     const lineText = editor.document.lineAt(i).text.trim();
-    if (lineText.startsWith("jq")) {
+    if (lineText.startsWith('jq')) {
       break;
     }
-    if (lineText.startsWith("#")) {
+    if (lineText.startsWith('#')) {
       continue;
     }
-    const [varName, varValue] = lineText.split("=");
+    const [varName, varValue] = lineText.split('=');
     if (varName && varValue) {
       variables.set(varName.trim(), varValue.trim());
     }
@@ -268,24 +268,24 @@ const readEditorVariables = (editor: TextEditor): Map<string, string> => {
 
 const findPreviousJqQueryLine = (editor: TextEditor): Option.Option<number> => {
   let { line } = editor.selection.start;
-  let queryLine = "";
+  let queryLine = '';
 
   do {
     queryLine = editor.document.lineAt(line).text;
-  } while (queryLine.startsWith("jq") === false && line-- > 0);
+  } while (queryLine.startsWith('jq') === false && line-- > 0);
 
-  return queryLine.startsWith("jq") ? Option.some(line) : Option.none();
+  return queryLine.startsWith('jq') ? Option.some(line) : Option.none();
 };
 
 export const queryRunner = (openResult: RenderOutputType) =>
   Effect.fnUntraced(function* () {
-    yield* Effect.log("Running jq query from editor");
+    yield* Effect.log('Running jq query from editor');
     const activeEditor = activeTextEditor();
 
     if (Option.isNone(activeEditor)) {
-      yield* showWarningMessage("No active text editor found.");
+      yield* showWarningMessage('No active text editor found.');
       return yield* Effect.fail(
-        "No active text editor found. Please open a file."
+        'No active text editor found. Please open a file.'
       );
     }
 
@@ -295,7 +295,7 @@ export const queryRunner = (openResult: RenderOutputType) =>
 
     if (Option.isNone(jqQueryLine)) {
       yield* showWarningMessage(
-        "Current line does not contain jq query string"
+        'Current line does not contain jq query string'
       );
     } else {
       const line = yield* jqQueryLine;
@@ -331,9 +331,9 @@ export const executeJqCommand = (params: {
     const cwd = currentWorkingDirectory();
     const queryLine: string = document
       .lineAt(params.range.start.line)
-      .text.replace(/jq\s+/, "");
+      .text.replace(/jq\s+/, '');
     const args = parseJqCommandArgs(queryLine);
-    let queryLineWithoutOpts = args.at(-1) ?? "";
+    let queryLineWithoutOpts = args.at(-1) ?? '';
     let lineOffset = 1;
 
     // Multiline jq filter tra apici
@@ -352,16 +352,16 @@ export const executeJqCommand = (params: {
       params.range.start.line + lineOffset,
       document.lineCount - 1
     );
-    let outputFile = "";
+    let outputFile = '';
     let appendToOutputFile = false;
 
-    if (document.lineAt(contextLine)?.text?.startsWith("> ")) {
+    if (document.lineAt(contextLine)?.text?.startsWith('> ')) {
       const res = gestisciRedirezioneOutput(document, contextLine);
       outputFile = res.outputFile;
       contextLine = res.contextLine;
       lineOffset += res.lineOffset;
     }
-    if (document.lineAt(contextLine)?.text?.startsWith(">> ")) {
+    if (document.lineAt(contextLine)?.text?.startsWith('>> ')) {
       const res = gestisciRedirezioneOutputAppend(document, contextLine);
       outputFile = res.outputFile;
       contextLine = res.contextLine;
@@ -405,7 +405,7 @@ export const executeJqCommand = (params: {
     yield* Effect.log(`Using jq binary at: ${jqExecutablePath}`);
 
     const jqCommand = spawnCommandEffect(
-      Option.getOrElse(jqExecutablePath, () => ""),
+      Option.getOrElse(jqExecutablePath, () => ''),
       args,
       {
         cwd,
@@ -438,9 +438,9 @@ export const executeJqCommand = (params: {
         return pipe(
           Effect.fail(Cause.pretty(cause)),
           Effect.tapError((errorMessage) =>
-            showErrorMessage(errorMessage, "Open Settings").pipe(
+            showErrorMessage(errorMessage, 'Open Settings').pipe(
               Effect.andThen((userChoice) =>
-                userChoice === "Open Settings" ? jqPathSetting() : Effect.void
+                userChoice === 'Open Settings' ? jqPathSetting() : Effect.void
               )
             )
           )

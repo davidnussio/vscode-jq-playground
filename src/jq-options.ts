@@ -16,10 +16,10 @@ export interface JqOptions {
   // filter inputs
   filter?: string;
   /** If true, interpret filter as path to filter file */
-  "from-file"?: boolean;
+  'from-file'?: boolean;
 
   // libs
-  "module-dirs"?: string[];
+  'module-dirs'?: string[];
 
   // filter arguments
   arg?: { [name: string]: string };
@@ -31,80 +31,80 @@ export interface JqOptions {
 
   stream?: boolean;
   slurp?: boolean;
-  "raw-input"?: boolean;
-  "compact-output"?: boolean;
+  'raw-input'?: boolean;
+  'compact-output'?: boolean;
   tab?: boolean;
   indent?: number;
-  "sort-keys"?: boolean;
-  "raw-output"?: boolean;
-  "join-output"?: boolean;
+  'sort-keys'?: boolean;
+  'raw-output'?: boolean;
+  'join-output'?: boolean;
 }
 
 function mapArgs(options: JqOptions, key: string) {
   const prop = <K extends keyof JqOptions>(
     key: K,
-    map: (value: JqOptions[K]) => string[],
+    map: (value: JqOptions[K]) => string[]
   ) => {
     const value = options[key];
     return value != null ? map(value) : null;
   };
   switch (key) {
-    case "module-dirs":
-      return prop(key, (moduleDirs) => moduleDirs.flatMap((d) => ["-L", d]));
-    case "arg":
+    case 'module-dirs':
+      return prop(key, (moduleDirs) => moduleDirs.flatMap((d) => ['-L', d]));
+    case 'arg':
       return prop(key, (arg) =>
-        Object.entries(arg).flatMap(([key, value]) => ["--arg", key, value]),
+        Object.entries(arg).flatMap(([key, value]) => ['--arg', key, value])
       );
-    case "argjson":
+    case 'argjson':
       return prop(key, (argjson) =>
         Object.entries(argjson).flatMap(([key, value]) => [
-          "--argjson",
+          '--argjson',
           key,
           value,
-        ]),
+        ])
       );
-    case "slurpfile":
+    case 'slurpfile':
       return prop(key, (slurpfile) =>
         Object.entries(slurpfile).flatMap(([key, value]) => [
-          "--slurpfile",
+          '--slurpfile',
           key,
           value,
-        ]),
+        ])
       );
-    case "rawfile":
+    case 'rawfile':
       return prop(key, (rawfile) =>
         Object.entries(rawfile).flatMap(([key, value]) => [
-          "--rawfile",
+          '--rawfile',
           key,
           value,
-        ]),
+        ])
       );
-    case "argfile":
+    case 'argfile':
       return prop(key, (argfile) =>
         Object.entries(argfile).flatMap(([key, value]) => [
-          "--argfile",
+          '--argfile',
           key,
           value,
-        ]),
+        ])
       );
-    case "stream":
-      return prop(key, () => ["--stream"]);
-    case "slurp":
-      return prop(key, () => ["--slurp"]);
-    case "raw-input":
-      return prop(key, () => ["--raw-input"]);
-    case "compact-output":
-      return prop(key, () => ["--compact-output"]);
-    case "tab":
-      return prop(key, () => ["--tab"]);
-    case "indent":
-      return prop(key, (n) => ["--indent", `${n}`]);
-    case "sort-keys":
-      return prop(key, () => ["--sort-keys"]);
-    case "raw-output":
-      return prop(key, () => ["--raw-output"]);
-    case "join-output":
-      return prop(key, () => ["--join-output"]);
+    case 'stream':
+      return prop(key, () => ['--stream']);
+    case 'slurp':
+      return prop(key, () => ['--slurp']);
+    case 'raw-input':
+      return prop(key, () => ['--raw-input']);
+    case 'compact-output':
+      return prop(key, () => ['--compact-output']);
+    case 'tab':
+      return prop(key, () => ['--tab']);
+    case 'indent':
+      return prop(key, (n) => ['--indent', `${n}`]);
+    case 'sort-keys':
+      return prop(key, () => ['--sort-keys']);
+    case 'raw-output':
+      return prop(key, () => ['--raw-output']);
+    case 'join-output':
+      return prop(key, () => ['--join-output']);
     default:
       return null;
   }
@@ -120,14 +120,14 @@ export const buildJqCommandArgs = (params: JqOptions) => {
     }
   }
   if (!params.input) {
-    args.push("--null-input");
+    args.push('--null-input');
   }
-  if (params["from-file"]) {
-    args.push("--from-file", params.filter);
+  if (params['from-file']) {
+    args.push('--from-file', params.filter);
   } else if (params.filter) {
     args.push(params.filter);
   } else {
-    args.push(".");
+    args.push('.');
   }
   return args;
 };

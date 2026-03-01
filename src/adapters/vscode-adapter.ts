@@ -267,11 +267,11 @@ export const treeDataProvider =
           );
         },
         getParent: provider.parent
-          ? (element) =>
+          ? (element: A) =>
               Effect.runPromise(
-                Effect.map(provider.parent!(element), Option.getOrUndefined)
-              )
-          : undefined,
+                Effect.map(provider.parent!(element), (x) => Option.getOrUndefined(x) ?? undefined)
+              ) as any
+          : undefined as any,
         resolveTreeItem: provider.resolve
           ? (item, element, token) =>
               runWithTokenDefault(
@@ -281,7 +281,7 @@ export const treeDataProvider =
                 ),
                 token
               )
-          : undefined,
+          : undefined as any,
       };
       const context = yield* VsCodeContext;
       context.subscriptions.push(

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-
 export interface JqOptions {
   // spawn options
   cwd?: string;
@@ -42,69 +40,56 @@ export interface JqOptions {
 
 function mapArgs(options: JqOptions, key: string) {
   const prop = <K extends keyof JqOptions>(
-    key: K,
-    map: (value: JqOptions[K]) => string[],
+    k: K,
+    mapFn: (value: Exclude<JqOptions[K], undefined>) => string[]
   ) => {
-    const value = options[key];
-    return value != null ? map(value) : null;
+    const value = options[k];
+    return value !== undefined ? mapFn(value as any) : null;
   };
+
   switch (key) {
     case "module-dirs":
-      return prop(key, (moduleDirs) => moduleDirs.flatMap((d) => ["-L", d]));
+      return prop("module-dirs", (moduleDirs) =>
+        moduleDirs.flatMap((d) => ["-L", d])
+      );
     case "arg":
-      return prop(key, (arg) =>
-        Object.entries(arg).flatMap(([key, value]) => ["--arg", key, value]),
+      return prop("arg", (arg) =>
+        Object.entries(arg).flatMap(([k, v]) => ["--arg", k, v])
       );
     case "argjson":
-      return prop(key, (argjson) =>
-        Object.entries(argjson).flatMap(([key, value]) => [
-          "--argjson",
-          key,
-          value,
-        ]),
+      return prop("argjson", (argjson) =>
+        Object.entries(argjson).flatMap(([k, v]) => ["--argjson", k, v])
       );
     case "slurpfile":
-      return prop(key, (slurpfile) =>
-        Object.entries(slurpfile).flatMap(([key, value]) => [
-          "--slurpfile",
-          key,
-          value,
-        ]),
+      return prop("slurpfile", (slurpfile) =>
+        Object.entries(slurpfile).flatMap(([k, v]) => ["--slurpfile", k, v])
       );
     case "rawfile":
-      return prop(key, (rawfile) =>
-        Object.entries(rawfile).flatMap(([key, value]) => [
-          "--rawfile",
-          key,
-          value,
-        ]),
+      return prop("rawfile", (rawfile) =>
+        Object.entries(rawfile).flatMap(([k, v]) => ["--rawfile", k, v])
       );
     case "argfile":
-      return prop(key, (argfile) =>
-        Object.entries(argfile).flatMap(([key, value]) => [
-          "--argfile",
-          key,
-          value,
-        ]),
+      return prop("argfile", (argfile) =>
+        Object.entries(argfile).flatMap(([k, v]) => ["--argfile", k, v])
       );
     case "stream":
-      return prop(key, () => ["--stream"]);
+      return prop("stream", () => ["--stream"]);
     case "slurp":
-      return prop(key, () => ["--slurp"]);
+      return prop("slurp", () => ["--slurp"]);
     case "raw-input":
-      return prop(key, () => ["--raw-input"]);
+      return prop("raw-input", () => ["--raw-input"]);
     case "compact-output":
-      return prop(key, () => ["--compact-output"]);
+      return prop("compact-output", () => ["--compact-output"]);
     case "tab":
-      return prop(key, () => ["--tab"]);
+      return prop("tab", () => ["--tab"]);
     case "indent":
-      return prop(key, (n) => ["--indent", `${n}`]);
+      return prop("indent", (n) => ["--indent", `${n}`]);
     case "sort-keys":
-      return prop(key, () => ["--sort-keys"]);
+      return prop("sort-keys", () => ["--sort-keys"]);
     case "raw-output":
-      return prop(key, () => ["--raw-output"]);
+      return prop("raw-output", () => ["--raw-output"]);
     case "join-output":
-      return prop(key, () => ["--join-output"]);
+      return prop("join-output", () => ["--join-output"]);
     default:
       return null;
   }
@@ -112,7 +97,6 @@ function mapArgs(options: JqOptions, key: string) {
 
 export const buildJqCommandArgs = (params: JqOptions) => {
   const args = [];
-  // eslint-disable-next-line no-restricted-syntax
   for (const key of Object.keys(params)) {
     const value = mapArgs(params, key);
     if (value) {

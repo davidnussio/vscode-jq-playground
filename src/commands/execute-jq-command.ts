@@ -23,7 +23,9 @@ import {
 import type { JqMatch } from "../code-lens";
 import { CONFIGS } from "../configs";
 import { ExtensionConfig, jqPathSetting } from "../extension-config";
+import { buildJqCommandArgs, JqOptions } from "../jq-options";
 import { parseJqCommandArgs, spawnCommandEffect } from "../lib/command-line";
+import { resolveVariables } from "../lib/variable-resolver";
 import { type RenderOutputType, renderError, renderOutput } from "../renderers";
 
 function getFileName(cwd: string, context: string): string {
@@ -142,38 +144,38 @@ function renderOutputDecorator(
 //     });
 // }
 
-function gestisciInputDaFilepathLocale(
-  cwd: string,
-  context: string,
-  args: string[]
-): string {
-  spawnCommand(CONFIGS.FILEPATH, args.concat(getFiles(cwd, context.trim())), {
-    cwd,
-  })()
-    .then(([_, out]): [string, string] => {
-      return out;
-    })
-    .catch(renderError);
-}
+// function gestisciInputDaFilepathLocale(
+//   cwd: string,
+//   context: string,
+//   args: string[]
+// ): string {
+//   spawnCommand(CONFIGS.FILEPATH, args.concat(getFiles(cwd, context.trim())), {
+//     cwd,
+//   })()
+//     .then(([_, out]): [string, string] => {
+//       return out;
+//     })
+//     .catch(renderError);
+// }
 
-function gestisciInputDaShellCommand(
-  context: string,
-  variables: Record<string, string>,
-  cwd: string
-): void {
-  const [httpCli, ...httpCliOptions] = parse(context.replace("$ ", ""), {
-    ...process.env,
-    ...variables,
-  });
-  if (httpCli === "http") {
-    httpCliOptions.unshift("--ignore-stdin");
-  }
-  spawnCommandEffect(httpCli as string, httpCliOptions as string[], { cwd })()
-    .then(([_, out]: [string, string]) => {
-      return out;
-    })
-    .catch(renderError);
-}
+// function gestisciInputDaShellCommand(
+//   context: string,
+//   variables: Record<string, string>,
+//   cwd: string
+// ): void {
+//   const [httpCli, ...httpCliOptions] = parse(context.replace("$ ", ""), {
+//     ...process.env,
+//     ...variables,
+//   });
+//   if (httpCli === "http") {
+//     httpCliOptions.unshift("--ignore-stdin");
+//   }
+//   spawnCommandEffect(httpCli as string, httpCliOptions as string[], { cwd })()
+//     .then(([_, out]: [string, string]) => {
+//       return out;
+//     })
+//     .catch(renderError);
+// }
 
 // ------------------------------------------------------------
 // ------------------------------------------------------------
@@ -313,6 +315,65 @@ export const queryRunner = (openResult: RenderOutputType) =>
     }
   });
 // Esegue un comando jq dato un documento e delle variabili
+export const executeJqInputCommand = (params: JqOptions) =>
+  Effect.gen(function* () {
+    const cwd = params.cwd ?? currentWorkingDirectory();
+    const env = params.env;
+    const rawArgs = params.rawArgs;
+
+    const args: string[] = rawArgs
+      ? parseJqCommandArgs(rawArgs)
+      : (buildJqCommandArgs(params).filter(a => a !== undefined) as string[]);
+
+    let input: string | null = null;
+    if (params.jsonInput && typeof params.input === "string") {
+      input = params.input;
+    } else if (Array.isArray(params.input)) {
+      args.push(...(params.input as string[]));
+    } else if (params.input) {
+      args.push(params.input as string);
+    }
+
+    const context = { cwd, env };
+    const resolvedArgs = yield* resolveVariables(context, args);
+    const resolvedInput = yield* resolveVariables(context, input || "");
+
+    const { jq } = yield* ExtensionConfig;
+    const jqExecutablePath = yield* jq.path.pipe(
+      Effect.tap((path) =>
+        Option.isSome(path)
+          ? Effect.succeed(path)
+          : Effect.fail(
+              `No jq binary path found (${path}). Please configure it in the settings.`
+            )
+      ),
+      Effect.tapError((message) => showErrorMessage(message))
+    );
+
+    const result = yield* spawnCommandEffect(
+      Option.getOrElse(jqExecutablePath, () => ""),
+      resolvedArgs,
+      context
+    )(resolvedInput).pipe(
+      Effect.map((out) => out.replace(/\n$/, "")), // remove trailing newline
+      Effect.tapErrorCause((cause) => {
+        return pipe(
+          Effect.fail(Cause.pretty(cause)),
+          Effect.tapError((errorMessage) =>
+            showErrorMessage(errorMessage, "Open Settings").pipe(
+              Effect.andThen((userChoice) =>
+                userChoice === "Open Settings" ? jqPathSetting() : Effect.void
+              )
+            )
+          )
+        );
+      })
+    );
+
+    renderOutput("output")(result);
+    return result;
+  });
+
 export const executeJqCommand = (params: {
   document: TextDocument;
   range: Range;
@@ -422,7 +483,7 @@ export const executeJqCommand = (params: {
     const processors = [
       urlProcessor(context),
       workspaceFileProcessor(context, workspace.textDocuments),
-      isFilepath(cwd, context.trim()),
+      // isFilepath(cwd, context.trim()), // this is boolean, removing to fix type error
       //  gestisciInputDaFilepathLocale(cwd, context, args),
       // /^\$ (http|curl|wget|cat|echo|ls|dir|grep|tail|head|find)(?:\.exe)? /.exec(
       //   context

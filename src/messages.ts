@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-// eslint-disable-next-line no-unused-vars
 import * as vscode from "vscode";
 import { readFile } from "node:fs";
 import { join } from "node:path";

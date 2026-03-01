@@ -7,12 +7,11 @@ import { launch, logger, VsCodeContext } from "./adapters/vscode-adapter";
 import { ExtensionConfig } from "./extension-config";
 import { SetupEnvLive } from "./setup-env";
 
-const MainLive = Layer.mergeAll(SetupEnvLive).pipe(
+const MainLive: Layer.Layer<never, never, VsCodeContext> = Layer.mergeAll(SetupEnvLive).pipe(
   Layer.provide(logger("JQ Playground")),
   Layer.provide(ExtensionConfig.Default),
   Layer.provide(FetchHttpClient.layer)
-  // Layer.provide(NodeContext.layer)
-);
+) as unknown as Layer.Layer<never, never, VsCodeContext>;
 
 export function activate(context: vscode.ExtensionContext) {
   launch(MainLive).pipe(

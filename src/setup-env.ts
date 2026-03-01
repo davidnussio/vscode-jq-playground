@@ -16,12 +16,14 @@ import { builtins } from "./builtins";
 
 import { jqQueryLenses } from "./code-lens";
 import {
-  notImplemented,
   openExamples,
   openManual,
   openTutorial,
 } from "./commands";
-import { executeJqCommand, queryRunner } from "./commands/execute-jq-command";
+import { executeJqCommand, executeJqInputCommand, queryRunner } from "./commands/execute-jq-command";
+import { inputBoxFilter } from "./inputbox-filter";
+
+const inputBoxFilterHandler = inputBoxFilter();
 
 const SetupCommands = Effect.gen(function* () {
   yield* registerCommand("extension.openManual", openManual);
@@ -29,9 +31,10 @@ const SetupCommands = Effect.gen(function* () {
   yield* registerCommand("extension.openExamples", openExamples);
   yield* registerCommand("extension.runQueryOutput", queryRunner("output"));
   yield* registerCommand("extension.runQueryEditor", queryRunner("editor"));
-  yield* registerCommand("extension.createJqpgFromFilter", notImplemented);
-  yield* registerCommand("extension.jqpgFromFilter", notImplemented);
+  yield* registerCommand("extension.createJqpgFromFilter", () => inputBoxFilterHandler(true)());
+  yield* registerCommand("extension.jqpgFromFilter", () => inputBoxFilterHandler(false)());
   yield* registerCommand("extension.executeJqCommand", executeJqCommand);
+  yield* registerCommand("extension.executeJqInputCommand", executeJqInputCommand);
 });
 
 const SetupCodeLens = Effect.gen(function* () {

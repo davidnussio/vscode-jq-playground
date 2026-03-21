@@ -8,6 +8,7 @@ import { executeJqCommand, queryRunner } from './commands/execute-query';
 import { executeJqInputCommand } from './commands/execute-jq-input-command';
 import { openExamples, openManual, openTutorial } from './commands/open-resources';
 import { createJqpgFromFilter, executeJqFromFilter } from './commands/playground';
+import { configureJqPathCommand, downloadJqBinaryCommand } from './services/JqBinaryService';
 import { LANGUAGES } from './domain/constants';
 import { jqQueryLenses } from './providers/code-lens';
 import { jqBuiltinsProvider, workspaceFilesProvider } from './providers/completion';
@@ -22,6 +23,8 @@ const SetupCommands = Effect.gen(function* () {
   yield* registerCommand('extension.jqpgFromFilter', executeJqFromFilter);
   yield* registerCommand('extension.executeJqCommand', executeJqCommand);
   yield* registerCommand('extension.executeJqInputCommand', executeJqInputCommand);
+  yield* registerCommand('extension.configureJqPath', () => configureJqPathCommand);
+  yield* registerCommand('extension.downloadJqBinary', () => downloadJqBinaryCommand);
 });
 
 const SetupCodeLens = Effect.gen(function* () {

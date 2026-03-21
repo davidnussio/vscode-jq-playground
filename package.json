@@ -54,7 +54,7 @@
         "jqPlayground.binaryPath": {
           "type": "string",
           "default": "",
-          "description": "Specifies the folder path to jq binary. (/home/user/bin/jq). Leaves empty to automatically download from github.",
+          "description": "Path to the jq binary. If empty, the extension checks your system PATH first and prompts you to configure or download if not found.",
           "scope": "application"
         }
       }
@@ -119,6 +119,16 @@
       {
         "command": "extension.executeJqInputCommand",
         "title": "Execute jq input command",
+        "category": "JQPG"
+      },
+      {
+        "command": "extension.configureJqPath",
+        "title": "Configure jq path",
+        "category": "JQPG"
+      },
+      {
+        "command": "extension.downloadJqBinary",
+        "title": "Download jq binary",
         "category": "JQPG"
       }
     ],

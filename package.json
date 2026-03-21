@@ -56,6 +56,18 @@
           "default": "",
           "description": "Path to the jq binary. If empty, the extension checks your system PATH first and prompts you to configure or download if not found.",
           "scope": "application"
+        },
+        "jqPlayground.shortcutLabelConsole": {
+          "type": "string",
+          "default": "",
+          "description": "Shortcut label shown in the 'console' code lens. Leave empty to auto-detect from keybinding configuration.",
+          "scope": "application"
+        },
+        "jqPlayground.shortcutLabelEditor": {
+          "type": "string",
+          "default": "",
+          "description": "Shortcut label shown in the 'editor' code lens. Leave empty to auto-detect from keybinding configuration.",
+          "scope": "application"
         }
       }
     },

@@ -156,15 +156,13 @@ const promptUseSystemBinary = (
     const choice = yield* showInformationMessage(
       `Found system jq at ${systemJqPath} (${systemVersion}). Use it?`,
       "Yes, use system jq",
-      "Configure path manually",
+      "Configure manually",
       "Download latest"
     );
     if (choice === "Yes, use system jq") {
       yield* updatePath(systemJqPath);
-      yield* Effect.log(
-        `Using system jq: ${systemJqPath} (${systemVersion})`
-      );
-    } else if (choice === "Configure path manually") {
+      yield* Effect.log(`Using system jq: ${systemJqPath} (${systemVersion})`);
+    } else if (choice === "Configure manually") {
       yield* openBinaryPathSettings();
     } else if (choice === "Download latest") {
       yield* Effect.log("User chose to download jq");
@@ -172,9 +170,9 @@ const promptUseSystemBinary = (
     }
   });
 
-const resolveJqBinary = (
-  jqBinaryPathRef: { update: (value: string) => Effect.Effect<void> }
-) =>
+const resolveJqBinary = (jqBinaryPathRef: {
+  update: (value: string) => Effect.Effect<void>;
+}) =>
   Effect.gen(function* () {
     const systemJqPath = yield* findInstalledJqPath().pipe(
       Effect.catchAll(() => Effect.succeed(null as string | null))

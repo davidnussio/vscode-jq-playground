@@ -32,11 +32,6 @@ export const BINARIES: Record<
 
 export const JQ_QUERY_REGEX = /^jq\s/;
 
-export const CODELENS_TITLE_CONSOLE = /^darwin/.test(process.platform)
-  ? "⚡ console (cmd+enter)"
-  : "⚡ console (ctrl+enter)";
-
-export const CODELENS_TITLE_EDITOR = "⚡ editor (shift+enter)";
 
 export const EXAMPLES_PATH = path.join(".", "examples");
 

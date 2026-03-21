@@ -1,10 +1,6 @@
 import { Array, pipe } from "effect";
 import { CodeLens, Range, type TextDocument } from "vscode";
-import {
-  CODELENS_TITLE_CONSOLE,
-  CODELENS_TITLE_EDITOR,
-  JQ_QUERY_REGEX,
-} from "../domain/constants";
+import { JQ_QUERY_REGEX } from "../domain/constants";
 
 export interface JqMatch {
   readonly document: TextDocument;
@@ -35,8 +31,7 @@ const makeCodeLens = (
   openResult: "output" | "editor"
 ): CodeLens =>
   new CodeLens(match.range, {
-    title:
-      openResult === "output" ? CODELENS_TITLE_CONSOLE : CODELENS_TITLE_EDITOR,
+    title: openResult === "output" ? "⚡ console" : "⚡ editor",
     command: "extension.executeJqCommand",
     arguments: [{ ...match, index, openResult }],
   });

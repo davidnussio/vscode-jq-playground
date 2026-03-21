@@ -171,7 +171,7 @@
     "fix": "ultracite fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.7",
+    "@biomejs/biome": "2.4.8",
     "@effect/language-service": "^0.81.0",
     "@types/glob": "9.0.0",
     "@types/node": "^25.5.0",
@@ -191,7 +191,7 @@
     "typescript": "^5.9.3",
     "ultracite": "7.3.2",
     "vitest": "^4.1.0",
-    "yaml": "^2.8.2"
+    "yaml": "^2.8.3"
   },
   "dependencies": {
     "@effect/platform": "^0.96.0",

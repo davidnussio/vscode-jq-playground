@@ -24,7 +24,7 @@
     "url": "https://github.com/davidnussio/vscode-jq-playground.git"
   },
   "engines": {
-    "vscode": "^1.97.0"
+    "vscode": "^1.110.0"
   },
   "categories": [
     "Other"

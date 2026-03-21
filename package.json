@@ -148,7 +148,7 @@
     ]
   },
   "scripts": {
-    "prepare": "ts-patch install -s",
+    "prepare": "husky",
     "vscode:prepublish": "pnpm run package",
     "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
     "wat": "npm-run-all -p watch:*",
@@ -166,10 +166,12 @@
     "generate:examples": "node ./internals/build-examples.js",
     "generate:autocomplete": "node ./internals/build-autocomplete.js",
     "generate:builtins": "jq -n 'builtins | sort | map(split(\"/\")[0]) | unique | map( { (.): {\"documentation\": \"\"} }) | add' > ./files/builtins.json",
-    "generate:all": "rm -rf files/*; npm run generate:download && npm run generate:builtins && npm run generate:examples && npm run generate:autocomplete"
+    "generate:all": "rm -rf files/*; npm run generate:download && npm run generate:builtins && npm run generate:examples && npm run generate:autocomplete",
+    "check": "ultracite check",
+    "fix": "ultracite fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.8",
+    "@biomejs/biome": "2.4.7",
     "@effect/language-service": "^0.81.0",
     "@types/glob": "9.0.0",
     "@types/node": "^25.5.0",
@@ -183,6 +185,7 @@
     "esbuild": "^0.27.4",
     "eslint": "^10.1.0",
     "glob": "^13.0.6",
+    "husky": "^9.1.7",
     "lefthook": "^2.1.4",
     "lint-staged": "^16.4.0",
     "npm-run-all": "^4.1.5",

@@ -115,6 +115,11 @@
         "command": "extension.jqpgFromFilter",
         "title": "Execute jq filter",
         "category": "JQPG"
+      },
+      {
+        "command": "extension.executeJqInputCommand",
+        "title": "Execute jq input command",
+        "category": "JQPG"
       }
     ],
     "keybindings": [
@@ -154,40 +159,40 @@
     "generate:all": "rm -rf files/*; npm run generate:download && npm run generate:builtins && npm run generate:examples && npm run generate:autocomplete"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.6",
-    "@effect/language-service": "^0.23.3",
-    "@types/glob": "8.1.0",
-    "@types/node": "^24.0.7",
-    "@types/ramda": "^0.30.2",
+    "@biomejs/biome": "2.4.8",
+    "@effect/language-service": "^0.81.0",
+    "@types/glob": "9.0.0",
+    "@types/node": "^25.5.0",
+    "@types/ramda": "^0.31.1",
     "@types/shell-quote": "^1.7.5",
-    "@types/vscode": "^1.101.0",
-    "@typescript-eslint/eslint-plugin": "^8.35.0",
-    "@typescript-eslint/parser": "^8.35.0",
-    "@vscode/test-cli": "^0.0.11",
+    "@types/vscode": "^1.110.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/parser": "^8.57.1",
+    "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.25.5",
-    "eslint": "^9.30.0",
-    "glob": "^11.0.3",
-    "lefthook": "^1.11.14",
-    "lint-staged": "^16.1.2",
+    "esbuild": "^0.27.4",
+    "eslint": "^10.1.0",
+    "glob": "^13.0.6",
+    "lefthook": "^2.1.4",
+    "lint-staged": "^16.4.0",
     "npm-run-all": "^4.1.5",
-    "simple-git-hooks": "^2.13.0",
+    "simple-git-hooks": "^2.13.1",
     "ts-patch": "^3.3.0",
-    "typescript": "^5.8.3",
-    "ultracite": "5.0.26",
-    "vitest": "^3.2.4",
-    "yaml": "^2.8.0"
+    "typescript": "^5.9.3",
+    "ultracite": "7.3.2",
+    "vitest": "^4.1.0",
+    "yaml": "^2.8.2"
   },
   "dependencies": {
-    "@effect/platform": "^0.89.0",
-    "@effect/platform-node": "^0.92.0",
-    "effect": "^3.17.0",
+    "@effect/platform": "^0.96.0",
+    "@effect/platform-node": "^0.106.0",
+    "effect": "^3.21.0",
     "eyes": "^0.1.8",
     "md5-file": "^5.0.0",
     "node-fetch": "3.3.2",
-    "ramda": "0.31.3",
+    "ramda": "0.32.0",
     "shell-quote": "^1.8.3",
-    "which": "5.0.0"
+    "which": "6.0.1"
   },
   "extensionDependencies": [
     "jq-syntax-highlighting.jq-syntax-highlighting"

@@ -43,10 +43,10 @@ export interface JqOptions {
 function mapArgs(options: JqOptions, key: string) {
   const prop = <K extends keyof JqOptions>(
     key: K,
-    map: (value: JqOptions[K]) => string[]
+    map: (value: NonNullable<JqOptions[K]>) => string[]
   ) => {
     const value = options[key];
-    return value != null ? map(value) : null;
+    return value != null ? map(value as NonNullable<JqOptions[K]>) : null;
   };
   switch (key) {
     case 'module-dirs':

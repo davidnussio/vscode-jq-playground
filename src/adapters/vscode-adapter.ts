@@ -266,22 +266,30 @@ export const treeDataProvider =
             )
           );
         },
-        getParent: provider.parent
-          ? (element) =>
-              Effect.runPromise(
-                Effect.map(provider.parent!(element), Option.getOrUndefined)
-              )
-          : undefined,
-        resolveTreeItem: provider.resolve
-          ? (item, element, token) =>
-              runWithTokenDefault(
-                Effect.map(
-                  provider.resolve!(item, element),
-                  Option.getOrUndefined
+        ...(provider.parent
+          ? {
+              getParent: (element: A) =>
+                Effect.runPromise(
+                  Effect.map(provider.parent!(element), Option.getOrUndefined)
                 ),
-                token
-              )
-          : undefined,
+            }
+          : {}),
+        ...(provider.resolve
+          ? {
+              resolveTreeItem: (
+                item: vscode.TreeItem,
+                element: A,
+                token: vscode.CancellationToken
+              ) =>
+                runWithTokenDefault(
+                  Effect.map(
+                    provider.resolve!(item, element),
+                    Option.getOrUndefined
+                  ),
+                  token
+                ),
+            }
+          : {}),
       };
       const context = yield* VsCodeContext;
       context.subscriptions.push(

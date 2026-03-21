@@ -1,6 +1,7 @@
 bin/**
 .vscode/**
 .vscode-test/**
+.vscode-test.mjs
 out/test/**
 out/**/*.map
 src/**
@@ -15,7 +16,26 @@ internals/**
 webpack.config.js
 files/**
 babel.config.js
-
 node_modules
-
 images
+
+# Dev/CI files
+.agents/**
+.claude/**
+.github/**
+.husky/**
+.editorconfig
+biome.jsonc
+lefthook.yml
+renovate.json
+pnpm-lock.yaml
+esbuild.js
+skills-lock.json
+vitest.config.ts_
+playground.test.jqpg
+effect-ts-llms.md
+architecture.excalidraw
+PLAN.md
+PROJECT.md
+TODO.md
+examples/**

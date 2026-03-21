@@ -25,6 +25,7 @@
         "namespaceImportPackages": ["effect"]
       }
     ],
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "skipLibCheck": true
   }
 }

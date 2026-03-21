@@ -17,7 +17,7 @@ const jqMatchRange = (document: TextDocument, line: number): JqMatch => ({
 const findAllMatches = (document: TextDocument): Array<JqMatch> => {
   const matches: Array<JqMatch> = [];
   for (let i = 0; i < document.lineCount; i++) {
-    const text = document.lineAt(i).text.substring(0, 30);
+    const text = document.lineAt(i).text.slice(0, 30);
     if (JQ_QUERY_REGEX.test(text)) {
       matches.push(jqMatchRange(document, i));
     }

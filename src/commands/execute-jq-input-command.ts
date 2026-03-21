@@ -4,6 +4,7 @@ import { pipe } from "effect";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import { window, workspace } from "vscode";
+import { FileNotFoundError, InputResolutionError } from "../domain/errors";
 import { JqExecutionService } from "../services/jq-execution-service";
 
 /**
@@ -38,7 +39,11 @@ export const executeJqInputCommand = (args?: {
 
       inputData = yield* Effect.try({
         try: () => fs.readFileSync(resolvedPath, "utf-8"),
-        catch: () => new Error(`Failed to read input file: ${resolvedPath}`),
+        catch: () =>
+          new FileNotFoundError({
+            path: resolvedPath,
+            message: `Failed to read input file: ${resolvedPath}`,
+          }),
       }).pipe(
         Effect.catchAll(() => {
           // Try as inline JSON — validate before using
@@ -47,9 +52,9 @@ export const executeJqInputCommand = (args?: {
             return Effect.succeed(inputPath);
           } catch {
             return Effect.fail(
-              new Error(
-                `Input "${inputPath}" is neither a readable file nor valid JSON`
-              )
+              new InputResolutionError({
+                message: `Input "${inputPath}" is neither a readable file nor valid JSON`,
+              })
             );
           }
         })

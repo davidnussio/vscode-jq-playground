@@ -11,11 +11,14 @@ import { InputResolutionError } from "../domain/errors";
 
 const JQ_LINE_REGEX = /^jq\s/;
 const COMMENT_LINE_REGEX = /^#/;
+const WHITESPACE_REGEX = /\s+/;
 
 // --- Path resolution helper ---
 
+const ABSOLUTE_PATH_REGEX = /^(\/|[a-z]:\\)/i;
+
 const resolvePath = (cwd: string, filePath: string): string =>
-  /^(\/|[a-z]:\\)/i.test(filePath)
+  ABSOLUTE_PATH_REGEX.test(filePath)
     ? path.resolve(filePath)
     : path.resolve(path.join(cwd, filePath));
 
@@ -36,7 +39,10 @@ const urlProcessor = Effect.fn("InputResolver.url")(function* (
   const response = yield* client.get(context).pipe(
     Effect.timeout(Duration.seconds(10)),
     Effect.mapError(
-      () => new InputResolutionError({ message: `URL fetch timed out or failed: ${context}` })
+      () =>
+        new InputResolutionError({
+          message: `URL fetch timed out or failed: ${context}`,
+        })
     )
   );
   return yield* response.text;
@@ -83,7 +89,7 @@ const fileProcessor = (cwd: string, context: string) => {
   return readFileAtPath(resolvedPath).pipe(
     Effect.catchAll(() => {
       // Try multiple files separated by spaces
-      const files = trimmed.split(/\s+/);
+      const files = trimmed.split(WHITESPACE_REGEX);
       if (files.length <= 1) {
         return Effect.fail(
           new InputResolutionError({

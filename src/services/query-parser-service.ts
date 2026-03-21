@@ -14,13 +14,18 @@ import { parseJqCommandArgs } from "../lib/command-line";
 // --- Multiline query extraction ---
 
 const UNESCAPED_QUOTE_END_REGEX = /(?:^|[^\\])'\s*$/;
+const SINGLE_QUOTE_WHITESPACE_REGEX = /^'\s*$/;
 const JQ_PREFIX_REGEX = /jq\s+/;
+const TRAILING_WHITESPACE_REGEX = /\s*$/;
 
 const hasClosingQuote = (query: string): boolean => {
   // Check if the string (after the opening quote) contains an unescaped closing quote.
   // We skip the first character which is the opening quote itself.
   const afterOpening = query.slice(1);
-  return UNESCAPED_QUOTE_END_REGEX.test(afterOpening) || /^'\s*$/.test(afterOpening);
+  return (
+    UNESCAPED_QUOTE_END_REGEX.test(afterOpening) ||
+    SINGLE_QUOTE_WHITESPACE_REGEX.test(afterOpening)
+  );
 };
 
 const extractMultilineQuery = (
@@ -39,7 +44,10 @@ const extractMultilineQuery = (
     lineOffset++;
   }
   // Remove opening and closing quotes
-  return { query: query.slice(1, -1).replace(/\s*$/, ""), lineOffset };
+  return {
+    query: query.slice(1, -1).replace(TRAILING_WHITESPACE_REGEX, ""),
+    lineOffset,
+  };
 };
 
 // --- Output redirect parsing ---

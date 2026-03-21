@@ -32,7 +32,6 @@ export const BINARIES: Record<
 
 export const JQ_QUERY_REGEX = /^jq\s/;
 
-
 export const EXAMPLES_PATH = path.join(".", "examples");
 
 export const LANGUAGES = ["jqpg", "jq"] as const;

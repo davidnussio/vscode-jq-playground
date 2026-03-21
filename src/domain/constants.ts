@@ -30,7 +30,7 @@ export const BINARIES: Record<
   },
 };
 
-export const JQ_QUERY_REGEX = /^(jq)\s+(.+?)/;
+export const JQ_QUERY_REGEX = /^jq\s/;
 
 export const CODELENS_TITLE_CONSOLE = /^darwin/.test(process.platform)
   ? "⚡ console (cmd+enter)"

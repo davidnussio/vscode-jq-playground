@@ -20,7 +20,10 @@ export class VsCodeContext extends Context.Tag("vscode/ExtensionContext")<
 
 export const thenable = <A>(f: () => Thenable<A>) =>
   Effect.async<A>((resume) => {
-    f().then((_) => resume(Effect.succeed(_)));
+    f().then(
+      (_) => resume(Effect.succeed(_)),
+      (err) => resume(Effect.die(err))
+    );
   });
 
 export const thenableCatch = <A, E>(
@@ -125,9 +128,14 @@ export const config = <A>(
         : Option.fromNullable(value);
     };
 
-    const update = (value: A) => {
-      return SubscriptionRef.set(ref, Option.fromNullable(value));
-    };
+    const update = (value: A) =>
+      thenable(() =>
+        vscode.workspace
+          .getConfiguration(namespace)
+          .update(setting, value, true)
+      ).pipe(
+        Effect.zipRight(SubscriptionRef.set(ref, Option.fromNullable(value)))
+      );
 
     const ref = yield* SubscriptionRef.make<Option.Option<A>>(get());
 

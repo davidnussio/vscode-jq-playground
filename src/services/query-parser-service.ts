@@ -13,8 +13,15 @@ import { parseJqCommandArgs } from "../lib/command-line";
 
 // --- Multiline query extraction ---
 
-const UNESCAPED_QUOTE_END_REGEX = /[^\\]'\s*$/;
+const UNESCAPED_QUOTE_END_REGEX = /(?:^|[^\\])'\s*$/;
 const JQ_PREFIX_REGEX = /jq\s+/;
+
+const hasClosingQuote = (query: string): boolean => {
+  // Check if the string (after the opening quote) contains an unescaped closing quote.
+  // We skip the first character which is the opening quote itself.
+  const afterOpening = query.slice(1);
+  return UNESCAPED_QUOTE_END_REGEX.test(afterOpening) || /^'\s*$/.test(afterOpening);
+};
 
 const extractMultilineQuery = (
   document: TextDocument,
@@ -25,13 +32,14 @@ const extractMultilineQuery = (
   let lineOffset = 1;
   for (
     let line = startLine + lineOffset;
-    query.search(UNESCAPED_QUOTE_END_REGEX) === -1 && line < document.lineCount;
+    !hasClosingQuote(query) && line < document.lineCount;
     line++
   ) {
-    query += document.lineAt(line).text;
+    query += `\n${document.lineAt(line).text}`;
     lineOffset++;
   }
-  return { query: query.slice(1, -1), lineOffset };
+  // Remove opening and closing quotes
+  return { query: query.slice(1, -1).replace(/\s*$/, ""), lineOffset };
 };
 
 // --- Output redirect parsing ---
@@ -136,19 +144,6 @@ export class QueryParserService extends Effect.Service<QueryParserService>()(
           lineOffset += redirect.lineOffset;
         }
 
-        // Check for append redirect after regular redirect
-        if (contextLine < document.lineCount) {
-          const redirect2 = parseOutputRedirect(document, contextLine);
-          if (
-            redirect2.target &&
-            redirect2.target._tag === "FileAppendOutput"
-          ) {
-            outputTarget = redirect2.target;
-            contextLine = redirect2.nextLine;
-            lineOffset += redirect2.lineOffset;
-          }
-        }
-
         return {
           args,
           filter,
@@ -157,7 +152,7 @@ export class QueryParserService extends Effect.Service<QueryParserService>()(
         } satisfies ParsedQuery;
       });
 
-      return { parse, readEditorVariables };
+      return { parse };
     },
   }
 ) {}

@@ -41,8 +41,17 @@ export const executeJqInputCommand = (args?: {
         catch: () => new Error(`Failed to read input file: ${resolvedPath}`),
       }).pipe(
         Effect.catchAll(() => {
-          // Try as inline JSON
-          return Effect.succeed(inputPath);
+          // Try as inline JSON — validate before using
+          try {
+            JSON.parse(inputPath);
+            return Effect.succeed(inputPath);
+          } catch {
+            return Effect.fail(
+              new Error(
+                `Input "${inputPath}" is neither a readable file nor valid JSON`
+              )
+            );
+          }
         })
       );
     } else {

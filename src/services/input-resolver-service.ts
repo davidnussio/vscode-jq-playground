@@ -3,16 +3,21 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { HttpClient } from "@effect/platform";
 import * as Duration from "effect/Duration";
-
-const WHITESPACE_REGEX = /\s+/;
-const JQ_LINE_REGEX = /^(jq)\s+(.+?)/;
-const COMMENT_LINE_REGEX = /^#/;
-
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import type { TextDocument } from "vscode";
 import { InputResolutionError } from "../domain/errors";
+
+const JQ_LINE_REGEX = /^jq\s/;
+const COMMENT_LINE_REGEX = /^#/;
+
+// --- Path resolution helper ---
+
+const resolvePath = (cwd: string, filePath: string): string =>
+  /^(\/|[a-z]:\\)/i.test(filePath)
+    ? path.resolve(filePath)
+    : path.resolve(path.join(cwd, filePath));
 
 // --- URL processor ---
 
@@ -28,7 +33,12 @@ const urlProcessor = Effect.fn("InputResolver.url")(function* (
     );
   }
   const client = yield* HttpClient.HttpClient;
-  const response = yield* client.get(context);
+  const response = yield* client.get(context).pipe(
+    Effect.timeout(Duration.seconds(10)),
+    Effect.mapError(
+      () => new InputResolutionError({ message: `URL fetch timed out or failed: ${context}` })
+    )
+  );
   return yield* response.text;
 });
 
@@ -50,7 +60,16 @@ const workspaceDocProcessor = (
       );
 };
 
-// --- Local file processor ---
+// --- Local file processor (single read attempt, no double stat) ---
+
+const readFileAtPath = (resolvedPath: string) =>
+  Effect.try({
+    try: () => fs.readFileSync(resolvedPath, "utf-8"),
+    catch: () =>
+      new InputResolutionError({
+        message: `Failed to read file: ${resolvedPath}`,
+      }),
+  });
 
 const fileProcessor = (cwd: string, context: string) => {
   const trimmed = context.trim();
@@ -58,53 +77,24 @@ const fileProcessor = (cwd: string, context: string) => {
     return Effect.fail(new InputResolutionError({ message: "Empty context" }));
   }
 
-  const resolvedPath =
-    trimmed.search(/^(\/|[a-z]:\\)/gi) === 0
-      ? path.resolve(trimmed)
-      : path.resolve(path.join(cwd, trimmed));
+  const resolvedPath = resolvePath(cwd, trimmed);
 
-  if (fs.existsSync(resolvedPath)) {
-    return Effect.try({
-      try: () => fs.readFileSync(resolvedPath, "utf-8"),
-      catch: () =>
-        new InputResolutionError({
-          message: `Failed to read file: ${resolvedPath}`,
-        }),
-    });
-  }
-
-  // Try multiple files separated by spaces
-  const files = trimmed.split(WHITESPACE_REGEX);
-  const allExist = files.every((f) => {
-    const p =
-      f.search(/^(\/|[a-z]:\\)/gi) === 0
-        ? path.resolve(f)
-        : path.resolve(path.join(cwd, f));
-    return fs.existsSync(p);
-  });
-
-  if (allExist && files.length > 0) {
-    return Effect.try({
-      try: () =>
-        files
-          .map((f) => {
-            const p =
-              f.search(/^(\/|[a-z]:\\)/gi) === 0
-                ? path.resolve(f)
-                : path.resolve(path.join(cwd, f));
-            return fs.readFileSync(p, "utf-8");
+  // Try single file first
+  return readFileAtPath(resolvedPath).pipe(
+    Effect.catchAll(() => {
+      // Try multiple files separated by spaces
+      const files = trimmed.split(/\s+/);
+      if (files.length <= 1) {
+        return Effect.fail(
+          new InputResolutionError({
+            message: `File not found: ${resolvedPath}`,
           })
-          .join("\n"),
-      catch: () =>
-        new InputResolutionError({
-          message: `Failed to read files: ${trimmed}`,
-        }),
-    });
-  }
-
-  return Effect.fail(
-    new InputResolutionError({
-      message: `File not found: ${resolvedPath}`,
+        );
+      }
+      const resolvedFiles = files.map((f) => resolvePath(cwd, f));
+      return Effect.all(resolvedFiles.map(readFileAtPath)).pipe(
+        Effect.map((contents) => contents.join("\n"))
+      );
     })
   );
 };
@@ -132,14 +122,11 @@ const shellCommandProcessor = (
     commandStr = commandStr.replace(new RegExp(`\\$${key}\\b`, "g"), value);
   }
 
-  const parts = commandStr.split(WHITESPACE_REGEX);
-  const cmd = parts[0];
-  const args = parts.slice(1);
-
   return Effect.async<string, InputResolutionError>((resume) => {
     const result = { stdout: [] as string[], stderr: [] as string[] };
-    const proc = spawn(cmd, args, {
+    const proc = spawn(commandStr, {
       cwd,
+      shell: true,
       stdio: ["ignore", "pipe", "pipe"],
     });
 
@@ -151,7 +138,7 @@ const shellCommandProcessor = (
     }
 
     const commandTimeout = setTimeout(() => {
-      proc.kill("SIGABRT");
+      proc.kill("SIGKILL");
       resume(
         Effect.fail(
           new InputResolutionError({
@@ -200,10 +187,7 @@ const inlineJsonProcessor = (
   let line = startLine + 1;
   while (line < document.lineCount) {
     const text = document.lineAt(line++).text;
-    if (
-      JQ_LINE_REGEX.exec(text) !== null ||
-      COMMENT_LINE_REGEX.exec(text) !== null
-    ) {
+    if (JQ_LINE_REGEX.test(text) || COMMENT_LINE_REGEX.test(text)) {
       break;
     }
     lines.push(`${text}\n`);

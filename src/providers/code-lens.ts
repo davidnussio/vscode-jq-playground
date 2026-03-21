@@ -1,4 +1,4 @@
-import { Array, Option, pipe } from "effect";
+import { Array, pipe } from "effect";
 import { CodeLens, Range, type TextDocument } from "vscode";
 import {
   CODELENS_TITLE_CONSOLE,
@@ -18,18 +18,16 @@ const jqMatchRange = (document: TextDocument, line: number): JqMatch => ({
   openResult: "output",
 });
 
-const findAllMatches = (document: TextDocument): Array<JqMatch> =>
-  pipe(
-    Array.range(0, document.lineCount - 1),
-    Array.map((documentLine: number) => {
-      const line = document.lineAt(documentLine);
-      const text = line.text.substring(0, 30);
-      return JQ_QUERY_REGEX.test(text)
-        ? Option.some(jqMatchRange(document, documentLine))
-        : Option.none();
-    }),
-    Array.getSomes
-  );
+const findAllMatches = (document: TextDocument): Array<JqMatch> => {
+  const matches: Array<JqMatch> = [];
+  for (let i = 0; i < document.lineCount; i++) {
+    const text = document.lineAt(i).text.substring(0, 30);
+    if (JQ_QUERY_REGEX.test(text)) {
+      matches.push(jqMatchRange(document, i));
+    }
+  }
+  return matches;
+};
 
 const makeCodeLens = (
   match: JqMatch,

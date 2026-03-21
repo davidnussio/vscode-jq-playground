@@ -11,6 +11,19 @@ const spawnJq = (
   timeout: Duration.Duration
 ) =>
   Effect.fn("JqExecutionService.spawnJq")(function* (input?: string) {
+    // Validate JSON before spawning the process (point 5)
+    if (input) {
+      try {
+        JSON.parse(input);
+      } catch (error) {
+        return yield* Effect.fail(
+          new InvalidJsonInputError({
+            message: `Invalid JSON input: ${error}`,
+          })
+        );
+      }
+    }
+
     return yield* Effect.async<
       string,
       JqExecutionError | InvalidJsonInputError
@@ -20,26 +33,12 @@ const spawnJq = (
 
       const proc = spawn(command, args, options);
 
-      if (input) {
-        try {
-          JSON.parse(input);
-        } catch (error) {
-          resume(
-            Effect.fail(
-              new InvalidJsonInputError({
-                message: `Invalid JSON input: ${error}`,
-              })
-            )
-          );
-          return;
-        }
-        if (proc.stdin) {
-          proc.stdin.on("error", () => {
-            // Intentionally ignored — stdin errors are non-fatal
-          });
-          proc.stdin.write(input);
-          proc.stdin.end();
-        }
+      if (input && proc.stdin) {
+        proc.stdin.on("error", () => {
+          // Intentionally ignored — stdin errors are non-fatal
+        });
+        proc.stdin.write(input);
+        proc.stdin.end();
       }
 
       if (proc.stdout) {
@@ -50,9 +49,15 @@ const spawnJq = (
       }
 
       const commandTimeout = setTimeout(() => {
-        proc.kill("SIGABRT");
-        result.stderr.push(
-          `Command aborted: ${Duration.format(timeout)} timeout reached!`
+        proc.kill("SIGKILL");
+        resume(
+          Effect.fail(
+            new JqExecutionError({
+              message: `Command aborted: ${Duration.format(timeout)} timeout reached!`,
+              command,
+              args,
+            })
+          )
         );
       }, Duration.toMillis(timeout));
 

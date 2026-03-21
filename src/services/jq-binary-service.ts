@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import {
@@ -16,20 +16,45 @@ import {
 import type { JqBinaryPath, JqVersion } from "../domain/models";
 
 const spawnEffect = (command: string, args: string[]) =>
-  Effect.try({
-    try: () => {
-      const result = spawnSync(command, args);
-      if (result?.status === 0) {
-        return result.stdout.toString().trim();
+  Effect.async<string, JqExecutionError>((resume) => {
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+    const proc = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
+
+    if (proc.stdout) {
+      proc.stdout.on("data", (data) => stdout.push(data.toString()));
+    }
+    if (proc.stderr) {
+      proc.stderr.on("data", (data) => stderr.push(data.toString()));
+    }
+
+    proc.on("error", (error) => {
+      resume(
+        Effect.fail(
+          new JqExecutionError({
+            message: error.message,
+            command,
+            args,
+          })
+        )
+      );
+    });
+
+    proc.on("close", (code) => {
+      if (code === 0) {
+        resume(Effect.succeed(stdout.join("").trim()));
+      } else {
+        resume(
+          Effect.fail(
+            new JqExecutionError({
+              message: stderr.join("") || "Command failed",
+              command,
+              args,
+            })
+          )
+        );
       }
-      throw new Error(result?.error?.message ?? "Command failed");
-    },
-    catch: (e) =>
-      new JqExecutionError({
-        message: e instanceof Error ? e.message : String(e),
-        command,
-        args,
-      }),
+    });
   });
 
 const findInstalledJqPath = () =>
@@ -91,10 +116,94 @@ export const downloadJqBinaryCommand = Effect.gen(function* () {
   );
 });
 
+// --- Binary resolution helpers ---
+
+const promptNoBinaryFound = Effect.gen(function* () {
+  const choice = yield* showErrorMessage(
+    "jq executable not found in your system PATH.",
+    "Configure path manually",
+    "Download automatically"
+  );
+  if (choice === "Configure path manually") {
+    yield* openBinaryPathSettings();
+  } else if (choice === "Download automatically") {
+    yield* Effect.log("User chose to download jq");
+    // TODO: actual download
+  }
+});
+
+const promptBrokenBinary = (systemJqPath: string) =>
+  Effect.gen(function* () {
+    const choice = yield* showErrorMessage(
+      `jq found at ${systemJqPath} but it doesn't work correctly.`,
+      "Configure path manually",
+      "Download automatically"
+    );
+    if (choice === "Configure path manually") {
+      yield* openBinaryPathSettings();
+    } else if (choice === "Download automatically") {
+      yield* Effect.log("User chose to download jq");
+      // TODO: actual download
+    }
+  });
+
+const promptUseSystemBinary = (
+  systemJqPath: string,
+  systemVersion: JqVersion,
+  updatePath: (value: string) => Effect.Effect<void>
+) =>
+  Effect.gen(function* () {
+    const choice = yield* showInformationMessage(
+      `Found system jq at ${systemJqPath} (${systemVersion}). Use it?`,
+      "Yes, use system jq",
+      "Configure path manually",
+      "Download latest"
+    );
+    if (choice === "Yes, use system jq") {
+      yield* updatePath(systemJqPath);
+      yield* Effect.log(
+        `Using system jq: ${systemJqPath} (${systemVersion})`
+      );
+    } else if (choice === "Configure path manually") {
+      yield* openBinaryPathSettings();
+    } else if (choice === "Download latest") {
+      yield* Effect.log("User chose to download jq");
+      // TODO: actual download
+    }
+  });
+
+const resolveJqBinary = (
+  jqBinaryPathRef: { update: (value: string) => Effect.Effect<void> }
+) =>
+  Effect.gen(function* () {
+    const systemJqPath = yield* findInstalledJqPath().pipe(
+      Effect.catchAll(() => Effect.succeed(null as string | null))
+    );
+
+    if (!systemJqPath) {
+      yield* promptNoBinaryFound;
+      return;
+    }
+
+    const systemVersion = yield* jqVersion(systemJqPath).pipe(
+      Effect.catchAll(() => Effect.succeed(null as JqVersion | null))
+    );
+
+    if (!systemVersion) {
+      yield* promptBrokenBinary(systemJqPath);
+      return;
+    }
+
+    yield* promptUseSystemBinary(
+      systemJqPath,
+      systemVersion,
+      jqBinaryPathRef.update
+    );
+  });
+
 export class JqBinaryService extends Effect.Service<JqBinaryService>()(
   "@jqpg/JqBinaryService",
   {
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: pre-existing complexity, refactor planned
     scoped: Effect.gen(function* () {
       yield* Effect.log("Initializing JqBinaryService...");
 
@@ -108,65 +217,7 @@ export class JqBinaryService extends Effect.Service<JqBinaryService>()(
 
       // Only run resolution if no path is configured
       if (Option.isNone(currentPath) || currentPath.value === "") {
-        // 1. Check if jq is available in system PATH
-        const systemJqPath = yield* findInstalledJqPath().pipe(
-          Effect.catchAll(() => Effect.succeed(null as string | null))
-        );
-
-        if (systemJqPath) {
-          // 2. Validate the system jq actually works
-          const systemVersion = yield* jqVersion(systemJqPath).pipe(
-            Effect.catchAll(() => Effect.succeed(null as JqVersion | null))
-          );
-
-          if (systemVersion) {
-            // System jq is valid — ask user if they want to use it
-            const choice = yield* showInformationMessage(
-              `Found system jq at ${systemJqPath} (${systemVersion}). Use it?`,
-              "Yes, use system jq",
-              "Configure path manually",
-              "Download latest"
-            );
-
-            if (choice === "Yes, use system jq") {
-              yield* jqBinaryPathRef.update(systemJqPath);
-              yield* Effect.log(
-                `Using system jq: ${systemJqPath} (${systemVersion})`
-              );
-            } else if (choice === "Configure path manually") {
-              yield* openBinaryPathSettings();
-            } else if (choice === "Download latest") {
-              yield* Effect.log("User chose to download jq");
-              // TODO: actual download
-            }
-          } else {
-            // System jq found but broken — prompt without system option
-            const choice = yield* showErrorMessage(
-              `jq found at ${systemJqPath} but it doesn't work correctly.`,
-              "Configure path manually",
-              "Download automatically"
-            );
-            if (choice === "Configure path manually") {
-              yield* openBinaryPathSettings();
-            } else if (choice === "Download automatically") {
-              yield* Effect.log("User chose to download jq");
-              // TODO: actual download
-            }
-          }
-        } else {
-          // 3. No system jq found at all
-          const choice = yield* showErrorMessage(
-            "jq executable not found in your system PATH.",
-            "Configure path manually",
-            "Download automatically"
-          );
-          if (choice === "Configure path manually") {
-            yield* openBinaryPathSettings();
-          } else if (choice === "Download automatically") {
-            yield* Effect.log("User chose to download jq");
-            // TODO: actual download
-          }
-        }
+        yield* resolveJqBinary(jqBinaryPathRef);
       }
 
       const resolvedPath = yield* jqBinaryPathRef.get;

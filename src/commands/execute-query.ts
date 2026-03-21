@@ -10,9 +10,10 @@ import {
 import { InputResolverService } from "../services/input-resolver-service";
 import { JqExecutionService } from "../services/jq-execution-service";
 import { OutputRendererService } from "../services/output-renderer-service";
-import { QueryParserService } from "../services/query-parser-service";
-
-export type { RenderOutputType } from "../domain/models";
+import {
+  QueryParserService,
+  readEditorVariables,
+} from "../services/query-parser-service";
 
 const currentWorkingDirectory = (): string => {
   const cwdActiveFile = pipe(
@@ -58,7 +59,7 @@ export const executeJqCommand = (params: {
     const cwd = currentWorkingDirectory();
 
     // Read editor variables (VAR=value lines before jq)
-    const variables = queryParser.readEditorVariables(params.document);
+    const variables = readEditorVariables(params.document);
 
     // Parse the query from the document
     const parsed = yield* queryParser.parse(

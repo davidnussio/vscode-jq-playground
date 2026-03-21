@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "effect-ts": {
+      "source": "joelhooks/effectts-skills",
+      "sourceType": "github",
+      "computedHash": "648c1dd2182a78d997502279000a58e2471afa48df71aa83d07497c1ae39404a"
+    },
+    "ultracite": {
+      "source": "haydenbleasel/ultracite",
+      "sourceType": "github",
+      "computedHash": "2c53f9413e9ddb97f937b529a4919ae30621fc02076be9a24fe7d70ece7a73d8"
+    }
+  }
+}

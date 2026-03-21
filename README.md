@@ -1,316 +1,182 @@
-# VSCode jq playground
+# jq Playground for VS Code
 
-Create a notebook with power of [jq](https://stedolan.github.io/jq/) filters and the power of jq playground extension
+> An interactive jq notebook inside your editor. Write filters, pick your data source, see results instantly.
 
-Check jq [tutorial](https://stedolan.github.io/jq/tutorial/) or [manual](https://stedolan.github.io/jq/manual/v1.6/)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/davidnussio.vscode-jq-playground)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/davidnussio.vscode-jq-playground)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
+[![GitHub Issues](https://img.shields.io/github/issues/davidnussio/vscode-jq-playground)](https://github.com/davidnussio/vscode-jq-playground/issues)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-[![Latest Release](https://vsmarketplacebadge.apphb.com/version-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
-[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
-[![Installs](https://vsmarketplacebadge.apphb.com/downloads-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
-[![Rating](https://vsmarketplacebadge.apphb.com/rating-short/davidnussio.vscode-jq-playground.svg)](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
+![General demo](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/general-demo.gif)
 
-[![Open issues](https://img.shields.io/github/issues/davidnussio/vscode-jq-playground)](https://img.shields.io/github/issues/davidnussio/vscode-jq-playground)
-[![Closed issues](https://img.shields.io/github/issues-closed/davidnussio/vscode-jq-playground)](https://img.shields.io/github/issues-closed/davidnussio/vscode-jq-playground)
+---
 
-## Demo
+## Features
 
-### JQ Manual examples
+- **Notebook-style editing** — multiple jq filters in a single `.jqpg` file, each with its own data source
+- **Zero config** — auto-detects your system `jq`; can download it for you if missing
+- **Rich data inputs** — inline JSON, local files, workspace buffers, URLs, shell commands
+- **Smart autocomplete** — IntelliSense powered by the official jq builtins, with docs and examples
+- **Output flexibility** — results to the output console, a side editor, or redirected to a file
+- **Variables** — define `KEY=value` lines and reference `$KEY` in filters and commands
+- **Multiline filters** — write complex queries across multiple lines using quotes
+- **Syntax highlighting** — full TextMate grammar for jq and embedded JSON
 
-![jq-manual-examples](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/general-demo.gif)
+---
 
-### Usage example
+## Quick start
 
-#### Create playground from filter
+1. Install the extension from the [Marketplace](https://marketplace.visualstudio.com/items?itemName=davidnussio.vscode-jq-playground)
+2. Create a file with the `.jqpg` extension
+3. Write a filter and press `Cmd+Enter` (macOS) / `Ctrl+Enter` (Windows/Linux)
 
-![vscode-jq-payground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-1.gif)
-
-#### Filter json on the fly
-
-![vscode-jq-payground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-2.gif)
-
-![vscode-jq-payground](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/example_multiline.gif)
-
-![vscode-jq-playground](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/buffers-examples.gif)
-
-#### Autocomplete with inline documentation
-
-![Autocomplete](https://media.giphy.com/media/eHFSm80lXQnxQe2D64/giphy.gif)
-
-[**_ More examples _**](https://davidnussio.github.io/vscode-jq-playground/)
-
-## Main Features
-
-- Create notebook with multiple executable jq filters in one file
-- Support different data inputs:
-  - json text
-  - string
-  - url
-  - file
-  - workspace buffer and file
-  - command line (limited)
-- Support [input variable](https://code.visualstudio.com/docs/editor/variables-reference#_input-variables)
-- Redirect output
-- Command lines as input with variables support
-- Highlighting code
-- Autocomplete with documentation and examples
-- Open command filter result in output console or in new buffer
-- Open examples from jq manual and run it (ctrl+shift+p → jq playground: Examples)
-- Support hotkeys
-  - ctrl+enter → to output
-  - shift+enter → to editor
-
-## Usage
-
-Open new file and change _'Language Mode'_ to `jqpg` (JQ PlayGround) or
-use a file with `.jqpg` extension.
-
-### Start write jq filters
-
-```
-jq [options] <jq filter>
-[ JSON_TEXT | STRINGS | URL | FILE | COMMAND_LINE ]
+```jq
+jq '.name'
+{"name": "Ada Lovelace", "year": 1815}
 ```
 
-### Open official jq examples in jq playground
+The result appears in the output panel. Use `Shift+Enter` to open it in a side editor instead.
 
-```
-Command Palette... (ctrl + shift + p): jq playground: Examples
-```
+---
 
-### JSON_TEXT
+## Data sources
 
-```json
-# Example 1
-jq '.foo'
-{"foo": 42, "bar": "less interesting data"}
+Each filter block can pull data from a different source.
 
-# Example 2
-jq '.foo'
-{
-    "foo": 42,
-    "bar": "less interesting data"
-}
+**Inline JSON**
+
+```jq
+jq '[.[] | select(.active)]'
+[{"id": 1, "active": true}, {"id": 2, "active": false}]
 ```
 
-### STRINGS
+**Local or workspace files**
 
-```json
-# Example 1: raw input string
-jq -R 'split(" ")'
-non arcu risus quis varius quam quisque id diam vel
-
-# Example 2
-jq .[5:10]
-"less interesting data"
+```jq
+jq '.dependencies | keys'
+./package.json
 ```
 
-### URL
+**URLs**
 
-```json
-# Example 1
-jq '.[0] | {message: .commit.message, name: .commit.committer.name}'
+```jq
+jq '.[0].commit.message'
 https://api.github.com/repos/stedolan/jq/commits?per_page=5
 ```
 
-### FILE
+**Shell commands**
 
-```json
-# Example 1: relative pahts
-jq '.foo,.bar'
-../files/example.json
-
-# Example 2: absolute pahts
-jq '.foo,.bar'
-/home/dev/files/example.json
-
-# Example 3: buffer file
-jq '.'
-Untitled-1
-
-# Example 4: workspace file
-jq '.'
-opened-workspace-file-with-data.json
-
-# Example 5 (Multifile)
-jq '{
-    (input_filename|rtrimstr(".json")) :
-    .scripts | keys | map(select(. | contains("test"))) }'
-/home/dev/client/package.json /home/dev/server/package.json
+```jq
+jq -R -s 'split("\n") | map(select(length > 0))'
+$ ls -la
 ```
 
-### COMMAND_LINE
+**Raw string input**
 
-```json
-# Example 1
-jq '.token'
-$ curl -X GET "http://httpbin.org/bearer" -H "accept: application/json" -H "Authorization: Bearer 1234"
-
-# Example 2
-jq -R -s 'split("\n") | .[] | { file: ., lenght: . | length}'
-$ ls /etc/
+```jq
+jq -R 'split(" ")'
+Lorem ipsum dolor sit amet
 ```
 
-### COMMAND_LINE (with variables)
+---
 
-```json
-TOKEN = 1234
-ENDPOINT = bearer
+## Variables and output redirection
 
-# Example 1
-jq '.token'
-$ curl -X GET "http://httpbin.org/$ENDPOINT" -H "accept: application/json" -H "Authorization: Bearer $TOKEN"
+Define variables before your filter and use them in commands or URLs:
 
-# Example 2
-jq -R -s 'split("\n") | .[] | { file: ., lenght: . | length}'
-$ ls $HOME
+```jq
+TOKEN = "abc123"
+ENDPOINT = "users"
+
+jq '.results'
+$ curl -s -H "Authorization: Bearer $TOKEN" "https://api.example.com/$ENDPOINT"
 ```
 
-### Multiline jq filter
+Redirect output to a file with `>` (overwrite) or `>>` (append):
 
-```json
-# Example 1
-jq -r '(map(keys)
-  | add
-  | unique) as $cols
-  | map(. as $row
-  | $cols
-  | map($row[.])) as $rows
-  | $cols, $rows[]
-  | @csv'
-[
-    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
-    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
-    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
-    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
-]
-
-# Exampmle 2
-jq 'if . == 0 then
-    "zero"
-  elif . == 1 then
-    "one"
-  else
-    "many"
-  end
-'
-2
+```jq
+jq '[.[] | .url]'
+> urls.json
+$ curl -s 'https://api.github.com/repos/stedolan/jq/commits?per_page=5'
 ```
 
-### Support jq command line options
+---
 
-```json
-# Example 1
-jq --slurp '. + [5] + [6]'
-[
-  1,
-  2,
-  3
-]
+## Commands and keybindings
 
-# Example 2
-jq --arg var val '.value = $var'
-{}
+| Keybinding | Action |
+|---|---|
+| `Cmd+Enter` / `Ctrl+Enter` | Run filter → output console |
+| `Shift+Enter` | Run filter → side editor |
 
-# Example 3
-jq --raw-input --slurp 'split("\\n")'
-foo\nbar\nbaz
+All commands are available via the Command Palette under the `JQPG` prefix:
 
-# Example 4
-jq -r '(map(keys) | add | unique) as $cols | map(. as $row | $cols | map($row[.])) as $rows | $cols, $rows[] | @csv'
-[
-    {"code": "NSW", "name": "New South Wales", "level":"state", "country": "AU"},
-    {"code": "AB", "name": "Alberta", "level":"province", "country": "CA"},
-    {"code": "ABD", "name": "Aberdeenshire", "level":"council area", "country": "GB"},
-    {"code": "AK", "name": "Alaska", "level":"state", "country": "US"}
-]
+| Command | Description |
+|---|---|
+| JQPG: Examples | Browse executable examples from the jq manual |
+| JQPG: Manual | Open the official jq manual |
+| JQPG: Tutorial | Open the jq tutorial |
+| JQPG: Execute jq filter | Run a jq filter from an input box |
+| JQPG: Create playground from filter | Scaffold a `.jqpg` file from a filter |
+| JQPG: Configure jq path | Set a custom path to the jq binary |
+| JQPG: Download jq binary | Download jq if not installed |
 
-# Example 5
-jq --raw-output '"\(.one)\t\(.two)"'
-{"one":1,"two":"x"}
-```
+---
 
-## Use workspace file as command input or/and query filter
+## Configuration
 
-```json
-# Opened workspace file as filter
-jq opened-workspace-file-filter.jq
-[1, 2, 3, 4, 5]
+| Setting | Default | Description |
+|---|---|---|
+| `jqPlayground.binaryPath` | `""` | Path to the `jq` binary. Leave empty for auto-detection. |
 
-# Opened workspace file as filter and query input
-jq opened-workspace-file-filter.jq
-opened-workspace-file-with-data.json
-```
+---
 
-## Redirect output's filter
+## VS Code input variables
 
-```json
-jq '[.[].url]'
-> tmp.json
-$ curl 'https://api.github.com/repos/stedolan/jq/commits?per_page=5'
-```
-
-## Available commands
-
-http|curl|wget|cat|echo|ls|dir|grep|tail|head|find
-
-### Input Variable
+Use jq results as input variables in tasks and launch configs:
 
 ```json
 {
-  // See https://go.microsoft.com/fwlink/?LinkId=733558
-  // for the documentation about the tasks.json format
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "jq test",
-      "type": "shell",
-      "command": "curl",
-      "args": ["-v", "${input:urls}\\&param=${input:param}"],
-      "problemMatcher": []
-    }
-  ],
   "inputs": [
     {
-      "id": "urls",
+      "id": "apiUrl",
       "type": "command",
       "command": "extension.executeJqInputCommand",
       "args": {
-        "filter": ".[3]",
-        "input": "/home/david/dev/tmp/jqpg-examples/tmp.json"
-      }
-    },
-    {
-      "id": "param",
-      "type": "command",
-      "command": "extension.executeJqInputCommand",
-      "args": {
-        "filter": ".[2]",
-        "input": "[10, 50, 100]",
-        "jsonInput": true
+        "filter": ".endpoints.api",
+        "input": "./config.json"
       }
     }
   ]
 }
 ```
 
-### Open online manual
+---
 
-`ctrl+shift+p → > Manual`
+## More examples
 
-### Open online Tutoral
+![Autocomplete](https://media.giphy.com/media/eHFSm80lXQnxQe2D64/giphy.gif)
 
-`ctrl+shift+p → > Tutorial`
+![Multiple data sources](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/buffers-examples.gif)
 
-## Contributors
+![Multiline filters](https://github.com/davidnussio/vscode-jq-playground/raw/master/images/multiline-demo.gif)
 
-Thanks for cwd module patching [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=jpandersen87) [Joseph Andersen](https://github.com/jpandersen87)
+[See the interactive examples gallery →](https://davidnussio.github.io/vscode-jq-playground/)
 
-Thanks for updating deps and binary [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=yozlet) [Yoz Grahame](https://github.com/yozlet)
+---
 
-Thanks for input variable [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=JeffreyMercado) [Jeff Mercado](https://github.com/JeffreyMercado)
+## Contributing
 
-Thanks for input variable [💻](https://github.com/davidnussio/vscode-jq-playground/commits?author=leonelgalan) [Leonel Galán](https://github.com/leonelgalan)
+Issues and pull requests are welcome on [GitHub](https://github.com/davidnussio/vscode-jq-playground).
 
-## Thanks
+Thanks to all contributors:
+[Joseph Andersen](https://github.com/jpandersen87),
+[Yoz Grahame](https://github.com/yozlet),
+[Jeff Mercado](https://github.com/JeffreyMercado),
+[Leonel Galán](https://github.com/leonelgalan).
 
-I be inspired by [vscode-jq](https://marketplace.visualstudio.com/items?itemName=dandric.vscode-jq)
+Inspired by [vscode-jq](https://marketplace.visualstudio.com/items?itemName=dandric.vscode-jq).
+
+## License
+
+[MIT](LICENSE)

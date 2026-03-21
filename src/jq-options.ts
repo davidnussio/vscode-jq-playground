@@ -1,59 +1,56 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-
 export interface JqOptions {
+  // filter arguments
+  arg?: { [name: string]: string };
+  /** @deprecated */
+  argfile?: { [name: string]: string };
+  argjson?: { [name: string]: string };
+  "compact-output"?: boolean;
   // spawn options
   cwd?: string;
   env?: { [key: string]: string | undefined }; // NodeJS.ProcessEnv
-
-  // use arg parser
-  rawArgs?: string;
-
-  // data inputs
-  input?: string | string[];
-  /** If true, interpret input as json input */
-  jsonInput?: boolean;
 
   // filter inputs
   filter?: string;
   /** If true, interpret filter as path to filter file */
   "from-file"?: boolean;
+  indent?: number;
+
+  // data inputs
+  input?: string | string[];
+  "join-output"?: boolean;
+  /** If true, interpret input as json input */
+  jsonInput?: boolean;
 
   // libs
   "module-dirs"?: string[];
+  "raw-input"?: boolean;
+  "raw-output"?: boolean;
 
-  // filter arguments
-  arg?: { [name: string]: string };
-  argjson?: { [name: string]: string };
-  slurpfile?: { [name: string]: string };
+  // use arg parser
+  rawArgs?: string;
   rawfile?: { [name: string]: string };
-  /** @deprecated */
-  argfile?: { [name: string]: string };
+  slurp?: boolean;
+  slurpfile?: { [name: string]: string };
+  "sort-keys"?: boolean;
 
   stream?: boolean;
-  slurp?: boolean;
-  "raw-input"?: boolean;
-  "compact-output"?: boolean;
   tab?: boolean;
-  indent?: number;
-  "sort-keys"?: boolean;
-  "raw-output"?: boolean;
-  "join-output"?: boolean;
 }
 
 function mapArgs(options: JqOptions, key: string) {
   const prop = <K extends keyof JqOptions>(
     key: K,
-    map: (value: JqOptions[K]) => string[],
+    map: (value: NonNullable<JqOptions[K]>) => string[]
   ) => {
     const value = options[key];
-    return value != null ? map(value) : null;
+    return value == null ? null : map(value as NonNullable<JqOptions[K]>);
   };
   switch (key) {
     case "module-dirs":
       return prop(key, (moduleDirs) => moduleDirs.flatMap((d) => ["-L", d]));
     case "arg":
       return prop(key, (arg) =>
-        Object.entries(arg).flatMap(([key, value]) => ["--arg", key, value]),
+        Object.entries(arg).flatMap(([key, value]) => ["--arg", key, value])
       );
     case "argjson":
       return prop(key, (argjson) =>
@@ -61,7 +58,7 @@ function mapArgs(options: JqOptions, key: string) {
           "--argjson",
           key,
           value,
-        ]),
+        ])
       );
     case "slurpfile":
       return prop(key, (slurpfile) =>
@@ -69,7 +66,7 @@ function mapArgs(options: JqOptions, key: string) {
           "--slurpfile",
           key,
           value,
-        ]),
+        ])
       );
     case "rawfile":
       return prop(key, (rawfile) =>
@@ -77,7 +74,7 @@ function mapArgs(options: JqOptions, key: string) {
           "--rawfile",
           key,
           value,
-        ]),
+        ])
       );
     case "argfile":
       return prop(key, (argfile) =>
@@ -85,7 +82,7 @@ function mapArgs(options: JqOptions, key: string) {
           "--argfile",
           key,
           value,
-        ]),
+        ])
       );
     case "stream":
       return prop(key, () => ["--stream"]);
@@ -111,8 +108,7 @@ function mapArgs(options: JqOptions, key: string) {
 }
 
 export const buildJqCommandArgs = (params: JqOptions) => {
-  const args = [];
-  // eslint-disable-next-line no-restricted-syntax
+  const args: string[] = [];
   for (const key of Object.keys(params)) {
     const value = mapArgs(params, key);
     if (value) {
@@ -122,7 +118,7 @@ export const buildJqCommandArgs = (params: JqOptions) => {
   if (!params.input) {
     args.push("--null-input");
   }
-  if (params["from-file"]) {
+  if (params["from-file"] && params.filter) {
     args.push("--from-file", params.filter);
   } else if (params.filter) {
     args.push(params.filter);

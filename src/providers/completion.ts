@@ -1,19 +1,15 @@
-import { basename } from 'node:path';
+import { basename } from "node:path";
 import {
   CompletionItem,
   CompletionItemKind,
+  type CompletionItemProvider,
   CompletionList,
   MarkdownString,
   workspace,
-  type CompletionItemProvider,
-  type TextDocument,
-  type Position,
-  type CancellationToken,
-  type CompletionContext,
-} from 'vscode';
-import { builtins } from '../builtins';
+} from "vscode";
+import { builtins } from "../builtins";
 
-const FILE_TYPES = ['json', 'plaintext'];
+const FILE_TYPES = ["json", "plaintext"];
 
 export const workspaceFilesProvider: CompletionItemProvider = {
   provideCompletionItems() {

@@ -59,7 +59,7 @@ describe("Spawn jq command line", () => {
     ]);
   });
 
-  // eslint-disable-next-line jest/no-done-callback
+  // biome-ignore lint/style/noDoneCallback: legacy test pattern using fork callbacks
   test("should execute command", (done) => {
     const jqCommand = spawnCommand("/usr/bin/jq");
 

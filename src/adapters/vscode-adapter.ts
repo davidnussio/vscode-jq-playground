@@ -1,19 +1,19 @@
-import { pipe } from 'effect';
-import type * as Cause from 'effect/Cause';
-import * as Context from 'effect/Context';
-import * as Effect from 'effect/Effect';
-import * as Exit from 'effect/Exit';
-import * as Layer from 'effect/Layer';
-import * as Logger from 'effect/Logger';
-import * as LogLevel from 'effect/LogLevel';
-import * as Option from 'effect/Option';
-import * as Runtime from 'effect/Runtime';
-import * as Scope from 'effect/Scope';
-import * as Stream from 'effect/Stream';
-import * as SubscriptionRef from 'effect/SubscriptionRef';
-import * as vscode from 'vscode';
+import { pipe } from "effect";
+import type * as Cause from "effect/Cause";
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Exit from "effect/Exit";
+import * as Layer from "effect/Layer";
+import * as Logger from "effect/Logger";
+import * as LogLevel from "effect/LogLevel";
+import * as Option from "effect/Option";
+import * as Runtime from "effect/Runtime";
+import * as Scope from "effect/Scope";
+import * as Stream from "effect/Stream";
+import * as SubscriptionRef from "effect/SubscriptionRef";
+import * as vscode from "vscode";
 
-export class VsCodeContext extends Context.Tag('vscode/ExtensionContext')<
+export class VsCodeContext extends Context.Tag("vscode/ExtensionContext")<
   VsCodeContext,
   vscode.ExtensionContext
 >() {}
@@ -39,6 +39,7 @@ export const dismissable = <A>(
 ): Effect.Effect<A, Cause.NoSuchElementException> =>
   thenable(f).pipe(Effect.flatMap(Effect.fromNullable));
 
+// biome-ignore lint/suspicious/noExplicitAny: vscode executeCommand API expects any
 export const executeCommand = (command: string, ...args: Array<any>) =>
   thenable(() => vscode.commands.executeCommand(command, ...args));
 
@@ -59,6 +60,7 @@ export const showInformationMessage = <T extends string>(
 
 export const registerCommand = <R, E, A>(
   command: string,
+  // biome-ignore lint/suspicious/noExplicitAny: vscode command args are untyped
   f: (...args: Array<any>) => Effect.Effect<A, E, R>
 ) =>
   Effect.gen(function* () {
@@ -103,8 +105,8 @@ export const activeTextEditor = () =>
   Option.fromNullable(vscode.window.activeTextEditor);
 
 export interface ConfigRef<A, B = A> {
-  readonly get: Effect.Effect<A>;
   readonly changes: Stream.Stream<A>;
+  readonly get: Effect.Effect<A>;
   readonly update: (value: B) => Effect.Effect<void, never, never>;
 }
 
@@ -118,7 +120,7 @@ export const config = <A>(
       const value = vscode.workspace
         .getConfiguration(namespace)
         .get<A>(setting);
-      return emptyValueAsNone && typeof value === 'string' && value === ''
+      return emptyValueAsNone && typeof value === "string" && value === ""
         ? Option.none()
         : Option.fromNullable(value);
     };
@@ -132,7 +134,7 @@ export const config = <A>(
     yield* listenFork(vscode.workspace.onDidChangeConfiguration, (event) =>
       event.affectsConfiguration(`${namespace}.${setting}`)
         ? pipe(
-            Effect.log('Configuration changed', namespace, setting, get()),
+            Effect.log("Configuration changed", namespace, setting, get()),
             Effect.zipRight(SubscriptionRef.set(ref, get()))
           )
         : Effect.void
@@ -162,7 +164,7 @@ export const configWithDefault = <A>(
     yield* listenFork(vscode.workspace.onDidChangeConfiguration, (event) =>
       event.affectsConfiguration(`${namespace}.${setting}`)
         ? pipe(
-            Effect.log('Configuration changed', namespace, setting, get()),
+            Effect.log("Configuration changed", namespace, setting, get()),
             Effect.zipRight(SubscriptionRef.set(ref, get() ?? defaultValue))
           )
         : Effect.void
@@ -184,7 +186,7 @@ export const listen = <A, R>(
       const d = event((data) =>
         run(
           Effect.catchAllCause(f(data), (_) =>
-            Effect.log('unhandled defect in event listener', _)
+            Effect.log("unhandled defect in event listener", _)
           )
         )
       );
@@ -224,13 +226,12 @@ export const emitter = <A>() =>
   });
 
 export const emitterOptional = <A>() =>
-  Effect.map(emitter<A | null | undefined | void>(), (emitter) => ({
+  Effect.map(emitter<A | null | undefined>(), (emitter) => ({
     ...emitter,
     fire: (data: Option.Option<A>) => emitter.fire(Option.getOrUndefined(data)),
   }));
 
 export interface TreeDataProvider<A> {
-  readonly treeItem: (element: A) => Effect.Effect<vscode.TreeItem>;
   readonly children: (
     element: Option.Option<A>
   ) => Effect.Effect<Option.Option<Array<A>>>;
@@ -239,6 +240,7 @@ export interface TreeDataProvider<A> {
     item: vscode.TreeItem,
     element: A
   ) => Effect.Effect<Option.Option<vscode.TreeItem>>;
+  readonly treeItem: (element: A) => Effect.Effect<vscode.TreeItem>;
 }
 
 export const TreeDataProvider = <A>(_: TreeDataProvider<A>) => _;
@@ -270,6 +272,7 @@ export const treeDataProvider =
           ? {
               getParent: (element: A) =>
                 Effect.runPromise(
+                  // biome-ignore lint/style/noNonNullAssertion: parent is checked before this branch
                   Effect.map(provider.parent!(element), Option.getOrUndefined)
                 ),
             }
@@ -283,6 +286,7 @@ export const treeDataProvider =
               ) =>
                 runWithTokenDefault(
                   Effect.map(
+                    // biome-ignore lint/style/noNonNullAssertion: resolve is checked before this branch
                     provider.resolve!(item, element),
                     Option.getOrUndefined
                   ),
@@ -311,7 +315,7 @@ export const runWithToken = <R>(runtime: Runtime.Runtime<R>) => {
         onExit: (exit) => {
           tokenDispose.dispose();
 
-          if (exit._tag === 'Success') {
+          if (exit._tag === "Success") {
             resolve(exit.value);
           } else {
             resolve(undefined);
@@ -370,13 +374,14 @@ export const logger = (name: string) =>
     })
   );
 
-export class VsCodeDebugSession extends Context.Tag('vscode/DebugSession')<
+export class VsCodeDebugSession extends Context.Tag("vscode/DebugSession")<
   VsCodeDebugSession,
   vscode.DebugSession
 >() {}
 
 export const debugRequest = <A = unknown>(
   command: string,
+  // biome-ignore lint/suspicious/noExplicitAny: vscode debug request args are untyped
   args?: any
 ): Effect.Effect<A, never, VsCodeDebugSession> =>
   Effect.flatMap(VsCodeDebugSession, (session) =>

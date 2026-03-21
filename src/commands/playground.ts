@@ -1,14 +1,14 @@
-import * as Effect from 'effect/Effect';
-import * as Option from 'effect/Option';
-import * as vscode from 'vscode';
-import { activeTextEditor, thenable } from '../adapters/vscode-adapter';
+import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
+import * as vscode from "vscode";
+import { activeTextEditor, thenable } from "../adapters/vscode-adapter";
 
 const askFilter = (initialValue: string) =>
   thenable(() =>
     vscode.window.showInputBox({
-      prompt: 'Enter a jq filter',
+      prompt: "Enter a jq filter",
       value: initialValue,
-      placeHolder: '.',
+      placeHolder: ".",
     })
   );
 
@@ -16,25 +16,25 @@ const getEditorText = (): Effect.Effect<string, string> =>
   Effect.gen(function* () {
     const ed = activeTextEditor();
     if (Option.isNone(ed)) {
-      return yield* Effect.fail('No active text editor');
+      return yield* Effect.fail("No active text editor");
     }
     const editor = Option.getOrThrow(ed);
     const text = editor.document.getText(
       editor.selection.isEmpty ? undefined : editor.selection
     );
     if (!text) {
-      return yield* Effect.fail('No text in editor');
+      return yield* Effect.fail("No text in editor");
     }
     return text;
   });
 
 export const createJqpgFromFilter = () =>
   Effect.gen(function* () {
-    const filter = yield* askFilter('.');
-    const actualFilter = filter || '.';
+    const filter = yield* askFilter(".");
+    const actualFilter = filter || ".";
 
     const json = yield* getEditorText().pipe(
-      Effect.catchAll(() => Effect.succeed('{}'))
+      Effect.catchAll(() => Effect.succeed("{}"))
     );
 
     const content = `jq '${actualFilter}'\n${json}`;
@@ -42,7 +42,7 @@ export const createJqpgFromFilter = () =>
     const doc = yield* thenable(() =>
       vscode.workspace.openTextDocument({
         content,
-        language: 'jqpg',
+        language: "jqpg",
       })
     );
 
@@ -53,8 +53,10 @@ export const createJqpgFromFilter = () =>
 
 export const executeJqFromFilter = () =>
   Effect.gen(function* () {
-    const filter = yield* askFilter('.');
-    if (!filter) return;
+    const filter = yield* askFilter(".");
+    if (!filter) {
+      return;
+    }
 
     const json = yield* getEditorText();
 
@@ -64,7 +66,7 @@ export const executeJqFromFilter = () =>
     const doc = yield* thenable(() =>
       vscode.workspace.openTextDocument({
         content,
-        language: 'jqpg',
+        language: "jqpg",
       })
     );
 

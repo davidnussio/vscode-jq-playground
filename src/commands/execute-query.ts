@@ -1,45 +1,40 @@
-import * as path from 'node:path';
-import { pipe } from 'effect';
-import * as Effect from 'effect/Effect';
-import * as Option from 'effect/Option';
-import { Position, Range, type TextDocument, window, workspace } from 'vscode';
+import * as path from "node:path";
+import { pipe } from "effect";
+import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
+import { Position, Range, type TextDocument, window, workspace } from "vscode";
 import {
   activeTextEditor,
-  showErrorMessage,
   showWarningMessage,
-} from '../adapters/vscode-adapter';
-import type { JqMatch } from '../providers/code-lens';
-import type { RenderOutputType } from '../domain/models';
-import { ConsoleOutput, EditorOutput } from '../domain/models';
-import { InputResolverService } from '../services/InputResolverService';
-import { JqBinaryService } from '../services/JqBinaryService';
-import { JqExecutionService } from '../services/JqExecutionService';
-import { OutputRendererService } from '../services/OutputRendererService';
-import { QueryParserService } from '../services/QueryParserService';
+} from "../adapters/vscode-adapter";
+import { InputResolverService } from "../services/input-resolver-service";
+import { JqExecutionService } from "../services/jq-execution-service";
+import { OutputRendererService } from "../services/output-renderer-service";
+import { QueryParserService } from "../services/query-parser-service";
 
-export type { RenderOutputType } from '../domain/models';
+export type { RenderOutputType } from "../domain/models";
 
 const currentWorkingDirectory = (): string => {
   const cwdActiveFile = pipe(
     Option.fromNullable(window.activeTextEditor),
     Option.map((editor) => editor.document.fileName),
-    Option.map((fileName) => path.join(fileName, '..'))
+    Option.map((fileName) => path.join(fileName, ".."))
   );
   const cwdFirstWorkspace = pipe(
     Option.fromNullable(workspace.workspaceFolders),
     Option.map((folder) => folder[0].uri.path),
-    Option.getOrElse(() => '.')
+    Option.getOrElse(() => ".")
   );
   return Option.getOrElse(cwdActiveFile, () => cwdFirstWorkspace);
 };
 
 const findPreviousJqQueryLine = (
-  document: import('vscode').TextDocument,
+  document: import("vscode").TextDocument,
   startLine: number
 ): Option.Option<number> => {
   let line = startLine;
   while (line >= 0) {
-    if (document.lineAt(line).text.startsWith('jq')) {
+    if (document.lineAt(line).text.startsWith("jq")) {
       return Option.some(line);
     }
     line--;
@@ -50,10 +45,10 @@ const findPreviousJqQueryLine = (
 export const executeJqCommand = (params: {
   document: TextDocument;
   range: Range;
-  openResult: 'output' | 'editor';
+  openResult: "output" | "editor";
 }) =>
   Effect.gen(function* () {
-    yield* Effect.log('Executing jq command...');
+    yield* Effect.log("Executing jq command...");
 
     const queryParser = yield* QueryParserService;
     const inputResolver = yield* InputResolverService;
@@ -88,9 +83,9 @@ export const executeJqCommand = (params: {
       .execute(parsed.args, inputData, { cwd })
       .pipe(
         Effect.catchAll((error) =>
-          renderer.renderError(error.message).pipe(
-            Effect.zipRight(Effect.fail(error))
-          )
+          renderer
+            .renderError(error.message)
+            .pipe(Effect.zipRight(Effect.fail(error)))
         )
       );
 
@@ -98,14 +93,14 @@ export const executeJqCommand = (params: {
     yield* renderer.render(result, parsed.outputTarget, cwd);
   });
 
-export const queryRunner = (openResult: 'output' | 'editor') =>
+export const queryRunner = (openResult: "output" | "editor") =>
   Effect.fnUntraced(function* () {
     yield* Effect.log(`Running jq query (${openResult})`);
     const editor = activeTextEditor();
 
     if (Option.isNone(editor)) {
-      yield* showWarningMessage('No active text editor found.');
-      return yield* Effect.fail('No active text editor found.');
+      yield* showWarningMessage("No active text editor found.");
+      return yield* Effect.fail("No active text editor found.");
     }
 
     const ed = yield* editor;
@@ -116,7 +111,7 @@ export const queryRunner = (openResult: 'output' | 'editor') =>
 
     if (Option.isNone(jqQueryLine)) {
       yield* showWarningMessage(
-        'Current line does not contain jq query string'
+        "Current line does not contain jq query string"
       );
     } else {
       const line = yield* jqQueryLine;

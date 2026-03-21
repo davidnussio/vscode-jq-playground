@@ -150,17 +150,17 @@
   "scripts": {
     "prepare": "husky",
     "vscode:prepublish": "pnpm run package",
-    "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "compile": "pnpm run check-types && pnpm run check && node esbuild.js",
     "wat": "npm-run-all -p watch:*",
     "watch": "pnpm run watch:esbuild",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "pnpm run check-types && pnpm run lint && node esbuild.js --production",
+    "package": "pnpm run check-types && pnpm run check && node esbuild.js --production",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run check",
     "check-types": "tsc --noEmit",
-    "lint": "eslint src",
+    "lint": "ultracite check",
     "test": "vscode-test",
     "generate:download": "node ./internals/download-manual.js",
     "generate:examples": "node ./internals/build-examples.js",
@@ -178,12 +178,9 @@
     "@types/ramda": "^0.31.1",
     "@types/shell-quote": "^1.7.5",
     "@types/vscode": "^1.110.0",
-    "@typescript-eslint/eslint-plugin": "^8.57.1",
-    "@typescript-eslint/parser": "^8.57.1",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "esbuild": "^0.27.4",
-    "eslint": "^10.1.0",
     "glob": "^13.0.6",
     "husky": "^9.1.7",
     "lefthook": "^2.1.4",
@@ -214,9 +211,8 @@
     "pre-commit": "npx lint-staged"
   },
   "lint-staged": {
-    "*.ts": "eslint --cache --fix",
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
-      "npx ultracite format"
+      "npx ultracite fix"
     ]
   }
 }

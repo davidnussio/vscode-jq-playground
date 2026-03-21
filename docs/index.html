@@ -2,60 +2,68 @@
 <html lang="en">
   <head>
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-V676BWPVGJ"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-V676BWPVGJ"
+    ></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+    "use strict";
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      // biome-ignore lint/correctness/noUndeclaredVariables: standard gtag snippet
+      // biome-ignore lint/complexity/noArguments: standard gtag snippet
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
 
-      gtag('config', 'G-V676BWPVGJ');
+    gtag("config", "G-V676BWPVGJ");
     </script>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link
       rel="stylesheet"
       href="https://unpkg.com/spectre.css/dist/spectre.min.css"
-    />
+    >
     <link
       rel="stylesheet"
       href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css"
-    />
+    >
     <link
       rel="stylesheet"
       href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css"
-    />
+    >
     <link
       href="https://fonts.googleapis.com/css?family=Ubuntu"
       rel="stylesheet"
-    />
+    >
     <style type="text/css">
-      body {
-        font-family: "Ubuntu";
-        font-size: medium;
-        padding: 5ch;
-        background-color: #1e1e1e;
-        color: #d4d4d4;
-      }
-      .card-body {
-        min-height: 86px;
-      }
-      .bg-blue {
-        background-color: rgb(62, 180, 205);
-      }
-      .text-white {
-        color: white;
-      }
-      .panel {
-        margin-bottom: 46px;
-      }
-      .column {
-        margin-bottom: 16px;
-      }
-      .card {
-        border: 0;
-        box-shadow: 0 0.25rem 1rem rgb(48 55 66 / 15%);
-        height: 100%;
-      }
+    body {
+      padding: 5ch;
+      font-family: "Ubuntu", sans-serif;
+      font-size: medium;
+      color: #d4d4d4;
+      background-color: #1e1e1e;
+    }
+    .card-body {
+      min-height: 86px;
+    }
+    .bg-blue {
+      background-color: rgb(62, 180, 205);
+    }
+    .text-white {
+      color: white;
+    }
+    .panel {
+      margin-bottom: 46px;
+    }
+    .column {
+      margin-bottom: 16px;
+    }
+    .card {
+      height: 100%;
+      border: 0;
+      box-shadow: 0 0.25rem 1rem rgb(48 55 66 / 15%);
+    }
     </style>
   </head>
 
@@ -65,14 +73,12 @@
         <div class="tile-icon">
           <img
             src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/icon.png"
-            alt="Image"
+            alt="jq playground logo"
             height="72"
-          />
+          >
         </div>
         <div class="tile-content">
-          <div class="tile-title">
-            <span class="h2">Playground</span>
-          </div>
+          <div class="tile-title"><span class="h2">Playground</span></div>
           <span class="tile-subtitle text-gray"
             >Create interactive jq filters notebook.</span
           >
@@ -98,9 +104,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-1.gif"
-                    alt="Placeholder image"
+                    alt="Input box demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
@@ -109,16 +115,14 @@
             <div class="column col-12">
               <div class="card mt-2">
                 <div class="card-header">
-                  <div class="card-title h5 text-dark">
-                    Filter on the fly
-                  </div>
+                  <div class="card-title h5 text-dark">Filter on the fly</div>
                 </div>
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-2.gif"
-                    alt="Placeholder image"
+                    alt="Filter on the fly demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
@@ -134,9 +138,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/demo-redirect.gif"
-                    alt="Placeholder image"
+                    alt="Output redirect demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
@@ -152,9 +156,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/demo-variables.gif"
-                    alt="Placeholder image"
+                    alt="Variables demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
@@ -163,34 +167,30 @@
             <div class="column col-12">
               <div class="card mt-2">
                 <div class="card-header">
-                  <div class="card-title h5 text-dark">
-                    Use input variable
-                  </div>
+                  <div class="card-title h5 text-dark">Use input variable</div>
                 </div>
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/input-variable.gif"
-                    alt="Placeholder image"
+                    alt="Input variable demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
 
-             <!-- CARD 4 -->
-             <div class="column col-12">
+            <!-- CARD 4 -->
+            <div class="column col-12">
               <div class="card mt-2">
                 <div class="card-header">
-                  <div class="card-title h5 text-dark">
-                    ...
-                  </div>
+                  <div class="card-title h5 text-dark">...</div>
                 </div>
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/command-line-1.gif"
-                    alt="Placeholder image"
+                    alt="Command line demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
@@ -199,16 +199,14 @@
             <div class="column col-12">
               <div class="card mt-2">
                 <div class="card-header">
-                  <div class="card-title h5 text-dark">
-                    Multiline filter
-                  </div>
+                  <div class="card-title h5 text-dark">Multiline filter</div>
                 </div>
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/multiline.png"
-                    alt="Placeholder image"
+                    alt="Multiline query syntax"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
@@ -217,22 +215,20 @@
             <div class="column col-12">
               <div class="card mt-2">
                 <div class="card-header">
-                  <div class="card-title h5 text-dark">
-                    Multiline filter #2
-                  </div>
+                  <div class="card-title h5 text-dark">Multiline filter #2</div>
                 </div>
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/multiline-demo.gif"
-                    alt="Placeholder image"
+                    alt="Multiline query demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
 
-             <!-- CARD 7 -->
-             <div class="column col-md-12 col-6">
+            <!-- CARD 7 -->
+            <div class="column col-md-12 col-6">
               <div class="card mt-2">
                 <div class="card-header">
                   <div class="card-title h5 text-dark">Syntax highlight</div>
@@ -240,15 +236,15 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/highlight.png"
-                    alt="Placeholder image"
+                    alt="Syntax highlighting"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
 
-             <!-- CARD 8 -->
-             <div class="column col-md-12 col-6">
+            <!-- CARD 8 -->
+            <div class="column col-md-12 col-6">
               <div class="card mt-2">
                 <div class="card-header">
                   <div class="card-title h5 text-dark">Autocomplete</div>
@@ -256,15 +252,15 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/autocomple-1.png"
-                    alt="Placeholder image"
+                    alt="Autocomplete suggestions"
                     class="img-responsive"
-                  />
+                  >
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
+    </div>
   </body>
 </html>

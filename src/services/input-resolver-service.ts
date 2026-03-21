@@ -1,25 +1,30 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { type CommonSpawnOptions, spawn } from 'node:child_process';
-import { HttpClient } from '@effect/platform';
-import * as Duration from 'effect/Duration';
-import * as Effect from 'effect/Effect';
-import * as Option from 'effect/Option';
-import * as Schema from 'effect/Schema';
-import type { Range, TextDocument } from 'vscode';
-import { InputResolutionError } from '../domain/errors';
+import { spawn } from "node:child_process";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { HttpClient } from "@effect/platform";
+import * as Duration from "effect/Duration";
+
+const WHITESPACE_REGEX = /\s+/;
+const JQ_LINE_REGEX = /^(jq)\s+(.+?)/;
+const COMMENT_LINE_REGEX = /^#/;
+
+import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
+import * as Schema from "effect/Schema";
+import type { TextDocument } from "vscode";
+import { InputResolutionError } from "../domain/errors";
 
 // --- URL processor ---
 
 const isUrl = (s: string): boolean =>
   Schema.decodeUnknownOption(Schema.URL)(s).pipe(Option.isSome);
 
-const urlProcessor = Effect.fn('InputResolver.url')(function* (
+const urlProcessor = Effect.fn("InputResolver.url")(function* (
   context: string
 ) {
   if (!isUrl(context)) {
     return yield* Effect.fail(
-      new InputResolutionError({ message: 'Not a valid URL' })
+      new InputResolutionError({ message: "Not a valid URL" })
     );
   }
   const client = yield* HttpClient.HttpClient;
@@ -34,9 +39,7 @@ const workspaceDocProcessor = (
   textDocuments: ReadonlyArray<TextDocument>
 ) => {
   const found = textDocuments.find(
-    (doc) =>
-      doc.fileName === context ||
-      path.basename(doc.fileName) === context
+    (doc) => doc.fileName === context || path.basename(doc.fileName) === context
   );
   return found
     ? Effect.succeed(found.getText())
@@ -52,9 +55,7 @@ const workspaceDocProcessor = (
 const fileProcessor = (cwd: string, context: string) => {
   const trimmed = context.trim();
   if (!trimmed) {
-    return Effect.fail(
-      new InputResolutionError({ message: 'Empty context' })
-    );
+    return Effect.fail(new InputResolutionError({ message: "Empty context" }));
   }
 
   const resolvedPath =
@@ -64,7 +65,7 @@ const fileProcessor = (cwd: string, context: string) => {
 
   if (fs.existsSync(resolvedPath)) {
     return Effect.try({
-      try: () => fs.readFileSync(resolvedPath, 'utf-8'),
+      try: () => fs.readFileSync(resolvedPath, "utf-8"),
       catch: () =>
         new InputResolutionError({
           message: `Failed to read file: ${resolvedPath}`,
@@ -73,7 +74,7 @@ const fileProcessor = (cwd: string, context: string) => {
   }
 
   // Try multiple files separated by spaces
-  const files = trimmed.split(/\s+/);
+  const files = trimmed.split(WHITESPACE_REGEX);
   const allExist = files.every((f) => {
     const p =
       f.search(/^(\/|[a-z]:\\)/gi) === 0
@@ -91,9 +92,9 @@ const fileProcessor = (cwd: string, context: string) => {
               f.search(/^(\/|[a-z]:\\)/gi) === 0
                 ? path.resolve(f)
                 : path.resolve(path.join(cwd, f));
-            return fs.readFileSync(p, 'utf-8');
+            return fs.readFileSync(p, "utf-8");
           })
-          .join('\n'),
+          .join("\n"),
       catch: () =>
         new InputResolutionError({
           message: `Failed to read files: ${trimmed}`,
@@ -121,17 +122,17 @@ const shellCommandProcessor = (
   const match = SHELL_COMMAND_REGEX.exec(context.trim());
   if (!match) {
     return Effect.fail(
-      new InputResolutionError({ message: 'Not a shell command' })
+      new InputResolutionError({ message: "Not a shell command" })
     );
   }
 
   // Substitute variables in the command string
   let commandStr = match[1];
   for (const [key, value] of variables) {
-    commandStr = commandStr.replace(new RegExp(`\\$${key}\\b`, 'g'), value);
+    commandStr = commandStr.replace(new RegExp(`\\$${key}\\b`, "g"), value);
   }
 
-  const parts = commandStr.split(/\s+/);
+  const parts = commandStr.split(WHITESPACE_REGEX);
   const cmd = parts[0];
   const args = parts.slice(1);
 
@@ -139,18 +140,18 @@ const shellCommandProcessor = (
     const result = { stdout: [] as string[], stderr: [] as string[] };
     const proc = spawn(cmd, args, {
       cwd,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: ["ignore", "pipe", "pipe"],
     });
 
     if (proc.stdout) {
-      proc.stdout.on('data', (data) => result.stdout.push(data.toString()));
+      proc.stdout.on("data", (data) => result.stdout.push(data.toString()));
     }
     if (proc.stderr) {
-      proc.stderr.on('data', (data) => result.stderr.push(data.toString()));
+      proc.stderr.on("data", (data) => result.stderr.push(data.toString()));
     }
 
     const commandTimeout = setTimeout(() => {
-      proc.kill('SIGABRT');
+      proc.kill("SIGABRT");
       resume(
         Effect.fail(
           new InputResolutionError({
@@ -160,7 +161,7 @@ const shellCommandProcessor = (
       );
     }, Duration.toMillis(timeout));
 
-    proc.on('error', (error) => {
+    proc.on("error", (error) => {
       clearTimeout(commandTimeout);
       resume(
         Effect.fail(
@@ -171,15 +172,15 @@ const shellCommandProcessor = (
       );
     });
 
-    proc.on('close', (code) => {
+    proc.on("close", (code) => {
       clearTimeout(commandTimeout);
       if (code === 0) {
-        resume(Effect.succeed(result.stdout.join('')));
+        resume(Effect.succeed(result.stdout.join("")));
       } else {
         resume(
           Effect.fail(
             new InputResolutionError({
-              message: `Shell command exited with code ${code}: ${result.stderr.join('')}`,
+              message: `Shell command exited with code ${code}: ${result.stderr.join("")}`,
             })
           )
         );
@@ -199,19 +200,22 @@ const inlineJsonProcessor = (
   let line = startLine + 1;
   while (line < document.lineCount) {
     const text = document.lineAt(line++).text;
-    if (/^(jq)\s+(.+?)/.exec(text) !== null || /^#/.exec(text) !== null) {
+    if (
+      JQ_LINE_REGEX.exec(text) !== null ||
+      COMMENT_LINE_REGEX.exec(text) !== null
+    ) {
       break;
     }
     lines.push(`${text}\n`);
   }
-  return Effect.succeed(lines.join(''));
+  return Effect.succeed(lines.join(""));
 };
 
 export class InputResolverService extends Effect.Service<InputResolverService>()(
-  '@jqpg/InputResolverService',
+  "@jqpg/InputResolverService",
   {
     sync: () => {
-      const resolve = Effect.fn('InputResolverService.resolve')(function* (
+      const resolve = Effect.fn("InputResolverService.resolve")(function* (
         document: TextDocument,
         inputLineIndex: number,
         cwd: string,

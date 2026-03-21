@@ -1,6 +1,6 @@
-import * as Effect from 'effect/Effect';
-import type { TextDocument } from 'vscode';
-import { JqParseError } from '../domain/errors';
+import * as Effect from "effect/Effect";
+import type { TextDocument } from "vscode";
+import { JqParseError } from "../domain/errors";
 import {
   ConsoleOutput,
   EditorOutput,
@@ -8,10 +8,13 @@ import {
   FileOutput,
   type OutputTarget,
   type ParsedQuery,
-} from '../domain/models';
-import { parseJqCommandArgs } from '../lib/command-line';
+} from "../domain/models";
+import { parseJqCommandArgs } from "../lib/command-line";
 
 // --- Multiline query extraction ---
+
+const UNESCAPED_QUOTE_END_REGEX = /[^\\]'\s*$/;
+const JQ_PREFIX_REGEX = /jq\s+/;
 
 const extractMultilineQuery = (
   document: TextDocument,
@@ -22,7 +25,7 @@ const extractMultilineQuery = (
   let lineOffset = 1;
   for (
     let line = startLine + lineOffset;
-    query.search(/[^\\]'\s*$/) === -1 && line < document.lineCount;
+    query.search(UNESCAPED_QUOTE_END_REGEX) === -1 && line < document.lineCount;
     line++
   ) {
     query += document.lineAt(line).text;
@@ -37,18 +40,18 @@ const parseOutputRedirect = (
   document: TextDocument,
   contextLine: number
 ): { target: OutputTarget | null; nextLine: number; lineOffset: number } => {
-  const text = document.lineAt(contextLine)?.text ?? '';
+  const text = document.lineAt(contextLine)?.text ?? "";
 
-  if (text.startsWith('>> ')) {
-    const path = text.replace('>> ', '').trim();
+  if (text.startsWith(">> ")) {
+    const path = text.replace(">> ", "").trim();
     return {
       target: FileAppendOutput(path),
       nextLine: contextLine + 1,
       lineOffset: 1,
     };
   }
-  if (text.startsWith('> ')) {
-    const path = text.replace('> ', '').trim();
+  if (text.startsWith("> ")) {
+    const path = text.replace("> ", "").trim();
     return {
       target: FileOutput(path),
       nextLine: contextLine + 1,
@@ -66,9 +69,13 @@ export const readEditorVariables = (
   const variables = new Map<string, string>();
   for (let i = 0; i < document.lineCount; i++) {
     const lineText = document.lineAt(i).text.trim();
-    if (lineText.startsWith('jq')) break;
-    if (lineText.startsWith('#')) continue;
-    const eqIndex = lineText.indexOf('=');
+    if (lineText.startsWith("jq")) {
+      break;
+    }
+    if (lineText.startsWith("#")) {
+      continue;
+    }
+    const eqIndex = lineText.indexOf("=");
     if (eqIndex > 0) {
       variables.set(
         lineText.slice(0, eqIndex).trim(),
@@ -80,13 +87,13 @@ export const readEditorVariables = (
 };
 
 export class QueryParserService extends Effect.Service<QueryParserService>()(
-  '@jqpg/QueryParserService',
+  "@jqpg/QueryParserService",
   {
     sync: () => {
-      const parse = Effect.fn('QueryParserService.parse')(function* (
+      const parse = Effect.fn("QueryParserService.parse")(function* (
         document: TextDocument,
         lineIndex: number,
-        defaultOutput: 'output' | 'editor'
+        defaultOutput: "output" | "editor"
       ) {
         if (lineIndex < 0 || lineIndex >= document.lineCount) {
           return yield* new JqParseError({
@@ -95,15 +102,15 @@ export class QueryParserService extends Effect.Service<QueryParserService>()(
         }
 
         const rawLine = document.lineAt(lineIndex).text;
-        if (!rawLine.trimStart().startsWith('jq')) {
+        if (!rawLine.trimStart().startsWith("jq")) {
           return yield* new JqParseError({
             message: `Line does not start with jq: "${rawLine}"`,
           });
         }
 
-        const queryLine = rawLine.replace(/jq\s+/, '');
+        const queryLine = rawLine.replace(JQ_PREFIX_REGEX, "");
         const args = parseJqCommandArgs(queryLine);
-        let filter = args.at(-1) ?? '';
+        let filter = args.at(-1) ?? "";
         let lineOffset = 1;
 
         // Handle multiline filter (wrapped in single quotes)
@@ -120,7 +127,7 @@ export class QueryParserService extends Effect.Service<QueryParserService>()(
           document.lineCount - 1
         );
         let outputTarget: OutputTarget =
-          defaultOutput === 'editor' ? EditorOutput : ConsoleOutput;
+          defaultOutput === "editor" ? EditorOutput : ConsoleOutput;
 
         const redirect = parseOutputRedirect(document, contextLine);
         if (redirect.target) {
@@ -132,7 +139,10 @@ export class QueryParserService extends Effect.Service<QueryParserService>()(
         // Check for append redirect after regular redirect
         if (contextLine < document.lineCount) {
           const redirect2 = parseOutputRedirect(document, contextLine);
-          if (redirect2.target && redirect2.target._tag === 'FileAppendOutput') {
+          if (
+            redirect2.target &&
+            redirect2.target._tag === "FileAppendOutput"
+          ) {
             outputTarget = redirect2.target;
             contextLine = redirect2.nextLine;
             lineOffset += redirect2.lineOffset;

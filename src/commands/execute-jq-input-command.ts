@@ -1,10 +1,10 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { pipe } from 'effect';
-import * as Effect from 'effect/Effect';
-import * as Option from 'effect/Option';
-import { window, workspace } from 'vscode';
-import { JqExecutionService } from '../services/JqExecutionService';
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { pipe } from "effect";
+import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
+import { window, workspace } from "vscode";
+import { JqExecutionService } from "../services/jq-execution-service";
 
 /**
  * Command for VS Code task input variables integration.
@@ -18,7 +18,7 @@ export const executeJqInputCommand = (args?: {
   input?: string;
 }) =>
   Effect.gen(function* () {
-    const filter = args?.filter ?? '.';
+    const filter = args?.filter ?? ".";
     const inputPath = args?.input;
 
     const jqExecution = yield* JqExecutionService;
@@ -26,7 +26,7 @@ export const executeJqInputCommand = (args?: {
     const cwd = pipe(
       Option.fromNullable(workspace.workspaceFolders),
       Option.map((folders) => folders[0].uri.fsPath),
-      Option.getOrElse(() => '.')
+      Option.getOrElse(() => ".")
     );
 
     let inputData: string | undefined;
@@ -37,7 +37,7 @@ export const executeJqInputCommand = (args?: {
         : path.resolve(cwd, inputPath);
 
       inputData = yield* Effect.try({
-        try: () => fs.readFileSync(resolvedPath, 'utf-8'),
+        try: () => fs.readFileSync(resolvedPath, "utf-8"),
         catch: () => new Error(`Failed to read input file: ${resolvedPath}`),
       }).pipe(
         Effect.catchAll(() => {
@@ -53,11 +53,7 @@ export const executeJqInputCommand = (args?: {
       }
     }
 
-    const result = yield* jqExecution.execute(
-      [filter],
-      inputData,
-      { cwd }
-    );
+    const result = yield* jqExecution.execute([filter], inputData, { cwd });
 
     return result;
   });

@@ -1,52 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link
       rel="stylesheet"
       href="https://unpkg.com/spectre.css/dist/spectre.min.css"
-    />
+    >
     <link
       rel="stylesheet"
       href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css"
-    />
+    >
     <link
       rel="stylesheet"
       href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css"
-    />
+    >
     <link
       href="https://fonts.googleapis.com/css?family=Ubuntu"
       rel="stylesheet"
-    />
+    >
     <style type="text/css">
-      body {
-        font-family: "Ubuntu";
-        font-size: medium;
-        padding: 5ch;
-        background-color: #1e1e1e;
-        color: #d4d4d4;
-      }
-      .card-body {
-        min-height: 86px;
-      }
-      .bg-blue {
-        background-color: rgb(62, 180, 205);
-      }
-      .text-white {
-        color: white;
-      }
-      .panel {
-        margin-bottom: 46px;
-      }
-      .column {
-        margin-bottom: 16px;
-      }
-      .card {
-        border: 0;
-        box-shadow: 0 0.25rem 1rem rgb(48 55 66 / 15%);
-        height: 100%;
-      }
+    body {
+      padding: 5ch;
+      font-family: "Ubuntu", sans-serif;
+      font-size: medium;
+      color: #d4d4d4;
+      background-color: #1e1e1e;
+    }
+    .card-body {
+      min-height: 86px;
+    }
+    .bg-blue {
+      background-color: rgb(62, 180, 205);
+    }
+    .text-white {
+      color: white;
+    }
+    .panel {
+      margin-bottom: 46px;
+    }
+    .column {
+      margin-bottom: 16px;
+    }
+    .card {
+      height: 100%;
+      border: 0;
+      box-shadow: 0 0.25rem 1rem rgb(48 55 66 / 15%);
+    }
     </style>
   </head>
 
@@ -56,9 +56,9 @@
         <div class="tile-icon">
           <img
             src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/icon.png"
-            alt="Image"
+            alt="jq playground logo"
             height="72"
-          />
+          >
         </div>
         <div class="tile-content">
           <div class="tile-title">
@@ -94,16 +94,16 @@
                     Create jq playground from query
                   </div>
                   <div class="card-subtitle text-dark">
-                    <span class="chip">ctrl + p</span> Create playground from
-                    filter
+                    <span class="chip">ctrl + p</span>
+                    Create playground from filter
                   </div>
                 </div>
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-1.gif"
-                    alt="Placeholder image"
+                    alt="Input box demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">
@@ -126,9 +126,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/inputbox-2.gif"
-                    alt="Placeholder image"
+                    alt="Input box advanced demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">no files needed</div>
@@ -168,9 +168,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/demo-redirect.gif"
-                    alt="Placeholder image"
+                    alt="Output redirect demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">
@@ -187,7 +187,7 @@
                     Use variables and environment variables into commands
                   </div>
                   <div class="card-subtitle text-dark">
-                    1. Start line with $ (dollar sign)<br />
+                    1. Start line with $ (dollar sign)<br>
                     2. Write command line and use evnvironment variables or
                     local variables defined before first jq filter
                   </div>
@@ -195,9 +195,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/demo-variables.gif"
-                    alt="Placeholder image"
+                    alt="Variables demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">
@@ -216,15 +216,15 @@
                 <div class="card-header">
                   <div class="card-title h5 text-dark">Use input variable</div>
                   <div class="card-subtitle text-dark">
-                    1. Write jq filter into tasks<br />
+                    1. Write jq filter into tasks<br>
                   </div>
                 </div>
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/input-variable.gif"
-                    alt="Placeholder image"
+                    alt="Input variable demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">
@@ -262,22 +262,22 @@
                     Use command line as jq's input
                   </div>
                   <div class="card-subtitle text-dark">
-                    1. Start line with $ (dollar sign)<br />
+                    1. Start line with $ (dollar sign)<br>
                     2. Write command line and filter the results with jq filter
                   </div>
                 </div>
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/command-line-1.gif"
-                    alt="Placeholder image"
+                    alt="Command line demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">
                   Support some basics commands with hardcoded max execution
                   timeout
-                  <span class="label">5 seconds</span><br />
+                  <span class="label">5 seconds</span><br>
                   http|curl|wget|cat|echo|ls|dir|grep|tail|head|find
                 </div>
               </div>
@@ -328,9 +328,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/multiline.png"
-                    alt="Placeholder image"
+                    alt="Multiline query syntax"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">
@@ -351,9 +351,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/multiline-demo.gif"
-                    alt="Placeholder image"
+                    alt="Multiline query demo"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">
@@ -379,9 +379,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/highlight.png"
-                    alt="Placeholder image"
+                    alt="Syntax highlighting"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">
@@ -406,9 +406,9 @@
                 <div class="card-image">
                   <img
                     src="https://github.com/davidnussio/vscode-jq-playground/raw/master/images/autocomple-1.png"
-                    alt="Placeholder image"
+                    alt="Autocomplete suggestions"
                     class="img-responsive"
-                  />
+                  >
                 </div>
 
                 <div class="card-body text-dark">

@@ -2,7 +2,7 @@
   "name": "vscode-jq-playground",
   "displayName": "Visual Code jq playground",
   "description": "Run jq filters directly in VS Code with live results, autocomplete, and playground support",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "publisher": "davidnussio",
   "license": "SEE LICENSE IN LICENSE",
   "author": {

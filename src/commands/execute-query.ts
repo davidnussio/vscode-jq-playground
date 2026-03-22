@@ -5,8 +5,11 @@ import * as Option from "effect/Option";
 import { Position, Range, type TextDocument, window, workspace } from "vscode";
 import {
   activeTextEditor,
+  showErrorMessage,
   showWarningMessage,
 } from "../adapters/vscode-adapter";
+import { fixErrorCommand } from "../ai/ai-commands";
+import { isAiAvailable } from "../ai/ai-service";
 import { InputResolverService } from "../services/input-resolver-service";
 import { JqExecutionService } from "../services/jq-execution-service";
 import { OutputRendererService } from "../services/output-renderer-service";
@@ -84,9 +87,27 @@ export const executeJqCommand = (params: {
       .execute(parsed.args, inputData, { cwd })
       .pipe(
         Effect.catchAll((error) =>
-          renderer
-            .renderError(error.message)
-            .pipe(Effect.zipRight(Effect.fail(error)))
+          Effect.gen(function* () {
+            // Show error in output channel only (no popup)
+            yield* renderer.renderError(error.message);
+
+            if (isAiAvailable()) {
+              // Single notification with AI fix option
+              const action = yield* showErrorMessage(
+                `jq error: ${error.message}`,
+                "✨ Explain & Fix",
+                "Dismiss"
+              );
+
+              if (action === "✨ Explain & Fix") {
+                yield* fixErrorCommand(parsed.filter, error.message, inputData);
+              }
+            } else {
+              yield* showErrorMessage(`jq error: ${error.message}`, "Dismiss");
+            }
+
+            return yield* Effect.fail(error);
+          })
         )
       );
 

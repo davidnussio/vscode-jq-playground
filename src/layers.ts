@@ -1,6 +1,7 @@
 import { FetchHttpClient } from "@effect/platform";
 import * as Layer from "effect/Layer";
 import { logger } from "./adapters/vscode-adapter";
+import { AiService } from "./ai/ai-service";
 import { InputResolverService } from "./services/input-resolver-service";
 import { JqBinaryService } from "./services/jq-binary-service";
 import { JqExecutionService } from "./services/jq-execution-service";
@@ -14,6 +15,7 @@ export const AppLive = SetupLive.pipe(
   Layer.provide(QueryParserService.Default),
   Layer.provide(OutputRendererService.Default),
   Layer.provide(JqBinaryService.Default),
+  Layer.provide(AiService.Default),
   Layer.provide(logger("JQ Playground")),
   Layer.provide(FetchHttpClient.layer)
 );

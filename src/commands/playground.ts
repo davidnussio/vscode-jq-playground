@@ -1,7 +1,11 @@
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as vscode from "vscode";
-import { activeTextEditor, thenable } from "../adapters/vscode-adapter";
+import {
+  activeTextEditor,
+  openTextDocument,
+  thenable,
+} from "../adapters/vscode-adapter";
 
 const askFilter = (initialValue: string) =>
   thenable(() =>
@@ -39,12 +43,10 @@ export const createJqpgFromFilter = () =>
 
     const content = `jq '${actualFilter}'\n${json}`;
 
-    const doc = yield* thenable(() =>
-      vscode.workspace.openTextDocument({
-        content,
-        language: "jqpg",
-      })
-    );
+    const doc = yield* openTextDocument({
+      content,
+      language: "jqpg",
+    });
 
     yield* thenable(() =>
       vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside)
@@ -63,12 +65,10 @@ export const executeJqFromFilter = () =>
     // Create a temporary playground and trigger execution
     const content = `jq '${filter}'\n${json}`;
 
-    const doc = yield* thenable(() =>
-      vscode.workspace.openTextDocument({
-        content,
-        language: "jqpg",
-      })
-    );
+    const doc = yield* openTextDocument({
+      content,
+      language: "jqpg",
+    });
 
     yield* thenable(() =>
       vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside)

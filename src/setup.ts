@@ -4,6 +4,8 @@ import {
   registerCommand,
   registerCompletionItemProvider,
 } from "./adapters/vscode-adapter";
+import { explainFilterCommand, generateFilterCommand } from "./ai/ai-commands";
+import { registerChatParticipant } from "./ai/chat-participant";
 import { executeJqInputCommand } from "./commands/execute-jq-input-command";
 import { executeJqCommand, queryRunner } from "./commands/execute-query";
 import {
@@ -50,6 +52,10 @@ const SetupCommands = Effect.gen(function* () {
     "extension.downloadJqBinary",
     () => downloadJqBinaryCommand
   );
+
+  // AI commands
+  yield* registerCommand("jqpg.ai.explainFilter", explainFilterCommand);
+  yield* registerCommand("jqpg.ai.generateFilter", generateFilterCommand);
 });
 
 const SetupCodeLens = Effect.gen(function* () {
@@ -63,9 +69,14 @@ const SetupCompletionProviders = Effect.gen(function* () {
   yield* registerCompletionItemProvider(["jqpg"], jqBuiltinsProvider);
 });
 
+const SetupChatParticipant = Effect.gen(function* () {
+  yield* registerChatParticipant;
+});
+
 export const SetupLive = Effect.gen(function* () {
   yield* SetupCommands;
   yield* SetupCodeLens;
   yield* SetupCompletionProviders;
+  yield* SetupChatParticipant;
   yield* Effect.log("Setup complete");
 }).pipe(Layer.effectDiscard);

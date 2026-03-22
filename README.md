@@ -21,6 +21,9 @@
 - **Variables** — define `KEY=value` lines and reference `$KEY` in filters and commands
 - **Multiline filters** — write complex queries across multiple lines using quotes
 - **Syntax highlighting** — full TextMate grammar for jq and embedded JSON
+- **AI-powered assistance** — explain, fix, and generate jq filters with GitHub Copilot integration
+- **Structured error handling** — clear, actionable error messages with optional AI-powered fix suggestions
+- **Chat participant** — ask `@jq` in the Copilot chat for jq help, filter writing, and debugging
 
 ---
 
@@ -102,6 +105,44 @@ $ curl -s 'https://api.github.com/repos/stedolan/jq/commits?per_page=5'
 
 ---
 
+## AI features
+
+> Requires [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot). Can be disabled via `jqPlayground.ai.enabled`.
+
+### Explain filter
+
+Click the **✨ Explain** code lens above any `jq` line to get a step-by-step explanation of what the filter does, which builtins are used, and why.
+
+### Fix errors with AI
+
+When a jq filter fails, the extension shows the error and offers an **✨ Explain & Fix** button. Clicking it opens a side panel with:
+- Why the error occurred
+- A corrected filter you can copy back
+
+### Generate filter
+
+Run **JQPG: Generate filter with AI** from the Command Palette, describe what you want in plain language (e.g. _"extract all names where active is true"_), and the extension generates a valid jq filter and inserts it into your playground.
+
+### Chat participant
+
+Type `@jq` in the GitHub Copilot chat to ask questions about jq syntax, get help writing filters, or debug existing ones. The participant is context-aware — it picks up the active filter and input sample from your editor.
+
+---
+
+## Error handling
+
+The extension provides structured, typed error messages for common failure scenarios:
+
+- **jq not found** — prompts to configure the path manually or download the binary automatically
+- **Invalid JSON input** — validates input before execution and reports parsing issues
+- **Execution errors** — displays jq stderr output in the output channel with an optional AI fix
+- **File not found** — clear message when a referenced input file doesn't exist
+- **Command timeout** — jq processes are killed after 10 seconds by default to prevent hangs
+- **Input resolution errors** — explains when a data source (URL, file, shell command) can't be resolved
+- **Unsupported platform** — reports when the current OS/architecture isn't supported for binary download
+
+---
+
 ## Commands and keybindings
 
 | Keybinding | Action |
@@ -116,10 +157,14 @@ All commands are available via the Command Palette under the `JQPG` prefix:
 | JQPG: Examples | Browse executable examples from the jq manual |
 | JQPG: Manual | Open the official jq manual |
 | JQPG: Tutorial | Open the jq tutorial |
+| JQPG: Run query in output | Run the current jq filter to the output console |
+| JQPG: Run query in editor | Run the current jq filter to a side editor |
 | JQPG: Execute jq filter | Run a jq filter from an input box |
-| JQPG: Create playground from filter | Scaffold a `.jqpg` file from a filter |
+| JQPG: Create playground from filter | Scaffold a `.jqpg` file from a filter and the active editor content |
 | JQPG: Configure jq path | Set a custom path to the jq binary |
 | JQPG: Download jq binary | Download jq if not installed |
+| JQPG: Explain filter with AI | Explain the current jq filter step by step |
+| JQPG: Generate filter with AI | Generate a jq filter from a natural language description |
 
 ---
 
@@ -128,6 +173,9 @@ All commands are available via the Command Palette under the `JQPG` prefix:
 | Setting | Default | Description |
 |---|---|---|
 | `jqPlayground.binaryPath` | `""` | Path to the `jq` binary. Leave empty for auto-detection. |
+| `jqPlayground.shortcutLabelConsole` | `""` | Custom label for the "console" code lens. Leave empty to auto-detect from keybindings. |
+| `jqPlayground.shortcutLabelEditor` | `""` | Custom label for the "editor" code lens. Leave empty to auto-detect from keybindings. |
+| `jqPlayground.ai.enabled` | `true` | Enable AI-powered features (Explain, Fix, Generate). Requires GitHub Copilot. Disable if you work with sensitive data. |
 
 ---
 
@@ -150,6 +198,8 @@ Use jq results as input variables in tasks and launch configs:
   ]
 }
 ```
+
+The `input` field accepts a file path (relative to workspace root) or inline JSON. If omitted, the active editor content is used.
 
 ---
 

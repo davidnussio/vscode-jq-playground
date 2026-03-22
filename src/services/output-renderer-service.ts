@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as Effect from "effect/Effect";
 import * as vscode from "vscode";
-import { openTextDocument, showErrorMessage } from "../adapters/vscode-adapter";
+import { openTextDocument } from "../adapters/vscode-adapter";
 import type { OutputTarget } from "../domain/models";
 
 export class OutputRendererService extends Effect.Service<OutputRendererService>()(
@@ -63,21 +63,15 @@ export class OutputRendererService extends Effect.Service<OutputRendererService>
 
       const renderError = Effect.fn("OutputRendererService.renderError")(
         function* (message: string) {
-          outputChannel.clear();
-          outputChannel.append(message);
-          outputChannel.show(true);
-          yield* showErrorMessage(message);
+          yield* Effect.sync(() => {
+            outputChannel.clear();
+            outputChannel.append(message);
+            outputChannel.show(true);
+          });
         }
       );
 
-      const renderErrorQuiet = (message: string) =>
-        Effect.sync(() => {
-          outputChannel.clear();
-          outputChannel.append(message);
-          outputChannel.show(true);
-        });
-
-      return { render, renderError, renderErrorQuiet };
+      return { render, renderError };
     }),
   }
 ) {}

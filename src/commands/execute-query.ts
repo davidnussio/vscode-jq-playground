@@ -89,7 +89,7 @@ export const executeJqCommand = (params: {
         Effect.catchAll((error) =>
           Effect.gen(function* () {
             // Show error in output channel only (no popup)
-            yield* renderer.renderErrorQuiet(error.message);
+            yield* renderer.renderError(error.message);
 
             if (isAiEnabled()) {
               // Single notification with AI fix option
@@ -103,7 +103,7 @@ export const executeJqCommand = (params: {
                 yield* fixErrorCommand(parsed.filter, error.message, inputData);
               }
             } else {
-              yield* showErrorMessage(`jq error: ${error.message}`);
+              yield* showErrorMessage(`jq error: ${error.message}`, "Dismiss");
             }
 
             return yield* Effect.fail(error);

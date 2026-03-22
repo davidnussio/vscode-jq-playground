@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as Effect from "effect/Effect";
 import * as vscode from "vscode";
+import { openTextDocument, showErrorMessage } from "../adapters/vscode-adapter";
 import type { OutputTarget } from "../domain/models";
 
 export class OutputRendererService extends Effect.Service<OutputRendererService>()(
@@ -26,12 +27,10 @@ export class OutputRendererService extends Effect.Service<OutputRendererService>
             break;
           }
           case "EditorOutput": {
-            const doc = yield* Effect.promise(() =>
-              vscode.workspace.openTextDocument({
-                content: result,
-                language: "json",
-              })
-            );
+            const doc = yield* openTextDocument({
+              content: result,
+              language: "json",
+            });
             yield* Effect.promise(() =>
               vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside)
             );
@@ -67,11 +66,18 @@ export class OutputRendererService extends Effect.Service<OutputRendererService>
           outputChannel.clear();
           outputChannel.append(message);
           outputChannel.show(true);
-          yield* Effect.promise(() => vscode.window.showErrorMessage(message));
+          yield* showErrorMessage(message);
         }
       );
 
-      return { render, renderError };
+      const renderErrorQuiet = (message: string) =>
+        Effect.sync(() => {
+          outputChannel.clear();
+          outputChannel.append(message);
+          outputChannel.show(true);
+        });
+
+      return { render, renderError, renderErrorQuiet };
     }),
   }
 ) {}

@@ -68,6 +68,12 @@
           "default": "",
           "description": "Shortcut label shown in the 'editor' code lens. Leave empty to auto-detect from keybinding configuration.",
           "scope": "application"
+        },
+        "jqPlayground.ai.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable AI-powered features (Explain, Fix, Generate). Requires GitHub Copilot. Disable if you work with sensitive data.",
+          "scope": "application"
         }
       }
     },
@@ -142,6 +148,24 @@
         "command": "extension.downloadJqBinary",
         "title": "Download jq binary",
         "category": "JQPG"
+      },
+      {
+        "command": "jqpg.ai.explainFilter",
+        "title": "Explain filter with AI",
+        "category": "JQPG"
+      },
+      {
+        "command": "jqpg.ai.generateFilter",
+        "title": "Generate filter with AI",
+        "category": "JQPG"
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "jqpg.assistant",
+        "name": "jq",
+        "description": "jq filter expert — write, explain and fix jq filters",
+        "isSticky": true
       }
     ],
     "keybindings": [

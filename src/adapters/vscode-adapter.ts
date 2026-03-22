@@ -107,6 +107,18 @@ export const registerCompletionItemProvider = (
 export const activeTextEditor = () =>
   Option.fromNullable(vscode.window.activeTextEditor);
 
+export const openTextDocument = (options: {
+  content?: string;
+  language?: string;
+}) => thenable(() => vscode.workspace.openTextDocument(options));
+
+export const getConfigurationValue = <A>(
+  namespace: string,
+  setting: string,
+  defaultValue: A
+): A =>
+  vscode.workspace.getConfiguration(namespace).get<A>(setting, defaultValue);
+
 export interface ConfigRef<A, B = A> {
   readonly changes: Stream.Stream<A>;
   readonly get: Effect.Effect<A>;

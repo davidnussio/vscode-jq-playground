@@ -4,6 +4,7 @@ import { Effect } from "effect";
 import * as vscode from "vscode";
 import {
   executeCommand,
+  openTextDocument,
   thenable,
   VsCodeContext,
 } from "../adapters/vscode-adapter";
@@ -44,12 +45,10 @@ export const openExamples = () =>
       )
     );
 
-    const doc = yield* thenable(() =>
-      vscode.workspace.openTextDocument({
-        content: fileContent,
-        language: "jqpg",
-      })
-    );
+    const doc = yield* openTextDocument({
+      content: fileContent,
+      language: "jqpg",
+    });
 
     return yield* thenable(() =>
       vscode.window.showTextDocument(doc, vscode.ViewColumn.Active)

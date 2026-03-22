@@ -9,7 +9,7 @@ import {
   showWarningMessage,
 } from "../adapters/vscode-adapter";
 import { fixErrorCommand } from "../ai/ai-commands";
-import { isAiEnabled } from "../ai/ai-service";
+import { isAiAvailable } from "../ai/ai-service";
 import { InputResolverService } from "../services/input-resolver-service";
 import { JqExecutionService } from "../services/jq-execution-service";
 import { OutputRendererService } from "../services/output-renderer-service";
@@ -91,7 +91,7 @@ export const executeJqCommand = (params: {
             // Show error in output channel only (no popup)
             yield* renderer.renderError(error.message);
 
-            if (isAiEnabled()) {
+            if (isAiAvailable()) {
               // Single notification with AI fix option
               const action = yield* showErrorMessage(
                 `jq error: ${error.message}`,

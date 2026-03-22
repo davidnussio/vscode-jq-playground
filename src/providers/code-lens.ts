@@ -1,6 +1,6 @@
 import { Array, pipe } from "effect";
 import { CodeLens, Range, type TextDocument } from "vscode";
-import { isAiEnabled } from "../ai/ai-service";
+import { isAiAvailable } from "../ai/ai-service";
 import { JQ_QUERY_REGEX } from "../domain/constants";
 
 const JQ_PREFIX_REGEX = /^jq\s+/;
@@ -82,7 +82,7 @@ export const jqQueryLenses = (document: TextDocument): CodeLens[] =>
         makeCodeLens(match, index, "output"),
         makeCodeLens(match, index, "editor"),
       ];
-      if (isAiEnabled()) {
+      if (isAiAvailable()) {
         lenses.push(makeExplainCodeLens(match));
       }
       return lenses;

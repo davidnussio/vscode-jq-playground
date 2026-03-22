@@ -8,24 +8,28 @@ export const BINARIES: Record<
 > = {
   darwin: {
     amd64: {
-      file: "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-macos-amd64",
-      checksum: "ed17e93cb3ef1be977fd7283ea605d2d",
+      file: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-macos-amd64",
+      checksum: "d91812b3fbcc20ae2e1f28a9b8141c67",
     },
     arm64: {
-      file: "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-macos-arm64",
-      checksum: "4ee0157ad6740efc58162a8266ca3091",
+      file: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-macos-arm64",
+      checksum: "d1e04871ef93ffd2807a00d7edfa305b",
     },
   },
   linux: {
     amd64: {
-      file: "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64",
-      checksum: "07c6205219634c82bae369de89efe175",
+      file: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64",
+      checksum: "b3cb933bb73f2a2c7fefb362cc8eabfd",
+    },
+    arm64: {
+      file: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-arm64",
+      checksum: "50c61a2c9130a1e42de431f87490b210",
     },
   },
   win32: {
     amd64: {
-      file: "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-windows-amd64.exe",
-      checksum: "fc682c40ed883241b34662713a9b8ff6",
+      file: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-windows-amd64.exe",
+      checksum: "88f32aca9fc04d009f3883844fab482e",
     },
   },
 };

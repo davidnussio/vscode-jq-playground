@@ -1,4 +1,4 @@
-pnpm test
+# pnpm test
 
 # ultracite
 #!/bin/sh

@@ -11,6 +11,7 @@ import { executeJqCommand, queryRunner } from "./commands/execute-query";
 import {
   openExamples,
   openManual,
+  openPlay,
   openTutorial,
 } from "./commands/open-resources";
 import {
@@ -32,6 +33,7 @@ const SetupCommands = Effect.gen(function* () {
   yield* registerCommand("extension.openManual", openManual);
   yield* registerCommand("extension.openTutorial", openTutorial);
   yield* registerCommand("extension.openExamples", openExamples);
+  yield* registerCommand("extension.openPlay", openPlay);
   yield* registerCommand("extension.runQueryOutput", queryRunner("output"));
   yield* registerCommand("extension.runQueryEditor", queryRunner("editor"));
   yield* registerCommand(

@@ -3,8 +3,10 @@ import * as path from "node:path";
 import { Effect } from "effect";
 import * as vscode from "vscode";
 import {
+  activeTextEditor,
   executeCommand,
   openTextDocument,
+  showInputBox,
   showTextDocument,
   VsCodeContext,
 } from "../adapters/vscode-adapter";
@@ -53,4 +55,22 @@ export const openExamples = () =>
     return yield* showTextDocument(doc, {
       viewColumn: vscode.ViewColumn.Active,
     });
+  });
+
+export const openPlay = () =>
+  Effect.gen(function* () {
+    const editor = yield* activeTextEditor();
+    const query = yield* showInputBox({ prompt: "jq query", value: "." });
+    if (!query) {
+      return;
+    }
+
+    const json = editor.document.getText();
+    const q = encodeURIComponent(query);
+    const j = encodeURIComponent(json);
+
+    yield* executeCommand(
+      "vscode.open",
+      vscode.Uri.parse(`https://play.jqlang.org?q=${q}&j=${j}`)
+    );
   });

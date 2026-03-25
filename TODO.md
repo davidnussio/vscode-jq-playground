@@ -1,93 +1,134 @@
-# TODO
+# TODO — vscode-jq-playground
 
-- [x] Base Effect configuration, integrate VsCodeContext from official effect extension
-- [x] Handle jq configuration and verify is it correct and executable and handle errors
-- [x] Run base jq command with inline json
-- [ ] Verify jq binary path is correct and executable and not wrong executable file
+---
 
-## Actions
+## Refactoring Effect-TS
 
-- [ ] Create playground from filter
-- [ ] Filter json on the fly
-- [ ] Autocomplete with inline documentation
+### Fase 0 — Pulizia e preparazione
 
-## User Actions
+- [x] 0.1 Eliminare file morti: `autocomplete.ts`, `inputbox-filter.ts`, `messages.ts`, `trash/`
+- [x] 0.2 Eliminare `configs.ts` (duplicato)
+- [x] 0.3 Eliminare `logger.ts` (duplicato, il logger è in vscode-adapter)
+- [x] 0.4 Rinominare funzioni italiane in inglese
+- [x] 0.5 Verificare che il progetto compili dopo la pulizia
 
-### Core jq Operations
+### Fase 1 — Schema e tipi di dominio (`src/domain/`)
 
-- [ ] Execute jq filters on JSON data
-- [ ] Apply filters to selected JSON content
-- [ ] Run jq commands with custom arguments
-- [ ] Process JSON files with jq filters
-- [ ] Transform JSON data using jq expressions
-- [ ] Validate JSON syntax before processing
-- [ ] Handle jq execution errors gracefully
+- [x] 1.1 `errors.ts` — Errori tipizzati con `Schema.TaggedError`
+- [x] 1.2 `models.ts` — Branded types, OutputTarget, InputSource, ParsedQuery
+- [x] 1.3 `constants.ts` — Costanti (binaries per piattaforma, regex, lingue)
 
-### Playground Management
+### Fase 2 — Services (`src/services/`)
 
-- [ ] Create new jq playground instance
-- [ ] Create playground from existing filter
-- [ ] Create playground from selected JSON
-- [ ] Save playground sessions
-- [ ] Load saved playground configurations
-- [ ] Export playground results
-- [ ] Share playground with others
-- [ ] Duplicate existing playground
+- [x] 2.1 `JqBinaryService` — find, version, validate, download, config
+- [x] 2.2 `JqExecutionService` — execute con spawn, timeout, errori tipizzati
+- [x] 2.3 `InputResolverService` — chain: URL → workspace doc → shell → file → inline JSON
+- [x] 2.4 `QueryParserService` — parsing args, multiline, redirect, variabili
+- [x] 2.5 `OutputRendererService` — console, editor, file, file append
 
-### Editor Integration
+### Fase 3 — Comandi e UI
 
-- [ ] Insert jq filter results into current document
-- [ ] Replace selected JSON with filtered results
-- [ ] Format JSON output with proper indentation
-- [ ] Syntax highlighting for jq expressions
-- [ ] Auto-completion for jq functions
-- [ ] Hover documentation for jq operators
-- [ ] Error highlighting in jq expressions
+- [x] 3.1 `execute-query.ts` — Comando principale con composizione service
+- [x] 3.2 `open-resources.ts` — Manual, Tutorial, Examples
+- [x] 3.3 `playground.ts` — createJqpgFromFilter, executeJqFromFilter
+- [x] 3.4 `code-lens.ts` — CodeLens provider con supporto AI
+- [x] 3.5 `completion.ts` — Autocomplete builtins + workspace files
 
-### Configuration & Settings
+### Fase 4 — Layer composition e entry point
 
-- [ ] Configure jq binary path
-- [ ] Set default jq execution options
-- [ ] Customize output formatting preferences
-- [ ] Configure error handling behavior
-- [ ] Set up custom jq library paths
-- [ ] Manage workspace-specific settings
+- [x] 4.1 `layers.ts` — AppLive con tutti i service
+- [x] 4.2 `extension.ts` — Entry point pulito con launch + Effect.runFork
+- [x] 4.3 `setup.ts` — Registrazione comandi, codelens, completion, chat participant
 
-### Data Input Methods
+### Fase 5 — Funzionalità mancanti dal refactoring
 
-- [ ] Load JSON from file
-- [ ] Input JSON manually in playground
-- [ ] Import JSON from clipboard
-- [ ] Use sample JSON data
-- [ ] Load JSON from URL/API endpoint
-- [ ] Process multiple JSON files batch
-- [ ] Handle streaming JSON data
+- [x] 5.1 Implementare `createJqpgFromFilter`
+- [x] 5.2 Implementare `jqpgFromFilter`
+- [ ] 5.3 Integrare `variable-resolver.ts` come service Effect (`${env:...}`, `${config:...}`)
+- [x] 5.4 Validazione JSON input prima dell'esecuzione (in JqExecutionService)
+- [ ] 5.5 Hover documentation per builtins jq
 
-### Output & Results
+### Fase 6 — Testing
 
-- [ ] View formatted JSON results
-- [ ] Copy results to clipboard
-- [ ] Save results to file
-- [ ] Export results in different formats
-- [ ] Preview results in tree view
-- [ ] Show execution statistics
-- [ ] Display processing time metrics
+- [ ] 6.1 Setup `@effect/vitest` (rinominare `vitest.config.ts_` → `vitest.config.ts`)
+- [ ] 6.2 Test `QueryParserService`: parsing argomenti, multiline, redirect
+- [ ] 6.3 Test `JqExecutionService`: esecuzione, timeout, errori
+- [ ] 6.4 Test `InputResolverService`: chain di processor
+- [ ] 6.5 Test `command-line.ts`: `parseJqCommandArgs` (test esistente da migrare)
 
-### Learning & Help
+---
 
-- [ ] Access jq documentation
-- [ ] View built-in jq examples
-- [ ] Get context-sensitive help
-- [ ] Show jq function reference
-- [ ] Provide interactive tutorials
-- [ ] Display syntax error explanations
+## Consolidamento
 
-### Advanced Features
+- [ ] Verificare che il path jq configurato punti effettivamente a jq e non a un altro eseguibile
+- [ ] Hover provider per builtins jq (documentazione al passaggio del mouse)
+- [ ] Snippet library: filtri jq comuni (flatten, group-by, unique, select-where) inseribili da autocomplete
+- [ ] Migliorare autocomplete: context-aware in base alla posizione nel filtro
 
-- [ ] Debug jq expressions step-by-step
-- [ ] Profile jq performance
-- [ ] Compare multiple filter results
-- [ ] Version control for playground sessions
-- [ ] Collaborate on playground sessions
-- [ ] Generate test cases from playground
-- [ ] Create reusable filter templates
+---
+
+## Nuove funzionalità — Esperienza utente
+
+- [ ] Tree View risultati: pannello laterale con JSON navigabile (expand/collapse)
+- [ ] Query history: ultime N query eseguite con risultati, navigabili da command palette
+- [ ] Live preview / watch mode: riesecuzione automatica al cambio filtro o input (debounced)
+- [ ] Multi-file batch processing: stesso filtro su più file JSON, output aggregato o per-file
+- [ ] Diff view: confronto risultati di due filtri diversi o stesso filtro su input diversi
+- [ ] Copy result to clipboard: comando dedicato per copiare l'ultimo risultato
+- [ ] Execution time metrics: mostrare tempo di esecuzione nella status bar
+
+---
+
+## Nuove funzionalità — Avanzate
+
+- [ ] jq debugger step-by-step: visualizzare output intermedio di ogni stage della pipeline
+- [ ] Notebook API nativa: migrare da `.jqpg` alla VS Code Notebook API (celle con output renderizzato)
+- [ ] Export/share playground: esportare come gist GitHub, markdown, o link condivisibile
+- [ ] jq module support: supporto `import`/`include` con autocomplete e go-to-definition
+- [ ] Schema inference: analizzare JSON input e suggerire filtri basati sulla struttura
+- [ ] Reusable filter templates: libreria di filtri salvabili e riutilizzabili per progetto
+
+---
+
+## Ecosistema
+
+- [ ] Web extension: compatibilità con vscode.dev usando WASM build di jq
+- [ ] Supporto yq/xq: estendere il playground per YAML (yq) e XML (xq)
+- [ ] Marketplace filtri: repository community di filtri jq scaricabili
+
+---
+
+## Struttura target
+
+```
+src/
+├── domain/
+│   ├── errors.ts
+│   ├── models.ts
+│   └── constants.ts
+├── services/
+│   ├── jq-binary-service.ts
+│   ├── jq-execution-service.ts
+│   ├── input-resolver-service.ts
+│   ├── query-parser-service.ts
+│   └── output-renderer-service.ts
+├── commands/
+│   ├── execute-query.ts
+│   ├── open-resources.ts
+│   └── playground.ts
+├── providers/
+│   ├── code-lens.ts
+│   └── completion.ts
+├── ai/
+│   ├── ai-service.ts
+│   ├── ai-commands.ts
+│   ├── chat-participant.ts
+│   └── prompts.ts
+├── adapters/
+│   └── vscode-adapter.ts
+├── lib/
+│   └── command-line.ts
+├── layers.ts
+├── setup.ts
+└── extension.ts
+```

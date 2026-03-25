@@ -128,7 +128,7 @@ const shellCommandProcessor = (
     commandStr = commandStr.replace(new RegExp(`\\$${key}\\b`, "g"), value);
   }
 
-  return Effect.async<string, InputResolutionError>((resume) => {
+  return Effect.async<string, InputResolutionError>((resume, signal) => {
     const result = { stdout: [] as string[], stderr: [] as string[] };
     const proc = spawn(commandStr, {
       cwd,
@@ -153,6 +153,12 @@ const shellCommandProcessor = (
         )
       );
     }, Duration.toMillis(timeout));
+
+    // Fiber interruption → kill the shell process
+    signal.addEventListener("abort", () => {
+      clearTimeout(commandTimeout);
+      proc.kill("SIGTERM");
+    });
 
     proc.on("error", (error) => {
       clearTimeout(commandTimeout);

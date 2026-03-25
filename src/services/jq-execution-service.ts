@@ -27,7 +27,7 @@ const spawnJq = (
     return yield* Effect.async<
       string,
       JqExecutionError | InvalidJsonInputError
-    >((resume) => {
+    >((resume, signal) => {
       const result = { stdout: [] as string[], stderr: [] as string[] };
       options.stdio = [input ? "pipe" : "ignore", "pipe", "pipe"];
 
@@ -60,6 +60,12 @@ const spawnJq = (
           )
         );
       }, Duration.toMillis(timeout));
+
+      // Fiber interruption → kill the child process
+      signal.addEventListener("abort", () => {
+        clearTimeout(commandTimeout);
+        proc.kill("SIGTERM");
+      });
 
       proc.on("error", (error) => {
         clearTimeout(commandTimeout);

@@ -1,8 +1,10 @@
 import { pipe } from "effect";
 import type * as Cause from "effect/Cause";
 import * as Context from "effect/Context";
+import type * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
+import * as Fiber from "effect/Fiber";
 import * as Layer from "effect/Layer";
 import * as Logger from "effect/Logger";
 import * as LogLevel from "effect/LogLevel";
@@ -323,6 +325,60 @@ export const treeDataProvider =
         })
       );
     }).pipe(Layer.scopedDiscard);
+
+/**
+ * Wraps an Effect in a VS Code progress notification with cancellation support.
+ * The notification only appears after `delay` (default 5s) to avoid flashing
+ * on fast operations. When the user clicks Cancel, the fiber is interrupted,
+ * which propagates to all child processes via AbortSignal in Effect.async.
+ */
+export const withProgress = <A, E, R>(
+  title: string,
+  effect: Effect.Effect<A, E, R>,
+  delay: Duration.DurationInput = "2 seconds"
+): Effect.Effect<A, E, R> =>
+  Effect.gen(function* () {
+    const fiber = yield* Effect.fork(effect);
+
+    // Wait for the fiber to complete within the delay
+    const fast = yield* Fiber.join(fiber).pipe(
+      Effect.timeout(delay),
+      Effect.option
+    );
+
+    if (Option.isSome(fast)) {
+      return fast.value;
+    }
+
+    // Still running — show progress and wait for completion
+    return yield* Effect.async<A, E>((resume) => {
+      vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title,
+          cancellable: true,
+        },
+        (_progress, token) =>
+          new Promise<void>((resolvePromise) => {
+            const tokenDispose = token.onCancellationRequested(() => {
+              Effect.runFork(Fiber.interrupt(fiber));
+            });
+
+            Effect.runCallback(Fiber.join(fiber) as Effect.Effect<A, E>, {
+              onExit: (exit) => {
+                tokenDispose.dispose();
+                resolvePromise();
+                if (exit._tag === "Success") {
+                  resume(Effect.succeed(exit.value));
+                } else {
+                  resume(Effect.failCause(exit.cause) as Effect.Effect<A, E>);
+                }
+              },
+            });
+          })
+      );
+    });
+  });
 
 export const runWithToken = <R>(runtime: Runtime.Runtime<R>) => {
   const runCallback = Runtime.runCallback(runtime);

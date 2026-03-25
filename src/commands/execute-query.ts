@@ -7,6 +7,7 @@ import {
   activeTextEditor,
   showErrorMessage,
   showWarningMessage,
+  withProgress,
 } from "../adapters/vscode-adapter";
 import { fixErrorCommand } from "../ai/ai-commands";
 import { isAiAvailable } from "../ai/ai-service";
@@ -73,43 +74,47 @@ export const executeJqCommand = (params: {
 
     yield* Effect.log(`Parsed args: ${JSON.stringify(parsed.args)}`);
 
-    // Resolve input data (with variables for shell command substitution)
-    const inputData = yield* inputResolver.resolve(
-      params.document,
-      parsed.inputLineIndex,
-      cwd,
-      workspace.textDocuments,
-      variables
-    );
+    // Resolve input + execute jq (wrapped in progress with cancellation)
+    const result = yield* withProgress(
+      "Running jq query…",
+      Effect.gen(function* () {
+        // Resolve input data (with variables for shell command substitution)
+        const inputData = yield* inputResolver.resolve(
+          params.document,
+          parsed.inputLineIndex,
+          cwd,
+          workspace.textDocuments,
+          variables
+        );
 
-    // Execute jq
-    const result = yield* jqExecution
-      .execute(parsed.args, inputData, { cwd })
-      .pipe(
-        Effect.catchAll((error) =>
-          Effect.gen(function* () {
-            // Show error in output channel only (no popup)
-            yield* renderer.renderError(error.message);
+        // Execute jq
+        return yield* jqExecution.execute(parsed.args, inputData, { cwd });
+      })
+    ).pipe(
+      Effect.catchAll((error) =>
+        Effect.gen(function* () {
+          // Show error in output channel only (no popup)
+          yield* renderer.renderError(error.message);
 
-            if (isAiAvailable()) {
-              // Single notification with AI fix option
-              const action = yield* showErrorMessage(
-                `jq error: ${error.message}`,
-                "✨ Explain & Fix",
-                "Dismiss"
-              );
+          if (isAiAvailable()) {
+            // Single notification with AI fix option
+            const action = yield* showErrorMessage(
+              `jq error: ${error.message}`,
+              "✨ Explain & Fix",
+              "Dismiss"
+            );
 
-              if (action === "✨ Explain & Fix") {
-                yield* fixErrorCommand(parsed.filter, error.message, inputData);
-              }
-            } else {
-              yield* showErrorMessage(`jq error: ${error.message}`, "Dismiss");
+            if (action === "✨ Explain & Fix") {
+              yield* fixErrorCommand(parsed.filter, error.message, "");
             }
+          } else {
+            yield* showErrorMessage(`jq error: ${error.message}`, "Dismiss");
+          }
 
-            return yield* Effect.fail(error);
-          })
-        )
-      );
+          return yield* Effect.fail(error);
+        })
+      )
+    );
 
     // Render output
     yield* renderer.render(result, parsed.outputTarget, cwd);

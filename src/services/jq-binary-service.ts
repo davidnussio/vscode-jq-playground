@@ -23,7 +23,7 @@ import {
 import type { JqBinaryPath, JqVersion } from "../domain/models";
 
 const spawnEffect = (command: string, args: string[]) =>
-  Effect.async<string, JqExecutionError>((resume) => {
+  Effect.async<string, JqExecutionError>((resume, signal) => {
     const stdout: string[] = [];
     const stderr: string[] = [];
     const proc = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
@@ -34,6 +34,11 @@ const spawnEffect = (command: string, args: string[]) =>
     if (proc.stderr) {
       proc.stderr.on("data", (data) => stderr.push(data.toString()));
     }
+
+    // Fiber interruption → kill the child process
+    signal.addEventListener("abort", () => {
+      proc.kill("SIGTERM");
+    });
 
     proc.on("error", (error) => {
       resume(

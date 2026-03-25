@@ -15,7 +15,7 @@ import * as vscode from "vscode";
 // ---------------------------------------------------------------------------
 
 const PLAYGROUND_FILE = path.resolve(
-  import.meta.dirname,
+  __dirname,
   "../../examples/playground.test.jqpg"
 );
 

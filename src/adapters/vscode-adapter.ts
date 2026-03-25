@@ -349,6 +349,9 @@ export const withProgress = <A, E, R>(
   delay: Duration.DurationInput = "2 seconds"
 ): Effect.Effect<A, E, R> =>
   Effect.gen(function* () {
+    const runtime = yield* Effect.runtime<R>();
+    const runFork = Runtime.runFork(runtime);
+    const runCallback = Runtime.runCallback(runtime);
     const fiber = yield* Effect.fork(effect);
 
     // Wait for the fiber to complete within the delay
@@ -372,10 +375,10 @@ export const withProgress = <A, E, R>(
         (_progress, token) =>
           new Promise<void>((resolvePromise) => {
             const tokenDispose = token.onCancellationRequested(() => {
-              Effect.runFork(Fiber.interrupt(fiber));
+              runFork(Fiber.interrupt(fiber));
             });
 
-            Effect.runCallback(Fiber.join(fiber) as Effect.Effect<A, E>, {
+            runCallback(Fiber.join(fiber) as Effect.Effect<A, E, R>, {
               onExit: (exit) => {
                 tokenDispose.dispose();
                 resolvePromise();

@@ -114,6 +114,17 @@ export const openTextDocument = (options: {
   language?: string;
 }) => thenable(() => vscode.workspace.openTextDocument(options));
 
+export const showTextDocument = (
+  document: vscode.TextDocument,
+  options?: vscode.TextDocumentShowOptions
+) => thenable(() => vscode.window.showTextDocument(document, options));
+
+export const showInputBox = (options?: vscode.InputBoxOptions) =>
+  thenable(() => vscode.window.showInputBox(options));
+
+export const createOutputChannel = (name: string, languageId: string) =>
+  Effect.sync(() => vscode.window.createOutputChannel(name, languageId));
+
 export const getConfigurationValue = <A>(
   namespace: string,
   setting: string,

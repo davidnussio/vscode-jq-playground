@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 import {
   executeCommand,
   openTextDocument,
-  thenable,
+  showTextDocument,
   VsCodeContext,
 } from "../adapters/vscode-adapter";
 import { FileNotFoundError } from "../domain/errors";
@@ -50,7 +50,7 @@ export const openExamples = () =>
       language: "jqpg",
     });
 
-    return yield* thenable(() =>
-      vscode.window.showTextDocument(doc, vscode.ViewColumn.Active)
-    );
+    return yield* showTextDocument(doc, {
+      viewColumn: vscode.ViewColumn.Active,
+    });
   });

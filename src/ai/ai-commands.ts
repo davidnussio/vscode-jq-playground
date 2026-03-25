@@ -1,7 +1,11 @@
 import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
 import * as vscode from "vscode";
 import {
+  activeTextEditor,
   openTextDocument,
+  showInputBox,
+  showTextDocument,
   showWarningMessage,
   thenable,
 } from "../adapters/vscode-adapter";
@@ -17,12 +21,10 @@ const streamToEditor = (response: vscode.LanguageModelChatResponse) =>
       content: AI_LOADING_HEADER,
       language: "markdown",
     });
-    const editor = yield* thenable(() =>
-      vscode.window.showTextDocument(doc, {
-        viewColumn: vscode.ViewColumn.Beside,
-        preview: true,
-      })
-    );
+    const editor = yield* showTextDocument(doc, {
+      viewColumn: vscode.ViewColumn.Beside,
+      preview: true,
+    });
 
     yield* Effect.tryPromise({
       try: async () => {
@@ -68,11 +70,11 @@ const collectResponseText = (response: vscode.LanguageModelChatResponse) =>
 // --- Helpers ---
 
 const getActiveEditorJsonSample = (): string | undefined => {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
+  const editor = activeTextEditor();
+  if (Option.isNone(editor)) {
     return undefined;
   }
-  const doc = editor.document;
+  const doc = Option.getOrThrow(editor).document;
   if (doc.languageId === "json" || doc.languageId === "jsonc") {
     return doc.getText().slice(0, 500);
   }
@@ -105,12 +107,10 @@ export const fixErrorCommand = (
 
 export const generateFilterCommand = () =>
   Effect.gen(function* () {
-    const description = yield* thenable(() =>
-      vscode.window.showInputBox({
-        prompt: "Describe what you want to do with the JSON",
-        placeHolder: 'e.g. "extract all names where active is true"',
-      })
-    );
+    const description = yield* showInputBox({
+      prompt: "Describe what you want to do with the JSON",
+      placeHolder: 'e.g. "extract all names where active is true"',
+    });
 
     if (!description) {
       return;
@@ -126,23 +126,30 @@ export const generateFilterCommand = () =>
     // generateFilter needs the full text to insert into a .jqpg block
     const filter = (yield* collectResponseText(response)).trim();
 
-    const editor = vscode.window.activeTextEditor;
-    if (editor && editor.document.languageId === "jqpg") {
-      const lastLine = editor.document.lineCount - 1;
-      const lastChar = editor.document.lineAt(lastLine).text.length;
-      yield* thenable(() =>
-        editor.edit((editBuilder) => {
-          editBuilder.insert(
-            new vscode.Position(lastLine, lastChar),
-            `\n\njq '${filter}'\n${jsonSample ?? "{}"}`
-          );
-        })
-      );
+    const ed = activeTextEditor();
+    if (Option.isSome(ed)) {
+      const editor = Option.getOrThrow(ed);
+      if (editor.document.languageId === "jqpg") {
+        const lastLine = editor.document.lineCount - 1;
+        const lastChar = editor.document.lineAt(lastLine).text.length;
+        yield* thenable(() =>
+          editor.edit((editBuilder) => {
+            editBuilder.insert(
+              new vscode.Position(lastLine, lastChar),
+              `\n\njq '${filter}'\n${jsonSample ?? "{}"}`
+            );
+          })
+        );
+      } else {
+        const content = `jq '${filter}'\n${jsonSample ?? "{}"}`;
+        const doc = yield* openTextDocument({ content, language: "jqpg" });
+        yield* showTextDocument(doc, {
+          viewColumn: vscode.ViewColumn.Beside,
+        });
+      }
     } else {
       const content = `jq '${filter}'\n${jsonSample ?? "{}"}`;
       const doc = yield* openTextDocument({ content, language: "jqpg" });
-      yield* thenable(() =>
-        vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside)
-      );
+      yield* showTextDocument(doc, { viewColumn: vscode.ViewColumn.Beside });
     }
   }).pipe(Effect.catchTag("AiUnavailableError", () => showUnavailableWarning));

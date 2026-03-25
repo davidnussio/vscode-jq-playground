@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect";
+import * as Option from "effect/Option";
 import * as vscode from "vscode";
-import { VsCodeContext } from "../adapters/vscode-adapter";
+import { activeTextEditor, VsCodeContext } from "../adapters/vscode-adapter";
 import { JQ_QUERY_REGEX } from "../domain/constants";
 import { buildChatSystemPrompt } from "./prompts";
 
@@ -9,8 +10,12 @@ import { buildChatSystemPrompt } from "./prompts";
 const JQ_PREFIX_REGEX = /^jq\s+/;
 
 const getActiveFilterAtCursor = (): string | undefined => {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor || editor.document.languageId !== "jqpg") {
+  const ed = activeTextEditor();
+  if (Option.isNone(ed)) {
+    return undefined;
+  }
+  const editor = Option.getOrThrow(ed);
+  if (editor.document.languageId !== "jqpg") {
     return undefined;
   }
   const line = editor.selection.active.line;
@@ -25,10 +30,11 @@ const getActiveFilterAtCursor = (): string | undefined => {
 };
 
 const getActiveInputSample = (): string | undefined => {
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
+  const ed = activeTextEditor();
+  if (Option.isNone(ed)) {
     return undefined;
   }
+  const editor = Option.getOrThrow(ed);
   const doc = editor.document;
   if (doc.languageId === "json" || doc.languageId === "jsonc") {
     return doc.getText().slice(0, 500);

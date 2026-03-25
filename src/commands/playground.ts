@@ -4,17 +4,16 @@ import * as vscode from "vscode";
 import {
   activeTextEditor,
   openTextDocument,
-  thenable,
+  showInputBox,
+  showTextDocument,
 } from "../adapters/vscode-adapter";
 
 const askFilter = (initialValue: string) =>
-  thenable(() =>
-    vscode.window.showInputBox({
-      prompt: "Enter a jq filter",
-      value: initialValue,
-      placeHolder: ".",
-    })
-  );
+  showInputBox({
+    prompt: "Enter a jq filter",
+    value: initialValue,
+    placeHolder: ".",
+  });
 
 const getEditorText = (): Effect.Effect<string, string> =>
   Effect.gen(function* () {
@@ -48,9 +47,7 @@ export const createJqpgFromFilter = () =>
       language: "jqpg",
     });
 
-    yield* thenable(() =>
-      vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside)
-    );
+    yield* showTextDocument(doc, { viewColumn: vscode.ViewColumn.Beside });
   });
 
 export const executeJqFromFilter = () =>
@@ -70,9 +67,7 @@ export const executeJqFromFilter = () =>
       language: "jqpg",
     });
 
-    yield* thenable(() =>
-      vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside)
-    );
+    yield* showTextDocument(doc, { viewColumn: vscode.ViewColumn.Beside });
 
     // The CodeLens will be available for the user to execute
     yield* Effect.log(`Created playground with filter: ${filter}`);

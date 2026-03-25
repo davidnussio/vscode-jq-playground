@@ -194,7 +194,6 @@
     "prepare": "husky",
     "vscode:prepublish": "pnpm run package",
     "compile": "pnpm run check-types && pnpm run check && node esbuild.js",
-    "wat": "npm-run-all -p watch:*",
     "watch": "pnpm run watch:esbuild",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
@@ -216,22 +215,14 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.9",
     "@effect/language-service": "^0.83.1",
-    "@types/glob": "9.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.0",
-    "@types/ramda": "^0.31.1",
-    "@types/shell-quote": "^1.7.5",
     "@types/vscode": "^1.110.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "esbuild": "^0.27.4",
-    "glob": "^13.0.6",
     "husky": "^9.1.7",
-    "lefthook": "^2.1.4",
     "lint-staged": "^16.4.0",
-    "npm-run-all": "^4.1.5",
-    "simple-git-hooks": "^2.13.1",
-    "ts-patch": "^3.3.0",
     "typescript": "^6.0.2",
     "ultracite": "7.3.2",
     "vitest": "^4.1.1",
@@ -239,21 +230,11 @@
   },
   "dependencies": {
     "@effect/platform": "^0.96.0",
-    "@effect/platform-node": "^0.106.0",
-    "effect": "^3.21.0",
-    "eyes": "^0.1.8",
-    "md5-file": "^5.0.0",
-    "node-fetch": "3.3.2",
-    "ramda": "0.32.0",
-    "shell-quote": "^1.8.3",
-    "which": "6.0.1"
+    "effect": "^3.21.0"
   },
   "extensionDependencies": [
     "jq-syntax-highlighting.jq-syntax-highlighting"
   ],
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
       "npx ultracite fix"

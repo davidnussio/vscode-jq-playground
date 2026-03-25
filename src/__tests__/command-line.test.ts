@@ -1,3 +1,4 @@
+import { describe, expect, test } from "vitest";
 import { parseCommandArgs } from "../lib/command-line";
 
 describe("Spawn jq command line", () => {

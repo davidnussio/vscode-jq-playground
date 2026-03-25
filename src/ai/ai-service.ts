@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import * as vscode from "vscode";
+import { getConfigurationValue } from "../adapters/vscode-adapter";
 import {
   buildExplainPrompt,
   buildFixPrompt,
@@ -26,9 +27,7 @@ const refreshModelAvailability = async () => {
 };
 
 export const isAiEnabled = (): boolean =>
-  vscode.workspace
-    .getConfiguration("jqPlayground")
-    .get<boolean>("ai.enabled", true);
+  getConfigurationValue<boolean>("jqPlayground", "ai.enabled", true);
 
 /** Check both the user setting and actual model availability (sync, cached). */
 export const isAiAvailable = (): boolean => isAiEnabled() && _hasModels;

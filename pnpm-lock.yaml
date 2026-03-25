@@ -45,6 +45,9 @@ importers:
       '@types/glob':
         specifier: 9.0.0
         version: 9.0.0
+      '@types/mocha':
+        specifier: ^10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0

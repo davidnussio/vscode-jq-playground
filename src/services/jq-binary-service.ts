@@ -1,4 +1,8 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { HttpClient } from "@effect/platform";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import {
@@ -6,9 +10,12 @@ import {
   executeCommand,
   showErrorMessage,
   showInformationMessage,
+  VsCodeContext,
 } from "../adapters/vscode-adapter";
 import { BINARIES, isSupportedPlatform } from "../domain/constants";
 import {
+  ChecksumMismatchError,
+  DownloadError,
   JqBinaryNotFoundError,
   JqExecutionError,
   UnsupportedPlatformError,
@@ -96,6 +103,82 @@ const getPlatformInfo = () => {
   return Effect.succeed({ platform, arch, ...binary });
 };
 
+// --- Download & checksum helpers ---
+
+const sha256 = (data: Uint8Array): string =>
+  createHash("sha256").update(data).digest("hex");
+
+const downloadBinary = (
+  url: string,
+  expectedChecksum: string,
+  destPath: string
+) =>
+  Effect.gen(function* () {
+    const client = yield* HttpClient.HttpClient;
+    yield* Effect.log(`Downloading jq from ${url}...`);
+
+    const response = yield* client
+      .get(url)
+      .pipe(
+        Effect.mapError(
+          (e) => new DownloadError({ message: `HTTP request failed: ${e}` })
+        )
+      );
+
+    const body = yield* response.arrayBuffer.pipe(
+      Effect.mapError(
+        (e) => new DownloadError({ message: `Failed to read response: ${e}` })
+      )
+    );
+
+    const data = new Uint8Array(body);
+    const actualChecksum = sha256(data);
+
+    if (actualChecksum !== expectedChecksum) {
+      return yield* new ChecksumMismatchError({
+        expected: expectedChecksum,
+        actual: actualChecksum,
+        message: `SHA256 mismatch: expected ${expectedChecksum}, got ${actualChecksum}`,
+      });
+    }
+
+    yield* Effect.try({
+      try: () => {
+        fs.mkdirSync(path.dirname(destPath), { recursive: true });
+        fs.writeFileSync(destPath, data);
+        if (process.platform !== "win32") {
+          fs.chmodSync(destPath, 0o755);
+        }
+      },
+      catch: (e) =>
+        new DownloadError({ message: `Failed to write binary: ${e}` }),
+    });
+
+    yield* Effect.log(`jq binary saved to ${destPath}`);
+    return destPath;
+  });
+
+const downloadJq = (updatePath: (value: string) => Effect.Effect<void>) =>
+  Effect.gen(function* () {
+    const platformInfo = yield* getPlatformInfo();
+    const context = yield* VsCodeContext;
+    const storagePath = context.globalStorageUri.fsPath;
+    const binaryName = process.platform === "win32" ? "jq.exe" : "jq";
+    const destPath = path.join(storagePath, binaryName);
+
+    const savedPath = yield* downloadBinary(
+      platformInfo.file,
+      platformInfo.checksum,
+      destPath
+    );
+
+    yield* updatePath(savedPath);
+    yield* showInformationMessage(
+      `jq binary downloaded and configured at ${savedPath}`,
+      "Ok"
+    );
+  });
+
 /**
  * Command handler: opens the jqPlayground.binaryPath setting for manual configuration.
  */
@@ -107,32 +190,36 @@ export const configureJqPathCommand = Effect.gen(function* () {
  * Command handler: downloads the jq binary for the current platform.
  */
 export const downloadJqBinaryCommand = Effect.gen(function* () {
-  const platformInfo = yield* getPlatformInfo();
-  yield* Effect.log(`Download requested: ${platformInfo.file}`);
-  // TODO: implement actual download logic
-  yield* showInformationMessage(
-    `Download jq for ${platformInfo.platform}/${platformInfo.arch}: ${platformInfo.file}`,
-    "Ok"
+  const service = yield* JqBinaryService;
+  yield* downloadJq(service.configRef.update).pipe(
+    Effect.catchAll((e) =>
+      showErrorMessage(`Failed to download jq: ${e.message}`, "Ok")
+    )
   );
 });
 
 // --- Binary resolution helpers ---
 
-const promptNoBinaryFound = Effect.gen(function* () {
-  const choice = yield* showErrorMessage(
-    "jq executable not found in your system PATH.",
-    "Configure path manually",
-    "Download automatically"
-  );
-  if (choice === "Configure path manually") {
-    yield* openBinaryPathSettings();
-  } else if (choice === "Download automatically") {
-    yield* Effect.log("User chose to download jq");
-    // TODO: actual download
-  }
-});
+const promptNoBinaryFound = (
+  updatePath: (value: string) => Effect.Effect<void>
+) =>
+  Effect.gen(function* () {
+    const choice = yield* showErrorMessage(
+      "jq executable not found in your system PATH.",
+      "Configure path manually",
+      "Download automatically"
+    );
+    if (choice === "Configure path manually") {
+      yield* openBinaryPathSettings();
+    } else if (choice === "Download automatically") {
+      yield* downloadJq(updatePath);
+    }
+  });
 
-const promptBrokenBinary = (systemJqPath: string) =>
+const promptBrokenBinary = (
+  systemJqPath: string,
+  updatePath: (value: string) => Effect.Effect<void>
+) =>
   Effect.gen(function* () {
     const choice = yield* showErrorMessage(
       `jq found at ${systemJqPath} but it doesn't work correctly.`,
@@ -142,8 +229,7 @@ const promptBrokenBinary = (systemJqPath: string) =>
     if (choice === "Configure path manually") {
       yield* openBinaryPathSettings();
     } else if (choice === "Download automatically") {
-      yield* Effect.log("User chose to download jq");
-      // TODO: actual download
+      yield* downloadJq(updatePath);
     }
   });
 
@@ -165,8 +251,7 @@ const promptUseSystemBinary = (
     } else if (choice === "Configure manually") {
       yield* openBinaryPathSettings();
     } else if (choice === "Download latest") {
-      yield* Effect.log("User chose to download jq");
-      // TODO: actual download
+      yield* downloadJq(updatePath);
     }
   });
 
@@ -179,7 +264,7 @@ const resolveJqBinary = (jqBinaryPathRef: {
     );
 
     if (!systemJqPath) {
-      yield* promptNoBinaryFound;
+      yield* promptNoBinaryFound(jqBinaryPathRef.update);
       return;
     }
 
@@ -188,7 +273,7 @@ const resolveJqBinary = (jqBinaryPathRef: {
     );
 
     if (!systemVersion) {
-      yield* promptBrokenBinary(systemJqPath);
+      yield* promptBrokenBinary(systemJqPath, jqBinaryPathRef.update);
       return;
     }
 

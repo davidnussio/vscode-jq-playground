@@ -39,6 +39,16 @@ export class CommandTimeoutError extends Schema.TaggedError<CommandTimeoutError>
   { message: Schema.String, timeoutMs: Schema.Number }
 ) {}
 
+export class DownloadError extends Schema.TaggedError<DownloadError>()(
+  "DownloadError",
+  { message: Schema.String }
+) {}
+
+export class ChecksumMismatchError extends Schema.TaggedError<ChecksumMismatchError>()(
+  "ChecksumMismatchError",
+  { expected: Schema.String, actual: Schema.String, message: Schema.String }
+) {}
+
 export class ConfigurationError extends Schema.TaggedError<ConfigurationError>()(
   "ConfigurationError",
   { message: Schema.String }

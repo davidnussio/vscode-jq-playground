@@ -1,10 +1,12 @@
 import * as path from "node:path";
 import { pipe } from "effect";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import { Position, Range, type TextDocument, window, workspace } from "vscode";
 import {
   activeTextEditor,
+  getConfigurationValue,
   showErrorMessage,
   showWarningMessage,
   withProgress,
@@ -75,6 +77,11 @@ export const executeJqCommand = (params: {
     yield* Effect.log(`Parsed args: ${JSON.stringify(parsed.args)}`);
 
     // Resolve input + execute jq (wrapped in progress with cancellation)
+    const progressDelay = getConfigurationValue<number>(
+      "jqPlayground",
+      "progressDelay",
+      2
+    );
     const result = yield* withProgress(
       "Running jq query…",
       Effect.gen(function* () {
@@ -89,7 +96,8 @@ export const executeJqCommand = (params: {
 
         // Execute jq
         return yield* jqExecution.execute(parsed.args, inputData, { cwd });
-      })
+      }),
+      Duration.seconds(progressDelay)
     ).pipe(
       Effect.catchAll((error) =>
         Effect.gen(function* () {

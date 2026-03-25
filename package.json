@@ -74,6 +74,13 @@
           "default": true,
           "description": "Enable AI-powered features (Explain, Fix, Generate). Requires GitHub Copilot. Disable if you work with sensitive data.",
           "scope": "application"
+        },
+        "jqPlayground.progressDelay": {
+          "type": "number",
+          "default": 2,
+          "minimum": 0,
+          "description": "Seconds to wait before showing a progress notification for long-running queries. Set to 0 to always show immediately.",
+          "scope": "application"
         }
       }
     },

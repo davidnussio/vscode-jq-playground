@@ -24,6 +24,7 @@
 - **AI-powered assistance** — explain, fix, and generate jq filters with GitHub Copilot integration
 - **Structured error handling** — clear, actionable error messages with optional AI-powered fix suggestions
 - **Chat participant** — ask `@jq` in the Copilot chat for jq help, filter writing, and debugging
+- **Filter panel** — a dedicated webview panel to pick JSON files, write filters, and see results side by side
 
 ---
 
@@ -105,6 +106,19 @@ $ curl -s 'https://api.github.com/repos/stedolan/jq/commits?per_page=5'
 
 ---
 
+## Filter panel
+
+Run **JQPG: Open Playground Panel** from the Command Palette to open a dedicated webview where you can experiment with jq filters without leaving the editor.
+
+![Filter panel](https://raw.githubusercontent.com/davidnussio/vscode-jq-playground/master/images/filter-panel.png)
+
+- **Pick files** — click 📂 Pick File to select a JSON/JSONL file from open editors or the workspace. Up to 4 files can be loaded at once as selectable chips.
+- **Write and run** — type your filter in the text area and press ▶ Run or `Cmd+Enter` / `Ctrl+Enter`. The output appears instantly below.
+- **Switch inputs** — click any file chip to change the active data source. The panel remembers your selection and filter text across sessions.
+- **Error feedback** — execution errors are displayed inline in the output area so you can iterate quickly.
+
+---
+
 ## AI features
 
 > Requires [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot). Can be disabled via `jqPlayground.ai.enabled`.
@@ -165,6 +179,7 @@ All commands are available via the Command Palette under the `JQPG` prefix:
 | JQPG: Download jq binary | Download jq if not installed |
 | JQPG: Explain filter with AI | Explain the current jq filter step by step |
 | JQPG: Generate filter with AI | Generate a jq filter from a natural language description |
+| JQPG: Open Playground Panel | Open the interactive filter panel in a webview tab |
 
 ---
 

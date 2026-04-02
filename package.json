@@ -39,7 +39,6 @@
     "notebook"
   ],
   "activationEvents": [
-    "onLanguage:jqpg",
     "onLanguage:jq"
   ],
   "main": "./dist/extension.js",

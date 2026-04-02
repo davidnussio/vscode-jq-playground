@@ -1,5 +1,75 @@
 # Change Log
 
+## [5.0.6] - DRAFT
+
+- New jq Playground Panel (`JQPG: Open Playground Panel`) with split layout: filter editor on top, JSON output below
+- File picker to select JSON files from workspace or open editors, shown as clickable chips (max 4) with ✓ on active and × to remove
+- Cmd/Ctrl+Enter shortcut to run filters from the panel
+- Panel state (filter, selected files) persists across tab switches
+- Fix activation race condition: `activate()` now returns a Promise so commands are available immediately
+- Cleanup redundant `activationEvents` in package.json (auto-generated from `contributes.commands`)
+
+## [5.0.5]
+
+- Update package.json metadata and description
+
+## [5.0.4]
+
+- Fix: support again jqplay.org integration
+- Add `Open in jqplay.org` command
+- Add unit tests for command-line argument parsing
+
+## [5.0.3]
+
+- Fix: downgrade vscode engine version to maintain compatibility with open-vsx
+
+## [5.0.2]
+
+- Update jq syntax highlighting for improved keyword and punctuation recognition
+- Add configurable progress notification delay for jq execution
+- Add progress notification with cancellation support for jq execution and shell commands
+- Add download and checksum validation for jq binaries
+- Enhance vscode adapter with new document handling functions
+- Refactor AI enabled check to use configuration adapter
+- Add integration tests for jq playground functionality
+
+## [5.0.1]
+
+- Add AI-powered features: Explain, Fix, and Generate jq filters (requires GitHub Copilot)
+- Update jq binaries to version 1.8.1 for macOS, Linux, and Windows
+- Improve error rendering in executeJqCommand
+
+## [5.0.0]
+
+- Complete rewrite using Effect-TS service layer architecture
+- Migrate from webpack to esbuild
+- Migrate from npm to pnpm
+- Migrate from eslint to biome (ultracite)
+- New modular service architecture: JqExecutionService, InputResolverService, QueryParserService, OutputRendererService, JqBinaryService
+- New VS Code adapter layer for testable, composable API wrappers
+- Add shortcut labels for console and editor code lenses
+- Require vscode ^1.100.0
+
+## [4.3.5]
+
+- Support languageId in result view
+
+## [4.3.4]
+
+- Bugfix release
+
+## [4.3.3]
+
+- Fix: close issue #87
+
+## [4.3.2]
+
+- Fix: removed command and invert label mac/others
+
+## [4.3.1]
+
+- Show cmd+enter shortcut on macOS
+
 ## [4.3.0]
 
 - Adds append to redirect output (leonelgalan)

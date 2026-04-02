@@ -4,6 +4,7 @@ import * as Effect from "effect/Effect";
 import * as Runtime from "effect/Runtime";
 import * as vscode from "vscode";
 import { VsCodeContext } from "../adapters/vscode-adapter";
+import { builtins } from "../builtins";
 import { JqExecutionService } from "../services/jq-execution-service";
 
 // --- Message protocol ---
@@ -19,7 +20,8 @@ type ExtensionMessage =
       type: "filePicked";
       fileName: string;
       filePath: string;
-    };
+    }
+  | { type: "builtins"; keywords: string[] };
 
 // --- File picker ---
 
@@ -227,6 +229,41 @@ const getWebviewHtml = (
       outline: 1px solid var(--vscode-focusBorder);
     }
 
+    /* Autocomplete */
+    .filter-section {
+      position: relative;
+    }
+    .autocomplete-list {
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      max-height: 180px;
+      overflow-y: auto;
+      background: var(--vscode-editorSuggestWidget-background, var(--vscode-input-background));
+      border: 1px solid var(--vscode-editorSuggestWidget-border, var(--vscode-input-border, #555));
+      border-radius: var(--radius);
+      display: none;
+      list-style: none;
+    }
+    .autocomplete-list.visible {
+      display: block;
+    }
+    .autocomplete-list li {
+      padding: 4px 8px;
+      cursor: pointer;
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: var(--vscode-editor-font-size, 13px);
+      color: var(--vscode-editorSuggestWidget-foreground, var(--vscode-input-foreground));
+    }
+    .autocomplete-list li.active {
+      background: var(--vscode-editorSuggestWidget-selectedBackground, var(--vscode-list-activeSelectionBackground));
+      color: var(--vscode-editorSuggestWidget-selectedForeground, var(--vscode-list-activeSelectionForeground));
+    }
+    .autocomplete-list li .match {
+      color: var(--vscode-editorSuggestWidget-highlightForeground, var(--vscode-focusBorder));
+    }
+
     /* JSON panels */
     .panels {
       flex: 1;
@@ -278,7 +315,8 @@ const getWebviewHtml = (
 
   <div class="filter-section">
     <label>Filter</label>
-    <textarea id="filter" rows="2" placeholder="." spellcheck="false">.</textarea>
+    <textarea id="filter" rows="3" placeholder="." spellcheck="false">.</textarea>
+    <ul class="autocomplete-list" id="autocomplete"></ul>
   </div>
 
   <div class="panels">
@@ -295,6 +333,92 @@ const getWebviewHtml = (
     const pickFileBtn = document.getElementById('pickFileBtn');
     const runBtn = document.getElementById('runBtn');
     const fileChipsEl = document.getElementById('fileChips');
+    const acList = document.getElementById('autocomplete');
+
+    let jqKeywords = [];
+    let acIndex = -1;
+
+    // --- Autocomplete helpers ---
+    const getWordAtCursor = () => {
+      const pos = filterEl.selectionStart;
+      const text = filterEl.value.substring(0, pos);
+      const match = text.match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
+      return match ? { word: match[1], start: pos - match[1].length, end: pos } : null;
+    };
+
+    const highlightMatch = (text, query) => {
+      const idx = text.toLowerCase().indexOf(query.toLowerCase());
+      if (idx < 0) return text;
+      return text.substring(0, idx)
+        + '<span class="match">' + text.substring(idx, idx + query.length) + '</span>'
+        + text.substring(idx + query.length);
+    };
+
+    const showAc = (items, wordInfo) => {
+      acList.innerHTML = '';
+      acIndex = -1;
+      if (items.length === 0) { acList.classList.remove('visible'); return; }
+      // Position the list below the textarea
+      acList.style.top = (filterEl.offsetTop + filterEl.offsetHeight) + 'px';
+      items.forEach((kw, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = highlightMatch(kw, wordInfo.word);
+        li.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          applyCompletion(kw, wordInfo);
+        });
+        acList.appendChild(li);
+      });
+      acList.classList.add('visible');
+    };
+
+    const hideAc = () => { acList.classList.remove('visible'); acIndex = -1; };
+
+    const applyCompletion = (keyword, wordInfo) => {
+      const before = filterEl.value.substring(0, wordInfo.start);
+      const after = filterEl.value.substring(wordInfo.end);
+      filterEl.value = before + keyword + after;
+      const newPos = wordInfo.start + keyword.length;
+      filterEl.setSelectionRange(newPos, newPos);
+      filterEl.focus();
+      hideAc();
+      saveState();
+    };
+
+    const updateAc = () => {
+      if (jqKeywords.length === 0) { hideAc(); return; }
+      const wordInfo = getWordAtCursor();
+      if (!wordInfo || wordInfo.word.length < 1) { hideAc(); return; }
+      const q = wordInfo.word.toLowerCase();
+      const matches = jqKeywords.filter(k => k.toLowerCase().includes(q) && k.toLowerCase() !== q);
+      showAc(matches.slice(0, 15), wordInfo);
+    };
+
+    filterEl.addEventListener('input', () => { saveState(); updateAc(); });
+    filterEl.addEventListener('blur', () => { setTimeout(hideAc, 150); });
+    filterEl.addEventListener('keydown', (e) => {
+      if (!acList.classList.contains('visible')) return;
+      const items = acList.querySelectorAll('li');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        acIndex = Math.min(acIndex + 1, items.length - 1);
+        items.forEach((li, i) => li.classList.toggle('active', i === acIndex));
+        items[acIndex]?.scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        acIndex = Math.max(acIndex - 1, 0);
+        items.forEach((li, i) => li.classList.toggle('active', i === acIndex));
+        items[acIndex]?.scrollIntoView({ block: 'nearest' });
+      } else if ((e.key === 'Enter' || e.key === 'Tab') && acIndex >= 0) {
+        e.preventDefault();
+        const wordInfo = getWordAtCursor();
+        if (wordInfo && items[acIndex]) {
+          applyCompletion(items[acIndex].textContent, wordInfo);
+        }
+      } else if (e.key === 'Escape') {
+        hideAc();
+      }
+    });
 
     const MAX_FILES = 4;
     // files: [{ fileName, filePath }], activeIndex: number | null
@@ -368,13 +492,13 @@ const getWebviewHtml = (
       }
     });
 
-    filterEl.addEventListener('input', saveState);
-
     window.addEventListener('message', (event) => {
       const msg = event.data;
       if (msg.type === 'result') {
         outputEl.textContent = msg.output;
         outputEl.className = msg.isError ? 'error' : '';
+      } else if (msg.type === 'builtins') {
+        jqKeywords = msg.keywords || [];
       } else if (msg.type === 'filePicked') {
         // Check if already in list
         const existing = files.findIndex(f => f.filePath === msg.filePath);
@@ -478,6 +602,10 @@ export const openPlaygroundPanel = () =>
             break;
           }
           case "ready":
+            postMessage({
+              type: "builtins",
+              keywords: Object.keys(builtins),
+            });
             break;
           default:
             break;

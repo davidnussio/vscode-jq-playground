@@ -158,6 +158,11 @@
         "category": "JQPG"
       },
       {
+        "command": "jqpg.openPlaygroundPanel",
+        "title": "Open Playground Panel",
+        "category": "JQPG"
+      },
+      {
         "command": "jqpg.ai.explainFilter",
         "title": "Explain filter with AI",
         "category": "JQPG"

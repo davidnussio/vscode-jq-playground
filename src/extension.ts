@@ -4,10 +4,11 @@ import { launch, VsCodeContext } from "./adapters/vscode-adapter";
 import { AppLive } from "./layers";
 
 export function activate(context: vscode.ExtensionContext) {
-  launch(AppLive).pipe(
-    Effect.tap(Effect.log("JQ Playground activated")),
-    Effect.provideService(VsCodeContext, context),
-    Effect.runFork
+  return Effect.runPromise(
+    launch(AppLive).pipe(
+      Effect.tap(Effect.log("JQ Playground activated")),
+      Effect.provideService(VsCodeContext, context)
+    )
   );
 }
 

@@ -24,6 +24,7 @@ import {
   jqBuiltinsProvider,
   workspaceFilesProvider,
 } from "./providers/completion";
+import { openPlaygroundPanel } from "./providers/playground-panel";
 import {
   configureJqPathCommand,
   downloadJqBinaryCommand,
@@ -41,6 +42,7 @@ const SetupCommands = Effect.gen(function* () {
     createJqpgFromFilter
   );
   yield* registerCommand("extension.jqpgFromFilter", executeJqFromFilter);
+  yield* registerCommand("jqpg.openPlaygroundPanel", openPlaygroundPanel);
   yield* registerCommand("extension.executeJqCommand", executeJqCommand);
   yield* registerCommand(
     "extension.executeJqInputCommand",

@@ -215,7 +215,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.9",
-    "@effect/language-service": "^0.83.1",
+    "@effect/language-service": "^0.84.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.0",
     "@types/vscode": "^1.100.0",

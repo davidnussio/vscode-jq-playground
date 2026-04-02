@@ -225,7 +225,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "typescript": "^6.0.2",
-    "ultracite": "7.3.2",
+    "ultracite": "7.4.2",
     "vitest": "^4.1.1",
     "yaml": "^2.8.3"
   },

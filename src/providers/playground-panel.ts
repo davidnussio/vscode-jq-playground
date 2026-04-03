@@ -537,6 +537,100 @@ const currentWorkingDirectory = (): string => {
   return folders?.[0]?.uri.fsPath ?? ".";
 };
 
+// Shared logic for setting up webview messaging
+const setupWebview = (
+  webview: vscode.Webview,
+  extensionUri: vscode.Uri,
+  subscriptions: vscode.Disposable[],
+  jqExecution: Effect.Effect.Success<typeof JqExecutionService>,
+  // biome-ignore lint/suspicious/noExplicitAny: Effect runtime fork type is complex
+  runFork: (effect: Effect.Effect<any, any, any>) => any
+) => {
+  webview.options = {
+    enableScripts: true,
+    localResourceRoots: [extensionUri],
+  };
+  webview.html = getWebviewHtml(webview, extensionUri);
+
+  const postMessage = (msg: ExtensionMessage) => {
+    webview.postMessage(msg);
+  };
+
+  const disposable = webview.onDidReceiveMessage((msg: WebviewMessage) => {
+    switch (msg.type) {
+      case "execute": {
+        const cwd = currentWorkingDirectory();
+        const args = [msg.filter];
+        const json = fs.readFileSync(msg.filePath, "utf-8");
+        runFork(
+          jqExecution.execute(args, json, { cwd }).pipe(
+            Effect.tap((output) =>
+              Effect.sync(() =>
+                postMessage({ type: "result", output, isError: false })
+              )
+            ),
+            Effect.catchAll((err) =>
+              Effect.sync(() =>
+                postMessage({
+                  type: "result",
+                  output: err.message,
+                  isError: true,
+                })
+              )
+            )
+          )
+        );
+        break;
+      }
+      case "pickFile": {
+        pickJsonFile().then((result) => {
+          if (result) {
+            postMessage({
+              type: "filePicked",
+              fileName: result.fileName,
+              filePath: result.filePath,
+            });
+          }
+        });
+        break;
+      }
+      case "ready":
+        postMessage({
+          type: "builtins",
+          keywords: Object.keys(builtins),
+        });
+        break;
+      default:
+        break;
+    }
+  });
+
+  subscriptions.push(disposable);
+};
+
+// --- Sidebar WebviewViewProvider ---
+
+export const playgroundViewProvider = Effect.gen(function* () {
+  const context = yield* VsCodeContext;
+  const jqExecution = yield* JqExecutionService;
+  const runtime = yield* Effect.runtime<JqExecutionService>();
+  const runFork = Runtime.runFork(runtime);
+
+  return {
+    resolveWebviewView(webviewView: vscode.WebviewView) {
+      setupWebview(
+        webviewView.webview,
+        context.extensionUri,
+        context.subscriptions,
+        jqExecution,
+        runFork
+      );
+    },
+  } satisfies vscode.WebviewViewProvider;
+});
+
+// --- Standalone panel command ---
+
 export const openPlaygroundPanel = () =>
   Effect.gen(function* () {
     const context = yield* VsCodeContext;
@@ -556,63 +650,13 @@ export const openPlaygroundPanel = () =>
     );
 
     panel.iconPath = vscode.Uri.joinPath(context.extensionUri, "icon.png");
-    panel.webview.html = getWebviewHtml(panel.webview, context.extensionUri);
 
-    const postMessage = (msg: ExtensionMessage) => {
-      panel.webview.postMessage(msg);
-    };
-
-    panel.webview.onDidReceiveMessage(
-      (msg: WebviewMessage) => {
-        switch (msg.type) {
-          case "execute": {
-            const cwd = currentWorkingDirectory();
-            const args = [msg.filter];
-            const json = fs.readFileSync(msg.filePath, "utf-8");
-            runFork(
-              jqExecution.execute(args, json, { cwd }).pipe(
-                Effect.tap((output) =>
-                  Effect.sync(() =>
-                    postMessage({ type: "result", output, isError: false })
-                  )
-                ),
-                Effect.catchAll((err) =>
-                  Effect.sync(() =>
-                    postMessage({
-                      type: "result",
-                      output: err.message,
-                      isError: true,
-                    })
-                  )
-                )
-              )
-            );
-            break;
-          }
-          case "pickFile": {
-            pickJsonFile().then((result) => {
-              if (result) {
-                postMessage({
-                  type: "filePicked",
-                  fileName: result.fileName,
-                  filePath: result.filePath,
-                });
-              }
-            });
-            break;
-          }
-          case "ready":
-            postMessage({
-              type: "builtins",
-              keywords: Object.keys(builtins),
-            });
-            break;
-          default:
-            break;
-        }
-      },
-      undefined,
-      context.subscriptions
+    setupWebview(
+      panel.webview,
+      context.extensionUri,
+      context.subscriptions,
+      jqExecution,
+      runFork
     );
 
     context.subscriptions.push(panel);

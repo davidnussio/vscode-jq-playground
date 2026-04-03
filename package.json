@@ -100,6 +100,24 @@
         }
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "jqpg-sidebar",
+          "title": "jq Playground",
+          "icon": "images/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "jqpg-sidebar": [
+        {
+          "type": "webview",
+          "id": "jqpg.playgroundView",
+          "name": "Playground"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "extension.openManual",

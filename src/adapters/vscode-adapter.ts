@@ -106,6 +106,19 @@ export const registerCompletionItemProvider = (
     );
   });
 
+export const registerWebviewViewProvider = (
+  viewId: string,
+  provider: vscode.WebviewViewProvider
+) =>
+  Effect.gen(function* () {
+    const context = yield* VsCodeContext;
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(viewId, provider, {
+        webviewOptions: { retainContextWhenHidden: true },
+      })
+    );
+  });
+
 export const activeTextEditor = () =>
   Option.fromNullable(vscode.window.activeTextEditor);
 

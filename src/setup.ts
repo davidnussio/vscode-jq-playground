@@ -3,6 +3,7 @@ import {
   registerCodeLens,
   registerCommand,
   registerCompletionItemProvider,
+  registerWebviewViewProvider,
 } from "./adapters/vscode-adapter";
 import { explainFilterCommand, generateFilterCommand } from "./ai/ai-commands";
 import { registerChatParticipant } from "./ai/chat-participant";
@@ -24,7 +25,10 @@ import {
   jqBuiltinsProvider,
   workspaceFilesProvider,
 } from "./providers/completion";
-import { openPlaygroundPanel } from "./providers/playground-panel";
+import {
+  openPlaygroundPanel,
+  playgroundViewProvider,
+} from "./providers/playground-panel";
 import {
   configureJqPathCommand,
   downloadJqBinaryCommand,
@@ -77,10 +81,16 @@ const SetupChatParticipant = Effect.gen(function* () {
   yield* registerChatParticipant;
 });
 
+const SetupSidebarView = Effect.gen(function* () {
+  const provider = yield* playgroundViewProvider;
+  yield* registerWebviewViewProvider("jqpg.playgroundView", provider);
+});
+
 export const SetupLive = Effect.gen(function* () {
   yield* SetupCommands;
   yield* SetupCodeLens;
   yield* SetupCompletionProviders;
   yield* SetupChatParticipant;
+  yield* SetupSidebarView;
   yield* Effect.log("Setup complete");
 }).pipe(Layer.effectDiscard);

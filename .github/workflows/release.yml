@@ -1,0 +1,53 @@
+name: Release Extension
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Extract version
+        id: version
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Package extension
+        run: pnpm dlx @vscode/vsce package --no-dependencies ${{ steps.version.outputs.value }}
+
+      - name: Publish to VS Marketplace
+        run: |
+          ARGS="--no-dependencies ${{ steps.version.outputs.value }}"
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            ARGS="$ARGS --pre-release"
+          fi
+          pnpm dlx @vscode/vsce publish $ARGS
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to Open VSX Registry
+        run: |
+          ARGS="vscode-jq-playground-${{ steps.version.outputs.value }}.vsix -p ${{ secrets.OVSX_TOKEN }}"
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            ARGS="$ARGS --pre-release"
+          fi
+          pnpm dlx ovsx publish $ARGS
+
+      - name: Upload .vsix to GitHub Release
+        run: gh release upload "${{ github.event.release.tag_name }}" vscode-jq-playground-${{ steps.version.outputs.value }}.vsix
+        env:
+          GH_TOKEN: ${{ github.token }}

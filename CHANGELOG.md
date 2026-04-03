@@ -1,13 +1,24 @@
 # Change Log
 
-## [5.0.6] - DRAFT
+## [5.0.6]
 
-- New jq Playground Panel (`JQPG: Open Playground Panel`) with split layout: filter editor on top, JSON output below
-- File picker to select JSON files from workspace or open editors, shown as clickable chips (max 4) with ✓ on active and × to remove
-- Cmd/Ctrl+Enter shortcut to run filters from the panel
-- Panel state (filter, selected files) persists across tab switches
-- Fix activation race condition: `activate()` now returns a Promise so commands are available immediately
-- Cleanup redundant `activationEvents` in package.json (auto-generated from `contributes.commands`)
+### Added
+
+- New sidebar Playground Panel with dedicated activity bar icon (`JQPG: Open Playground Panel`)
+  - Filter textarea with jq builtins autocomplete (keyboard navigation)
+  - File picker: select JSON files from open editors or workspace (max 4, shown as chips)
+  - Cmd/Ctrl+Enter shortcut to run filters
+  - Panel state (filter, selected files) persists across tab switches via `vscode.getState()`
+- Standalone panel variant via command palette (`JQPG: Open Playground Panel`)
+- Architecture documentation: Excalidraw diagram and Mermaid diagrams (`architecture.md`)
+
+### Fixed
+
+- Activation race condition: `activate()` now returns a `Promise` so VS Code waits for all commands to be registered before resolving
+
+### Changed
+
+- Removed redundant `onLanguage:jqpg` from `activationEvents` (auto-inferred from `contributes`)
 
 ## [5.0.5]
 

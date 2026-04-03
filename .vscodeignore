@@ -15,7 +15,7 @@ vsc-extension-quickstart.md
 internals/**
 webpack.config.js
 files/**
-babel.config.js
+
 node_modules
 images
 
@@ -38,3 +38,6 @@ architecture.excalidraw
 PLAN.md
 PROJECT.md
 TODO.md
+RELEASING.md
+examples/playground.test.jqpg
+*.vsix

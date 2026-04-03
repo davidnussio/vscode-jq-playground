@@ -1,5 +1,11 @@
 # Change Log
 
+## [5.0.7]
+
+### Fixed
+
+- Sidebar activity bar icon missing from published extension (`.vscodeignore` excluded the entire `images/` folder)
+
 ## [5.0.6]
 
 ### Added

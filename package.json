@@ -214,19 +214,19 @@
     "fix": "ultracite fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.9",
-    "@effect/language-service": "^0.84.0",
+    "@biomejs/biome": "2.4.10",
+    "@effect/language-service": "^0.84.3",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.0",
     "@types/vscode": "^1.100.0",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.27.4",
+    "esbuild": "^0.28.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "typescript": "^6.0.2",
     "ultracite": "7.4.2",
-    "vitest": "^4.1.1",
+    "vitest": "^4.1.2",
     "yaml": "^2.8.3"
   },
   "dependencies": {

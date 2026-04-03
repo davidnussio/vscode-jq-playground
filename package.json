@@ -39,7 +39,6 @@
     "notebook"
   ],
   "activationEvents": [
-    "onLanguage:jqpg",
     "onLanguage:jq"
   ],
   "main": "./dist/extension.js",
@@ -101,6 +100,24 @@
         }
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "jqpg-sidebar",
+          "title": "jq Playground",
+          "icon": "images/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "jqpg-sidebar": [
+        {
+          "type": "webview",
+          "id": "jqpg.playgroundView",
+          "name": "Playground"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "extension.openManual",
@@ -155,6 +172,11 @@
       {
         "command": "extension.downloadJqBinary",
         "title": "Download jq binary",
+        "category": "JQPG"
+      },
+      {
+        "command": "jqpg.openPlaygroundPanel",
+        "title": "Open Playground Panel",
         "category": "JQPG"
       },
       {

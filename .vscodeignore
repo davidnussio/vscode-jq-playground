@@ -17,7 +17,8 @@ webpack.config.js
 files/**
 
 node_modules
-images
+images/*
+!images/sidebar-icon.svg
 
 # Dev/CI files
 .agents/**

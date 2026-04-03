@@ -2,7 +2,7 @@
   "name": "vscode-jq-playground",
   "displayName": "jq Playground — JSON Filter Notebook",
   "description": "Interactive jq notebook for VS Code — run filters with live results, autocomplete, AI-powered explain & fix, and multi-source data inputs",
-  "version": "5.0.5",
+  "version": "5.0.6",
   "publisher": "davidnussio",
   "license": "SEE LICENSE IN LICENSE",
   "author": {

@@ -19,8 +19,8 @@ importers:
         specifier: 2.4.9
         version: 2.4.9
       '@effect/language-service':
-        specifier: ^0.83.1
-        version: 0.83.1
+        specifier: ^0.84.0
+        version: 0.84.3
       '@types/mocha':
         specifier: ^10.0.10
         version: 10.0.10
@@ -127,8 +127,8 @@ packages:
   '@clack/prompts@1.1.0':
     resolution: {integrity: sha512-pkqbPGtohJAvm4Dphs2M8xE29ggupihHdy1x84HNojZuMtFsHiUlRvqD24tM2+XmI+61LlfNceM3Wr7U5QES5g==}
 
-  '@effect/language-service@0.83.1':
-    resolution: {integrity: sha512-cBQ7yg/P4+kAp+JFX+9Bk5bc1jG3UMVq8pgtW5VAWBl/yiTjWlCGMKC4UxX2KlpREvjTkvS8BKi1wYw0phWmAQ==}
+  '@effect/language-service@0.84.3':
+    resolution: {integrity: sha512-zpxi6rLCwst/cBQd7ElwDvt36Y6Jvz8v6bCLnNiOL6OXvdLmqjOFWyzWZdMh92vvBQA/aVKhfIAAOP3o4wKt0A==}
     hasBin: true
 
   '@effect/platform@0.96.0':
@@ -1500,7 +1500,7 @@ snapshots:
       '@clack/core': 1.1.0
       sisteransi: 1.0.5
 
-  '@effect/language-service@0.83.1': {}
+  '@effect/language-service@0.84.3': {}
 
   '@effect/platform@0.96.0(effect@3.21.0)':
     dependencies:

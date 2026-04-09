@@ -236,7 +236,7 @@
     "fix": "ultracite fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.10",
+    "@biomejs/biome": "2.4.11",
     "@effect/language-service": "^0.84.3",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.5.0",

@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@effect/platform':
         specifier: ^0.96.0
-        version: 0.96.0(effect@3.21.0)
+        version: 0.96.0(effect@3.22.1)
       effect:
         specifier: ^3.21.0
-        version: 3.21.0
+        version: 3.22.1
     devDependencies:
       '@biomejs/biome':
         specifier: 2.4.10
@@ -35,7 +35,7 @@ importers:
         version: 0.0.12
       '@vscode/test-electron':
         specifier: ^2.5.2
-        version: 2.5.2
+        version: 2.5.2(supports-color@8.1.1)
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
@@ -687,8 +687,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect@3.21.0:
-    resolution: {integrity: sha512-PPN80qRokCd1f015IANNhrwOnLO7GrrMQfk4/lnZRE/8j7UPWrNNjPV0uBrZutI/nHzernbW+J0hdqQysHiSnQ==}
+  effect@3.22.1:
+    resolution: {integrity: sha512-TNoXushmPOBAjJlthF5d2QwnX2xBPEtcNJr5XKNKbRLbDvBcOYkXlYDfvGfSA0zriwLFuCll5MDtNMAdZL17PQ==}
 
   emoji-regex@10.6.0:
     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
@@ -1502,9 +1502,9 @@ snapshots:
 
   '@effect/language-service@0.84.3': {}
 
-  '@effect/platform@0.96.0(effect@3.21.0)':
+  '@effect/platform@0.96.0(effect@3.22.1)':
     dependencies:
-      effect: 3.21.0
+      effect: 3.22.1
       find-my-way-ts: 0.1.6
       msgpackr: 1.11.9
       multipasta: 0.2.7
@@ -1783,10 +1783,10 @@ snapshots:
     transitivePeerDependencies:
       - monocart-coverage-reports
 
-  '@vscode/test-electron@2.5.2':
+  '@vscode/test-electron@2.5.2(supports-color@8.1.1)':
     dependencies:
-      http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.6
+      http-proxy-agent: 7.0.2(supports-color@8.1.1)
+      https-proxy-agent: 7.0.6(supports-color@8.1.1)
       jszip: 3.10.1
       ora: 8.2.0
       semver: 7.7.4
@@ -1934,7 +1934,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect@3.21.0:
+  effect@3.22.1:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
@@ -2055,14 +2055,14 @@ snapshots:
 
   html-escaper@2.0.2: {}
 
-  http-proxy-agent@7.0.2:
+  http-proxy-agent@7.0.2(supports-color@8.1.1):
     dependencies:
       agent-base: 7.1.4
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@7.0.6:
+  https-proxy-agent@7.0.6(supports-color@8.1.1):
     dependencies:
       agent-base: 7.1.4
       debug: 4.4.3(supports-color@8.1.1)

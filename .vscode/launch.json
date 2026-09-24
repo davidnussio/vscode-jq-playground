@@ -6,10 +6,26 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension",
-      "type": "extensionHost",
+      // Fallback for when "Run Extension" fails with "Extension host did not
+      // start in 10 seconds": the debugger never attaches, most likely because
+      // VS Code moved the extension host to a different debug port than the
+      // one the debugger connects to. This starts a separate VS Code instance
+      // with the extension host inspector on a fixed port and attaches there.
+      "name": "Run Extension (fixed port 9333)",
+      "type": "node",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "runtimeExecutable": "${execPath}",
+      "runtimeArgs": [
+        "--user-data-dir=${workspaceFolder}/.vscode-test/dbg",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--inspect-brk-extensions=9333",
+        "--new-window",
+        "--skip-welcome",
+        "--skip-release-notes",
+        "--disable-workspace-trust",
+        "${workspaceFolder}/examples"
+      ],
+      "attachSimplePort": 9333,
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     }

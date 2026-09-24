@@ -4,6 +4,18 @@ import * as Effect from "effect/Effect";
 import { InvalidJsonInputError, JqExecutionError } from "../domain/errors";
 import { JqBinaryService } from "./jq-binary-service";
 
+const NON_JSON_INPUT_OPTIONS = new Set([
+  "-R",
+  "--raw-input",
+  "-n",
+  "--null-input",
+]);
+
+// With --raw-input jq reads plain text lines, and with --null-input it ignores
+// stdin, so the input must not be validated as JSON in those cases.
+export const expectsJsonInput = (args: readonly string[]): boolean =>
+  !args.some((arg) => NON_JSON_INPUT_OPTIONS.has(arg));
+
 const spawnJq = (
   command: string,
   args: string[],
@@ -12,7 +24,7 @@ const spawnJq = (
 ) =>
   Effect.fn("JqExecutionService.spawnJq")(function* (input?: string) {
     // Validate JSON before spawning the process (point 5)
-    if (input) {
+    if (input && expectsJsonInput(args)) {
       try {
         JSON.parse(input);
       } catch (error) {

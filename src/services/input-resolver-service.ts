@@ -202,9 +202,14 @@ const inlineJsonProcessor = (
     if (JQ_LINE_REGEX.test(text) || COMMENT_LINE_REGEX.test(text)) {
       break;
     }
-    lines.push(`${text}\n`);
+    lines.push(text);
   }
-  return Effect.succeed(lines.join(""));
+  // Blank lines separating this block from the next query are not input;
+  // with --raw-input jq would emit each of them as an empty string.
+  while (lines.length > 1 && lines.at(-1)?.trim() === "") {
+    lines.pop();
+  }
+  return Effect.succeed(`${lines.join("\n")}\n`);
 };
 
 export class InputResolverService extends Effect.Service<InputResolverService>()(

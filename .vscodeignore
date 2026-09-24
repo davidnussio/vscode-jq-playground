@@ -33,6 +33,7 @@ pnpm-lock.yaml
 esbuild.js
 skills-lock.json
 vitest.config.ts_
+vitest.config.mjs
 playground.test.jqpg
 effect-ts-llms.md
 architecture.excalidraw

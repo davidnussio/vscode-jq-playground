@@ -245,3 +245,7 @@ Inspired by [vscode-jq](https://marketplace.visualstudio.com/items?itemName=dand
 ## License
 
 [MIT](LICENSE)
+
+---
+
+Made by [David Nussio](https://github.com/davidnussio) · [dambox Sagl](https://dambox.ch) — also building [bizCARD](https://bizcard.ch), digital business cards for companies.

@@ -252,7 +252,7 @@
     "yaml": "^2.8.3"
   },
   "dependencies": {
-    "@effect/platform": "^0.96.0",
+    "@effect/platform": "^0.97.0",
     "effect": "^3.21.0"
   },
   "extensionDependencies": [

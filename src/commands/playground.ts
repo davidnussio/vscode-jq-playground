@@ -37,7 +37,7 @@ export const createJqpgFromFilter = () =>
     const actualFilter = filter || ".";
 
     const json = yield* getEditorText().pipe(
-      Effect.catchAll(() => Effect.succeed("{}"))
+      Effect.catch(() => Effect.succeed("{}"))
     );
 
     const content = `jq '${actualFilter}'\n${json}`;

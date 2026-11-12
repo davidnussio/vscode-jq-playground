@@ -236,24 +236,23 @@
     "fix": "ultracite fix"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.10",
-    "@effect/language-service": "^0.84.3",
+    "@biomejs/biome": "2.4.16",
+    "@effect/language-service": "^0.87.5",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^25.5.0",
+    "@types/node": "^26.6.6",
     "@types/vscode": "^1.100.0",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.28.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "esbuild": "^0.28.2",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "typescript": "^6.0.2",
+    "lint-staged": "^17.6.0",
+    "typescript": "^7.0.2",
     "ultracite": "7.4.3",
-    "vitest": "^4.1.2",
-    "yaml": "^2.8.3"
+    "vitest": "^5.1.0",
+    "yaml": "^2.9.1"
   },
   "dependencies": {
-    "@effect/platform": "^0.96.0",
-    "effect": "^3.21.0"
+    "effect": "^4.1.4"
   },
   "extensionDependencies": [
     "jq-syntax-highlighting.jq-syntax-highlighting"

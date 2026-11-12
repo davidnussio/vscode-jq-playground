@@ -23,12 +23,12 @@ import {
 
 const currentWorkingDirectory = (): string => {
   const cwdActiveFile = pipe(
-    Option.fromNullable(window.activeTextEditor),
+    Option.fromNullishOr(window.activeTextEditor),
     Option.map((editor) => editor.document.fileName),
     Option.map((fileName) => path.join(fileName, ".."))
   );
   const cwdFirstWorkspace = pipe(
-    Option.fromNullable(workspace.workspaceFolders),
+    Option.fromNullishOr(workspace.workspaceFolders),
     Option.map((folder) => folder[0].uri.path),
     Option.getOrElse(() => ".")
   );
@@ -99,7 +99,7 @@ export const executeJqCommand = (params: {
       }),
       Duration.seconds(progressDelay)
     ).pipe(
-      Effect.catchAll((error) =>
+      Effect.catch((error) =>
         Effect.gen(function* () {
           // Show error in output channel only (no popup)
           yield* renderer.renderError(error.message);
@@ -138,7 +138,7 @@ export const queryRunner = (openResult: "output" | "editor") =>
       return yield* Effect.fail("No active text editor found.");
     }
 
-    const ed = yield* editor;
+    const ed = editor.value;
     const jqQueryLine = findPreviousJqQueryLine(
       ed.document,
       ed.selection.start.line
@@ -149,7 +149,7 @@ export const queryRunner = (openResult: "output" | "editor") =>
         "Current line does not contain jq query string"
       );
     } else {
-      const line = yield* jqQueryLine;
+      const line = jqQueryLine.value;
       const range = new Range(
         new Position(line, 0),
         new Position(line, ed.document.lineAt(line).text.length)

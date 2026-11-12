@@ -1,7 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as Effect from "effect/Effect";
-import * as Runtime from "effect/Runtime";
 import * as vscode from "vscode";
 import { VsCodeContext } from "../adapters/vscode-adapter";
 import { builtins } from "../builtins";
@@ -542,9 +541,8 @@ const setupWebview = (
   webview: vscode.Webview,
   extensionUri: vscode.Uri,
   subscriptions: vscode.Disposable[],
-  jqExecution: Effect.Effect.Success<typeof JqExecutionService>,
-  // biome-ignore lint/suspicious/noExplicitAny: Effect runtime fork type is complex
-  runFork: (effect: Effect.Effect<any, any, any>) => any
+  jqExecution: typeof JqExecutionService.Service,
+  runFork: <A, E>(effect: Effect.Effect<A, E>) => unknown
 ) => {
   webview.options = {
     enableScripts: true,
@@ -569,7 +567,7 @@ const setupWebview = (
                 postMessage({ type: "result", output, isError: false })
               )
             ),
-            Effect.catchAll((err) =>
+            Effect.catch((err) =>
               Effect.sync(() =>
                 postMessage({
                   type: "result",
@@ -613,8 +611,9 @@ const setupWebview = (
 export const playgroundViewProvider = Effect.gen(function* () {
   const context = yield* VsCodeContext;
   const jqExecution = yield* JqExecutionService;
-  const runtime = yield* Effect.runtime<JqExecutionService>();
-  const runFork = Runtime.runFork(runtime);
+  const runFork = Effect.runForkWith(
+    yield* Effect.context<JqExecutionService>()
+  );
 
   return {
     resolveWebviewView(webviewView: vscode.WebviewView) {
@@ -635,8 +634,9 @@ export const openPlaygroundPanel = () =>
   Effect.gen(function* () {
     const context = yield* VsCodeContext;
     const jqExecution = yield* JqExecutionService;
-    const runtime = yield* Effect.runtime<JqExecutionService>();
-    const runFork = Runtime.runFork(runtime);
+    const runFork = Effect.runForkWith(
+      yield* Effect.context<JqExecutionService>()
+    );
 
     const panel = vscode.window.createWebviewPanel(
       "jqpgPlayground",

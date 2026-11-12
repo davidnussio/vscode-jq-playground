@@ -43,3 +43,4 @@ TODO.md
 RELEASING.md
 examples/playground.test.jqpg
 *.vsix
+repos/**

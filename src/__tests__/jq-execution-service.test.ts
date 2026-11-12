@@ -25,9 +25,9 @@ const hasSystemJq = (() => {
 
 const SystemJqBinary = Layer.succeed(
   JqBinaryService,
-  JqBinaryService.make({
+  JqBinaryService.of({
     find: () => Effect.succeed("jq" as JqBinaryPath),
-  } as unknown as JqBinaryService)
+  } as unknown as typeof JqBinaryService.Service)
 );
 
 const runJq = (args: string[], input: string) =>
@@ -35,9 +35,9 @@ const runJq = (args: string[], input: string) =>
     const jq = yield* JqExecutionService;
     return yield* jq.execute(args, input, { cwd: process.cwd() });
   }).pipe(
-    Effect.provide(JqExecutionService.Default),
+    Effect.provide(JqExecutionService.layer),
     Effect.provide(SystemJqBinary),
-    Effect.either,
+    Effect.result,
     Effect.runPromise
   );
 
@@ -58,8 +58,8 @@ describe("expectsJsonInput", () => {
 describe.runIf(hasSystemJq)("JqExecutionService with raw input", () => {
   test("passes non-JSON text to jq when -R is set", async () => {
     const result = await runJq(["-R", "{text: .}"], RAW_TEXT_INPUT);
-    expect(result._tag).toBe("Right");
-    const output = result._tag === "Right" ? result.right : "";
+    expect(result._tag).toBe("Success");
+    const output = result._tag === "Success" ? result.success : "";
     expect(output.trim().split("\n").join("")).toBe(
       '{  "text": "\'foo\'"}{  "text": "\'bar\'"}{  "text": "\'baz\'"}'
     );
@@ -67,8 +67,8 @@ describe.runIf(hasSystemJq)("JqExecutionService with raw input", () => {
 
   test("still rejects non-JSON text without -R", async () => {
     const result = await runJq(["."], RAW_TEXT_INPUT);
-    expect(result._tag).toBe("Left");
-    expect(result._tag === "Left" && result.left._tag).toBe(
+    expect(result._tag).toBe("Failure");
+    expect(result._tag === "Failure" && result.failure._tag).toBe(
       "InvalidJsonInputError"
     );
   });

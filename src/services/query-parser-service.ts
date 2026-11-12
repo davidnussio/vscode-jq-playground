@@ -1,4 +1,6 @@
+import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import type { TextDocument } from "vscode";
 import { JqParseError } from "../domain/errors";
 import {
@@ -102,10 +104,10 @@ export const readEditorVariables = (
   return variables;
 };
 
-export class QueryParserService extends Effect.Service<QueryParserService>()(
+export class QueryParserService extends Context.Service<QueryParserService>()(
   "@jqpg/QueryParserService",
   {
-    sync: () => {
+    make: Effect.sync(() => {
       const parse = Effect.fn("QueryParserService.parse")(function* (
         document: TextDocument,
         lineIndex: number,
@@ -161,6 +163,8 @@ export class QueryParserService extends Effect.Service<QueryParserService>()(
       });
 
       return { parse };
-    },
+    }),
   }
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make);
+}

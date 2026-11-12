@@ -1,4 +1,6 @@
+import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 import * as vscode from "vscode";
 import { getConfigurationValue } from "../adapters/vscode-adapter";
@@ -76,8 +78,8 @@ const sendRequest = (model: vscode.LanguageModelChat, prompt: string) =>
     catch: (e) => new AiUnavailableError({ message: String(e) }),
   });
 
-export class AiService extends Effect.Service<AiService>()("@jqpg/AiService", {
-  effect: Effect.gen(function* () {
+export class AiService extends Context.Service<AiService>()("@jqpg/AiService", {
+  make: Effect.gen(function* () {
     // Probe model availability at startup
     yield* Effect.promise(refreshModelAvailability);
 
@@ -121,4 +123,6 @@ export class AiService extends Effect.Service<AiService>()("@jqpg/AiService", {
 
     return { explainFilter, fixError, generateFilter, isAvailable };
   }),
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}

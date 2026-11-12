@@ -42,7 +42,7 @@ export const openExamples = () =>
           message: `Failed to read examples file: ${examplesPath}`,
         }),
     }).pipe(
-      Effect.catchAll(() =>
+      Effect.catch(() =>
         Effect.succeed('# No examples file found\njq .\n"hello"')
       )
     );
@@ -59,7 +59,7 @@ export const openExamples = () =>
 
 export const openPlay = () =>
   Effect.gen(function* () {
-    const editor = yield* activeTextEditor();
+    const editor = yield* Effect.fromOption(activeTextEditor());
     const query = yield* showInputBox({ prompt: "jq query", value: "." });
     if (!query) {
       return;

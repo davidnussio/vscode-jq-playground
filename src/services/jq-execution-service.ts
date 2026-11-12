@@ -1,6 +1,8 @@
 import { type CommonSpawnOptions, spawn } from "node:child_process";
+import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import { InvalidJsonInputError, JqExecutionError } from "../domain/errors";
 import { JqBinaryService } from "./jq-binary-service";
 
@@ -36,7 +38,7 @@ const spawnJq = (
       }
     }
 
-    return yield* Effect.async<
+    return yield* Effect.callback<
       string,
       JqExecutionError | InvalidJsonInputError
     >((resume, signal) => {
@@ -114,10 +116,10 @@ const spawnJq = (
     });
   });
 
-export class JqExecutionService extends Effect.Service<JqExecutionService>()(
+export class JqExecutionService extends Context.Service<JqExecutionService>()(
   "@jqpg/JqExecutionService",
   {
-    effect: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const binary = yield* JqBinaryService;
 
       const execute = Effect.fn("JqExecutionService.execute")(function* (
@@ -138,4 +140,6 @@ export class JqExecutionService extends Effect.Service<JqExecutionService>()(
       return { execute };
     }),
   }
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make);
+}

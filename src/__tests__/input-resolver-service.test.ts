@@ -1,5 +1,5 @@
-import { FetchHttpClient } from "@effect/platform";
 import * as Effect from "effect/Effect";
+import * as FetchHttpClient from "effect/http/FetchHttpClient";
 import { describe, expect, test } from "vitest";
 import type { TextDocument } from "vscode";
 import { InputResolverService } from "../services/input-resolver-service";
@@ -22,7 +22,7 @@ const resolveInline = (content: string, inputLineIndex: number) =>
       []
     );
   }).pipe(
-    Effect.provide(InputResolverService.Default),
+    Effect.provide(InputResolverService.layer),
     Effect.provide(FetchHttpClient.layer),
     Effect.runPromise
   );

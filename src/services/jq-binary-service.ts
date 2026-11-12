@@ -2,8 +2,10 @@ import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { HttpClient } from "@effect/platform";
+import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
+import * as HttpClient from "effect/http/HttpClient";
+import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import {
   config,
@@ -23,7 +25,7 @@ import {
 import type { JqBinaryPath, JqVersion } from "../domain/models";
 
 const spawnEffect = (command: string, args: string[]) =>
-  Effect.async<string, JqExecutionError>((resume, signal) => {
+  Effect.callback<string, JqExecutionError>((resume, signal) => {
     const stdout: string[] = [];
     const stderr: string[] = [];
     const proc = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] });
@@ -197,7 +199,7 @@ export const configureJqPathCommand = Effect.gen(function* () {
 export const downloadJqBinaryCommand = Effect.gen(function* () {
   const service = yield* JqBinaryService;
   yield* downloadJq(service.configRef.update).pipe(
-    Effect.catchAll((e) =>
+    Effect.catch((e) =>
       showErrorMessage(`Failed to download jq: ${e.message}`, "Ok")
     )
   );
@@ -205,29 +207,13 @@ export const downloadJqBinaryCommand = Effect.gen(function* () {
 
 // --- Binary resolution helpers ---
 
-const promptNoBinaryFound = (
+const promptUnusableBinary = (
+  message: string,
   updatePath: (value: string) => Effect.Effect<void>
 ) =>
   Effect.gen(function* () {
     const choice = yield* showErrorMessage(
-      "jq executable not found in your system PATH.",
-      "Configure path manually",
-      "Download automatically"
-    );
-    if (choice === "Configure path manually") {
-      yield* openBinaryPathSettings();
-    } else if (choice === "Download automatically") {
-      yield* downloadJq(updatePath);
-    }
-  });
-
-const promptBrokenBinary = (
-  systemJqPath: string,
-  updatePath: (value: string) => Effect.Effect<void>
-) =>
-  Effect.gen(function* () {
-    const choice = yield* showErrorMessage(
-      `jq found at ${systemJqPath} but it doesn't work correctly.`,
+      message,
       "Configure path manually",
       "Download automatically"
     );
@@ -265,20 +251,26 @@ const resolveJqBinary = (jqBinaryPathRef: {
 }) =>
   Effect.gen(function* () {
     const systemJqPath = yield* findInstalledJqPath().pipe(
-      Effect.catchAll(() => Effect.succeed(null as string | null))
+      Effect.catch(() => Effect.succeed(null as string | null))
     );
 
     if (!systemJqPath) {
-      yield* promptNoBinaryFound(jqBinaryPathRef.update);
+      yield* promptUnusableBinary(
+        "jq executable not found in your system PATH.",
+        jqBinaryPathRef.update
+      );
       return;
     }
 
     const systemVersion = yield* jqVersion(systemJqPath).pipe(
-      Effect.catchAll(() => Effect.succeed(null as JqVersion | null))
+      Effect.catch(() => Effect.succeed(null as JqVersion | null))
     );
 
     if (!systemVersion) {
-      yield* promptBrokenBinary(systemJqPath, jqBinaryPathRef.update);
+      yield* promptUnusableBinary(
+        `jq found at ${systemJqPath} but it doesn't work correctly.`,
+        jqBinaryPathRef.update
+      );
       return;
     }
 
@@ -289,10 +281,10 @@ const resolveJqBinary = (jqBinaryPathRef: {
     );
   });
 
-export class JqBinaryService extends Effect.Service<JqBinaryService>()(
+export class JqBinaryService extends Context.Service<JqBinaryService>()(
   "@jqpg/JqBinaryService",
   {
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       yield* Effect.log("Initializing JqBinaryService...");
 
       const jqBinaryPathRef = yield* config<string>(
@@ -300,15 +292,6 @@ export class JqBinaryService extends Effect.Service<JqBinaryService>()(
         "binaryPath",
         true
       );
-
-      const currentPath = yield* jqBinaryPathRef.get;
-
-      // Only run resolution if no path is configured
-      if (Option.isNone(currentPath) || currentPath.value === "") {
-        yield* resolveJqBinary(jqBinaryPathRef);
-      }
-
-      const resolvedPath = yield* jqBinaryPathRef.get;
 
       const find = Effect.fn("JqBinaryService.find")(function* () {
         const p = yield* jqBinaryPathRef.get;
@@ -320,48 +303,46 @@ export class JqBinaryService extends Effect.Service<JqBinaryService>()(
         return p.value as JqBinaryPath;
       });
 
-      const version = Effect.fn("JqBinaryService.version")(function* () {
-        const p = yield* find();
-        return yield* jqVersion(p);
-      });
-
-      const validate = Effect.fn("JqBinaryService.validate")(function* () {
-        const p = yield* find();
-        const v = yield* version();
-        return { path: p, version: v };
-      });
-
-      // Validate on startup if path is set
-      if (Option.isSome(resolvedPath) && resolvedPath.value !== "") {
-        const validation = yield* validate().pipe(
-          Effect.catchAll((e) => {
-            return showErrorMessage(
-              `Failed to validate jq at: ${Option.getOrElse(resolvedPath, () => "")}. ${e.message}`,
-              "Open Settings"
-            ).pipe(
-              Effect.tap((choice) =>
-                choice === "Open Settings"
-                  ? openBinaryPathSettings()
-                  : Effect.void
-              ),
-              Effect.map(() => null)
-            );
-          })
-        );
-        if (validation) {
-          yield* Effect.log(
-            `JqBinaryService ready: ${validation.path} (${validation.version})`
-          );
+      // Resolve and validate the binary in the background: the prompts wait
+      // for the user, and must not hold up extension activation.
+      const startup = Effect.gen(function* () {
+        const configured = yield* Effect.option(find());
+        if (Option.isNone(configured)) {
+          yield* resolveJqBinary(jqBinaryPathRef);
         }
-      }
 
-      return {
-        find,
-        version,
-        validate,
-        configRef: jqBinaryPathRef,
-        openSettings: openBinaryPathSettings,
-      };
+        const resolved = yield* Effect.option(find());
+        if (Option.isNone(resolved)) {
+          return;
+        }
+
+        const version = yield* Effect.option(jqVersion(resolved.value));
+        if (Option.isSome(version)) {
+          yield* Effect.log(
+            `JqBinaryService ready: ${resolved.value} (${version.value})`
+          );
+          return;
+        }
+
+        const choice = yield* showErrorMessage(
+          `Failed to validate jq at: ${resolved.value}`,
+          "Open Settings"
+        );
+        if (choice === "Open Settings") {
+          yield* openBinaryPathSettings();
+        }
+      });
+
+      yield* startup.pipe(
+        Effect.catch((e) =>
+          showErrorMessage(`Failed to set up jq: ${e.message}`, "Ok")
+        ),
+        Effect.forkScoped
+      );
+
+      return { find, configRef: jqBinaryPathRef };
     }),
   }
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make);
+}

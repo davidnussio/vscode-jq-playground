@@ -1,20 +1,10 @@
 import { type CommonSpawnOptions, spawn } from "node:child_process";
+import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
-import { InvalidJsonInputError, JqExecutionError } from "../domain/errors";
+import * as Layer from "effect/Layer";
+import { JqExecutionError } from "../domain/errors";
 import { JqBinaryService } from "./jq-binary-service";
-
-const NON_JSON_INPUT_OPTIONS = new Set([
-  "-R",
-  "--raw-input",
-  "-n",
-  "--null-input",
-]);
-
-// With --raw-input jq reads plain text lines, and with --null-input it ignores
-// stdin, so the input must not be validated as JSON in those cases.
-export const expectsJsonInput = (args: readonly string[]): boolean =>
-  !args.some((arg) => NON_JSON_INPUT_OPTIONS.has(arg));
 
 const spawnJq = (
   command: string,
@@ -22,24 +12,8 @@ const spawnJq = (
   options: CommonSpawnOptions,
   timeout: Duration.Duration
 ) =>
-  Effect.fn("JqExecutionService.spawnJq")(function* (input?: string) {
-    // Validate JSON before spawning the process (point 5)
-    if (input && expectsJsonInput(args)) {
-      try {
-        JSON.parse(input);
-      } catch (error) {
-        return yield* Effect.fail(
-          new InvalidJsonInputError({
-            message: `Invalid JSON input: ${error}`,
-          })
-        );
-      }
-    }
-
-    return yield* Effect.async<
-      string,
-      JqExecutionError | InvalidJsonInputError
-    >((resume, signal) => {
+  Effect.fn("JqExecutionService.spawnJq")((input?: string) =>
+    Effect.callback<string, JqExecutionError>((resume, signal) => {
       const result = { stdout: [] as string[], stderr: [] as string[] };
       options.stdio = [input ? "pipe" : "ignore", "pipe", "pipe"];
 
@@ -53,12 +27,12 @@ const spawnJq = (
         proc.stdin.end();
       }
 
-      if (proc.stdout) {
-        proc.stdout.on("data", (data) => result.stdout.push(data));
-      }
-      if (proc.stderr) {
-        proc.stderr.on("data", (data) => result.stderr.push(data));
-      }
+      // Decode as a stream so multi-byte characters split across chunks
+      // are not corrupted.
+      proc.stdout?.setEncoding("utf8");
+      proc.stderr?.setEncoding("utf8");
+      proc.stdout?.on("data", (data: string) => result.stdout.push(data));
+      proc.stderr?.on("data", (data: string) => result.stderr.push(data));
 
       const commandTimeout = setTimeout(() => {
         proc.kill("SIGKILL");
@@ -111,13 +85,13 @@ const spawnJq = (
           );
         }
       });
-    });
-  });
+    })
+  );
 
-export class JqExecutionService extends Effect.Service<JqExecutionService>()(
+export class JqExecutionService extends Context.Service<JqExecutionService>()(
   "@jqpg/JqExecutionService",
   {
-    effect: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const binary = yield* JqBinaryService;
 
       const execute = Effect.fn("JqExecutionService.execute")(function* (
@@ -138,4 +112,6 @@ export class JqExecutionService extends Effect.Service<JqExecutionService>()(
       return { execute };
     }),
   }
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make);
+}

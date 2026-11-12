@@ -6,6 +6,7 @@ import {
   openTextDocument,
   showInputBox,
   showTextDocument,
+  showWarningMessage,
 } from "../adapters/vscode-adapter";
 
 const askFilter = (initialValue: string) =>
@@ -15,30 +16,23 @@ const askFilter = (initialValue: string) =>
     placeHolder: ".",
   });
 
-const getEditorText = (): Effect.Effect<string, string> =>
-  Effect.gen(function* () {
-    const ed = activeTextEditor();
-    if (Option.isNone(ed)) {
-      return yield* Effect.fail("No active text editor");
-    }
-    const editor = Option.getOrThrow(ed);
-    const text = editor.document.getText(
-      editor.selection.isEmpty ? undefined : editor.selection
-    );
-    if (!text) {
-      return yield* Effect.fail("No text in editor");
-    }
-    return text;
-  });
+/** Selected text of the active editor, or the whole document if nothing is selected. */
+const getEditorText = (): Option.Option<string> =>
+  activeTextEditor().pipe(
+    Option.map((editor) =>
+      editor.document.getText(
+        editor.selection.isEmpty ? undefined : editor.selection
+      )
+    ),
+    Option.filter((text) => text !== "")
+  );
 
 export const createJqpgFromFilter = () =>
   Effect.gen(function* () {
     const filter = yield* askFilter(".");
     const actualFilter = filter || ".";
 
-    const json = yield* getEditorText().pipe(
-      Effect.catchAll(() => Effect.succeed("{}"))
-    );
+    const json = Option.getOrElse(getEditorText(), () => "{}");
 
     const content = `jq '${actualFilter}'\n${json}`;
 
@@ -57,7 +51,12 @@ export const executeJqFromFilter = () =>
       return;
     }
 
-    const json = yield* getEditorText();
+    const editorText = getEditorText();
+    if (Option.isNone(editorText)) {
+      yield* showWarningMessage("No text found in the active editor.");
+      return;
+    }
+    const json = editorText.value;
 
     // Create a temporary playground and trigger execution
     const content = `jq '${filter}'\n${json}`;

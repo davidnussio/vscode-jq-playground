@@ -1,5 +1,4 @@
 import { pipe } from "effect";
-import type * as Cause from "effect/Cause";
 import * as Context from "effect/Context";
 import type * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
@@ -7,42 +6,24 @@ import * as Exit from "effect/Exit";
 import * as Fiber from "effect/Fiber";
 import * as Layer from "effect/Layer";
 import * as Logger from "effect/Logger";
-import * as LogLevel from "effect/LogLevel";
 import * as Option from "effect/Option";
-import * as Runtime from "effect/Runtime";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as SubscriptionRef from "effect/SubscriptionRef";
 import * as vscode from "vscode";
 
-export class VsCodeContext extends Context.Tag("vscode/ExtensionContext")<
+export class VsCodeContext extends Context.Service<
   VsCodeContext,
   vscode.ExtensionContext
->() {}
+>()("vscode/ExtensionContext") {}
 
 export const thenable = <A>(f: () => Thenable<A>) =>
-  Effect.async<A>((resume) => {
+  Effect.callback<A>((resume) => {
     f().then(
       (_) => resume(Effect.succeed(_)),
       (err) => resume(Effect.die(err))
     );
   });
-
-export const thenableCatch = <A, E>(
-  f: () => Thenable<A>,
-  error: (error: unknown) => E
-) =>
-  Effect.async<A, E>((resume) => {
-    f().then(
-      (_) => resume(Effect.succeed(_)),
-      (_) => resume(Effect.fail(error(_)))
-    );
-  });
-
-export const dismissable = <A>(
-  f: () => Thenable<A | undefined>
-): Effect.Effect<A, Cause.NoSuchElementException> =>
-  thenable(f).pipe(Effect.flatMap(Effect.fromNullable));
 
 // biome-ignore lint/suspicious/noExplicitAny: vscode executeCommand API expects any
 export const executeCommand = (command: string, ...args: Array<any>) =>
@@ -66,21 +47,33 @@ export const showInformationMessage = <T extends string>(
 export const registerCommand = <R, E, A>(
   command: string,
   // biome-ignore lint/suspicious/noExplicitAny: vscode command args are untyped
-  f: (...args: Array<any>) => Effect.Effect<A, E, R>
+  f: (...args: Array<any>) => Effect.Effect<A, E, R>,
+  options?: {
+    /**
+     * Hand the command's result back to the caller of `executeCommand`
+     * (e.g. task input variables). Off by default so callers do not wait on
+     * notifications the command shows. Failures resolve to undefined.
+     */
+    readonly returnResult?: boolean;
+  }
 ) =>
   Effect.gen(function* () {
     const context = yield* VsCodeContext;
-    const runtime = yield* Effect.runtime<R>();
-    const run = Runtime.runFork(runtime);
+    const services = yield* Effect.context<R>();
+    const runFork = Effect.runForkWith(services);
+    const runPromise = Effect.runPromiseWith(services);
 
     context.subscriptions.push(
-      vscode.commands.registerCommand(command, (...args) =>
-        f(...args).pipe(
-          Effect.catchAllCause(Effect.log),
-          Effect.annotateLogs({ command }),
-          run
-        )
-      )
+      vscode.commands.registerCommand(command, (...args) => {
+        const effect = f(...args).pipe(
+          Effect.catchCause(Effect.log),
+          Effect.annotateLogs({ command })
+        );
+        if (options?.returnResult) {
+          return runPromise(effect);
+        }
+        runFork(effect);
+      })
     );
   });
 
@@ -120,7 +113,7 @@ export const registerWebviewViewProvider = (
   });
 
 export const activeTextEditor = () =>
-  Option.fromNullable(vscode.window.activeTextEditor);
+  Option.fromNullishOr(vscode.window.activeTextEditor);
 
 export const openTextDocument = (options: {
   content?: string;
@@ -163,7 +156,7 @@ export const config = <A>(
         .get<A>(setting);
       return emptyValueAsNone && typeof value === "string" && value === ""
         ? Option.none()
-        : Option.fromNullable(value);
+        : Option.fromNullishOr(value);
     };
 
     const update = (value: A) =>
@@ -172,7 +165,7 @@ export const config = <A>(
           .getConfiguration(namespace)
           .update(setting, value, true)
       ).pipe(
-        Effect.zipRight(SubscriptionRef.set(ref, Option.fromNullable(value)))
+        Effect.andThen(SubscriptionRef.set(ref, Option.fromNullishOr(value)))
       );
 
     const ref = yield* SubscriptionRef.make<Option.Option<A>>(get());
@@ -181,43 +174,13 @@ export const config = <A>(
       event.affectsConfiguration(`${namespace}.${setting}`)
         ? pipe(
             Effect.log("Configuration changed", namespace, setting, get()),
-            Effect.zipRight(SubscriptionRef.set(ref, get()))
+            Effect.andThen(SubscriptionRef.set(ref, get()))
           )
         : Effect.void
     );
     return {
       get: SubscriptionRef.get(ref),
-      changes: Stream.changes(ref.changes),
-      update,
-    };
-  });
-
-export const configWithDefault = <A>(
-  namespace: string,
-  setting: string,
-  defaultValue: A
-) =>
-  Effect.gen(function* () {
-    const get = () =>
-      vscode.workspace.getConfiguration(namespace).get<A>(setting);
-    const update = (value: A) =>
-      thenable(() =>
-        vscode.workspace
-          .getConfiguration(namespace)
-          .update(setting, value, true)
-      );
-    const ref = yield* SubscriptionRef.make(get() ?? defaultValue);
-    yield* listenFork(vscode.workspace.onDidChangeConfiguration, (event) =>
-      event.affectsConfiguration(`${namespace}.${setting}`)
-        ? pipe(
-            Effect.log("Configuration changed", namespace, setting, get()),
-            Effect.zipRight(SubscriptionRef.set(ref, get() ?? defaultValue))
-          )
-        : Effect.void
-    );
-    return {
-      get: SubscriptionRef.get(ref),
-      changes: Stream.changes(ref.changes),
+      changes: Stream.changes(SubscriptionRef.changes(ref)),
       update,
     };
   });
@@ -226,12 +189,12 @@ export const listen = <A, R>(
   event: vscode.Event<A>,
   f: (data: A) => Effect.Effect<void, never, R>
 ): Effect.Effect<never, never, R> =>
-  Effect.flatMap(Effect.runtime<R>(), (runtime) =>
-    Effect.async<never>((_resume) => {
-      const run = Runtime.runFork(runtime);
+  Effect.flatMap(Effect.context<R>(), (services) =>
+    Effect.callback<never>((_resume) => {
+      const run = Effect.runForkWith(services);
       const d = event((data) =>
         run(
-          Effect.catchAllCause(f(data), (_) =>
+          Effect.catchCause(f(data), (_) =>
             Effect.log("unhandled defect in event listener", _)
           )
         )
@@ -242,143 +205,34 @@ export const listen = <A, R>(
     })
   );
 
-export const listenStream = <A>(event: vscode.Event<A>): Stream.Stream<A> =>
-  Stream.async<A>((emit) => {
-    const d = event((data) => emit.single(data));
-    return Effect.sync(() => {
-      d.dispose();
-    });
-  });
-
 export const listenFork = <A, R>(
   event: vscode.Event<A>,
   f: (data: A) => Effect.Effect<void, never, R>
 ) => Effect.forkScoped(listen(event, f));
 
-export interface Emitter<A> {
-  readonly event: vscode.Event<A>;
-  readonly fire: (data: A) => Effect.Effect<void>;
-}
-
-export const emitter = <A>() =>
-  Effect.gen(function* () {
-    const emitter = new vscode.EventEmitter<A>();
-    yield* Effect.addFinalizer(() => Effect.sync(() => emitter.dispose()));
-    const fire = (data: A) => Effect.sync(() => emitter.fire(data));
-    return {
-      event: emitter.event,
-      fire,
-    } as Emitter<A>;
-  });
-
-export const emitterOptional = <A>() =>
-  Effect.map(emitter<A | null | undefined>(), (emitter) => ({
-    ...emitter,
-    fire: (data: Option.Option<A>) => emitter.fire(Option.getOrUndefined(data)),
-  }));
-
-export interface TreeDataProvider<A> {
-  readonly children: (
-    element: Option.Option<A>
-  ) => Effect.Effect<Option.Option<Array<A>>>;
-  readonly parent?: (element: A) => Effect.Effect<Option.Option<A>>;
-  readonly resolve?: (
-    item: vscode.TreeItem,
-    element: A
-  ) => Effect.Effect<Option.Option<vscode.TreeItem>>;
-  readonly treeItem: (element: A) => Effect.Effect<vscode.TreeItem>;
-}
-
-export const TreeDataProvider = <A>(_: TreeDataProvider<A>) => _;
-
-export const treeDataProvider =
-  <A>(name: string) =>
-  <R, E>(
-    create: (
-      refresh: (data: Option.Option<A | Array<A>>) => Effect.Effect<void>
-    ) => Effect.Effect<TreeDataProvider<A>, E, R>
-  ): Layer.Layer<never, E, Exclude<R, Scope.Scope> | VsCodeContext> =>
-    Effect.gen(function* () {
-      const onChange = yield* emitterOptional<A | Array<A>>();
-      const provider = yield* create(onChange.fire);
-      const vscodeProvider: vscode.TreeDataProvider<A> = {
-        onDidChangeTreeData: onChange.event,
-        getTreeItem(element) {
-          return Effect.runPromise(provider.treeItem(element));
-        },
-        getChildren(element) {
-          return Effect.runPromise(
-            Effect.map(
-              provider.children(Option.fromNullable(element)),
-              Option.getOrUndefined
-            )
-          );
-        },
-        ...(provider.parent
-          ? {
-              getParent: (element: A) =>
-                Effect.runPromise(
-                  // biome-ignore lint/style/noNonNullAssertion: parent is checked before this branch
-                  Effect.map(provider.parent!(element), Option.getOrUndefined)
-                ),
-            }
-          : {}),
-        ...(provider.resolve
-          ? {
-              resolveTreeItem: (
-                item: vscode.TreeItem,
-                element: A,
-                token: vscode.CancellationToken
-              ) =>
-                runWithTokenDefault(
-                  Effect.map(
-                    // biome-ignore lint/style/noNonNullAssertion: resolve is checked before this branch
-                    provider.resolve!(item, element),
-                    Option.getOrUndefined
-                  ),
-                  token
-                ),
-            }
-          : {}),
-      };
-      const context = yield* VsCodeContext;
-      context.subscriptions.push(
-        vscode.window.createTreeView(name, {
-          treeDataProvider: vscodeProvider,
-          showCollapseAll: true,
-        })
-      );
-    }).pipe(Layer.scopedDiscard);
-
 /**
  * Wraps an Effect in a VS Code progress notification with cancellation support.
- * The notification only appears after `delay` (default 5s) to avoid flashing
+ * The notification only appears after `delay` (default 2s) to avoid flashing
  * on fast operations. When the user clicks Cancel, the fiber is interrupted,
- * which propagates to all child processes via AbortSignal in Effect.async.
+ * which propagates to all child processes via AbortSignal in Effect.callback.
  */
 export const withProgress = <A, E, R>(
   title: string,
   effect: Effect.Effect<A, E, R>,
-  delay: Duration.DurationInput = "2 seconds"
+  delay: Duration.Input = "2 seconds"
 ): Effect.Effect<A, E, R> =>
   Effect.gen(function* () {
-    const runtime = yield* Effect.runtime<R>();
-    const runFork = Runtime.runFork(runtime);
-    const runCallback = Runtime.runCallback(runtime);
-    const fiber = yield* Effect.fork(effect);
+    const fiber = yield* Effect.forkChild(effect);
 
     // Wait for the fiber to complete within the delay
-    const fast = yield* Fiber.join(fiber).pipe(
-      Effect.timeout(delay),
-      Effect.option
-    );
+    const fast = yield* Fiber.join(fiber).pipe(Effect.timeoutOption(delay));
 
     if (Option.isSome(fast)) {
       return fast.value;
     }
 
     // Still running — show progress and wait for completion
-    return yield* Effect.async<A, E>((resume) => {
+    return yield* Effect.callback<A, E>((resume) => {
       vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
@@ -388,49 +242,20 @@ export const withProgress = <A, E, R>(
         (_progress, token) =>
           new Promise<void>((resolvePromise) => {
             const tokenDispose = token.onCancellationRequested(() => {
-              runFork(Fiber.interrupt(fiber));
+              Effect.runFork(Fiber.interrupt(fiber));
             });
 
-            runCallback(Fiber.join(fiber) as Effect.Effect<A, E, R>, {
+            Effect.runCallback(Fiber.join(fiber), {
               onExit: (exit) => {
                 tokenDispose.dispose();
                 resolvePromise();
-                if (exit._tag === "Success") {
-                  resume(Effect.succeed(exit.value));
-                } else {
-                  resume(Effect.failCause(exit.cause) as Effect.Effect<A, E>);
-                }
+                resume(exit);
               },
             });
           })
       );
     });
   });
-
-export const runWithToken = <R>(runtime: Runtime.Runtime<R>) => {
-  const runCallback = Runtime.runCallback(runtime);
-  return <E, A>(
-    effect: Effect.Effect<A, E, R>,
-    token: vscode.CancellationToken
-  ) =>
-    new Promise<A | undefined>((resolve) => {
-      const cancel = runCallback(effect, {
-        onExit: (exit) => {
-          tokenDispose.dispose();
-
-          if (exit._tag === "Success") {
-            resolve(exit.value);
-          } else {
-            resolve(undefined);
-          }
-        },
-      });
-      const tokenDispose = token.onCancellationRequested(() => {
-        cancel();
-      });
-    });
-};
-export const runWithTokenDefault = runWithToken(Runtime.defaultRuntime);
 
 export const launch = <E>(layer: Layer.Layer<never, E, VsCodeContext>) =>
   Effect.gen(function* () {
@@ -440,11 +265,10 @@ export const launch = <E>(layer: Layer.Layer<never, E, VsCodeContext>) =>
       dispose: () => Effect.runFork(Scope.close(scope, Exit.void)),
     });
     yield* Layer.buildWithScope(layer, scope);
-  }).pipe(Effect.catchAllCause(Effect.logFatal));
+  }).pipe(Effect.catchCause(Effect.logFatal));
 
 export const logger = (name: string) =>
-  Logger.replaceScoped(
-    Logger.defaultLogger,
+  Logger.layer([
     Effect.gen(function* () {
       const channel = yield* Effect.acquireRelease(
         Effect.sync(() =>
@@ -453,20 +277,20 @@ export const logger = (name: string) =>
         (channel) => Effect.sync(() => channel.dispose())
       );
       return Logger.make((options) => {
-        const message = Logger.logfmtLogger.log(options);
+        const message = Logger.formatLogFmt.log(options);
 
         switch (options.logLevel) {
-          case LogLevel.Trace:
+          case "Trace":
             channel.trace(message);
             break;
-          case LogLevel.Debug:
+          case "Debug":
             channel.debug(message);
             break;
-          case LogLevel.Warning:
+          case "Warn":
             channel.warn(message);
             break;
-          case LogLevel.Error:
-          case LogLevel.Fatal:
+          case "Error":
+          case "Fatal":
             channel.error(message);
             break;
           default:
@@ -474,19 +298,5 @@ export const logger = (name: string) =>
             break;
         }
       });
-    })
-  );
-
-export class VsCodeDebugSession extends Context.Tag("vscode/DebugSession")<
-  VsCodeDebugSession,
-  vscode.DebugSession
->() {}
-
-export const debugRequest = <A = unknown>(
-  command: string,
-  // biome-ignore lint/suspicious/noExplicitAny: vscode debug request args are untyped
-  args?: any
-): Effect.Effect<A, never, VsCodeDebugSession> =>
-  Effect.flatMap(VsCodeDebugSession, (session) =>
-    thenable(() => session.customRequest(command, args))
-  );
+    }),
+  ]);

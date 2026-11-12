@@ -25,7 +25,7 @@ export const executeJqInputCommand = (args?: {
     const jqExecution = yield* JqExecutionService;
 
     const cwd = pipe(
-      Option.fromNullable(workspace.workspaceFolders),
+      Option.fromNullishOr(workspace.workspaceFolders),
       Option.map((folders) => folders[0].uri.fsPath),
       Option.getOrElse(() => ".")
     );
@@ -45,7 +45,7 @@ export const executeJqInputCommand = (args?: {
             message: `Failed to read input file: ${resolvedPath}`,
           }),
       }).pipe(
-        Effect.catchAll(() => {
+        Effect.catch(() => {
           // Try as inline JSON — validate before using
           try {
             JSON.parse(inputPath);

@@ -1,15 +1,17 @@
 import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { HttpClient } from "@effect/platform";
+import * as Context from "effect/Context";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as HttpClient from "effect/http/HttpClient";
+import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import type { TextDocument } from "vscode";
+import { JQ_QUERY_REGEX } from "../domain/constants";
 import { InputResolutionError } from "../domain/errors";
 
-const JQ_LINE_REGEX = /^jq\s/;
 const COMMENT_LINE_REGEX = /^#/;
 const WHITESPACE_REGEX = /\s+/;
 
@@ -25,7 +27,7 @@ const resolvePath = (cwd: string, filePath: string): string =>
 // --- URL processor ---
 
 const isUrl = (s: string): boolean =>
-  Schema.decodeUnknownOption(Schema.URL)(s).pipe(Option.isSome);
+  Schema.decodeUnknownOption(Schema.URLFromString)(s).pipe(Option.isSome);
 
 const urlProcessor = Effect.fn("InputResolver.url")(function* (
   context: string
@@ -35,8 +37,10 @@ const urlProcessor = Effect.fn("InputResolver.url")(function* (
       new InputResolutionError({ message: "Not a valid URL" })
     );
   }
-  const client = yield* HttpClient.HttpClient;
-  const response = yield* client.get(context).pipe(
+  // Error responses (4xx/5xx) are failures, not input for jq
+  const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
+  return yield* client.get(context).pipe(
+    Effect.flatMap((response) => response.text),
     Effect.timeout(Duration.seconds(10)),
     Effect.mapError(
       () =>
@@ -45,7 +49,6 @@ const urlProcessor = Effect.fn("InputResolver.url")(function* (
         })
     )
   );
-  return yield* response.text;
 });
 
 // --- Workspace document processor ---
@@ -87,7 +90,7 @@ const fileProcessor = (cwd: string, context: string) => {
 
   // Try single file first
   return readFileAtPath(resolvedPath).pipe(
-    Effect.catchAll(() => {
+    Effect.catch(() => {
       // Try multiple files separated by spaces
       const files = trimmed.split(WHITESPACE_REGEX);
       if (files.length <= 1) {
@@ -108,6 +111,10 @@ const fileProcessor = (cwd: string, context: string) => {
 // --- Shell command processor (lines starting with "$ ") ---
 
 const SHELL_COMMAND_REGEX = /^\$ (.+)$/;
+const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
+
+const escapeRegex = (text: string): string =>
+  text.replace(REGEX_SPECIAL_CHARS, "\\$&");
 
 const shellCommandProcessor = (
   context: string,
@@ -125,10 +132,13 @@ const shellCommandProcessor = (
   // Substitute variables in the command string
   let commandStr = match[1];
   for (const [key, value] of variables) {
-    commandStr = commandStr.replace(new RegExp(`\\$${key}\\b`, "g"), value);
+    commandStr = commandStr.replace(
+      new RegExp(`\\$${escapeRegex(key)}\\b`, "g"),
+      () => value
+    );
   }
 
-  return Effect.async<string, InputResolutionError>((resume, signal) => {
+  return Effect.callback<string, InputResolutionError>((resume, signal) => {
     const result = { stdout: [] as string[], stderr: [] as string[] };
     const proc = spawn(commandStr, {
       cwd,
@@ -199,7 +209,7 @@ const inlineJsonProcessor = (
   let line = startLine + 1;
   while (line < document.lineCount) {
     const text = document.lineAt(line++).text;
-    if (JQ_LINE_REGEX.test(text) || COMMENT_LINE_REGEX.test(text)) {
+    if (JQ_QUERY_REGEX.test(text) || COMMENT_LINE_REGEX.test(text)) {
       break;
     }
     lines.push(text);
@@ -212,10 +222,10 @@ const inlineJsonProcessor = (
   return Effect.succeed(`${lines.join("\n")}\n`);
 };
 
-export class InputResolverService extends Effect.Service<InputResolverService>()(
+export class InputResolverService extends Context.Service<InputResolverService>()(
   "@jqpg/InputResolverService",
   {
-    sync: () => {
+    make: Effect.sync(() => {
       const resolve = Effect.fn("InputResolverService.resolve")(function* (
         document: TextDocument,
         inputLineIndex: number,
@@ -251,6 +261,8 @@ export class InputResolverService extends Effect.Service<InputResolverService>()
       });
 
       return { resolve };
-    },
+    }),
   }
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make);
+}

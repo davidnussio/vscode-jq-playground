@@ -389,6 +389,14 @@ suite("Playground jqpg integration tests", function () {
     await vscode.commands.executeCommand("workbench.action.closeAllEditors");
   });
 
+  test("executeJqInputCommand returns the jq result to the caller", async () => {
+    const result = await vscode.commands.executeCommand(
+      "extension.executeJqInputCommand",
+      { filter: ".endpoints.api", input: '{"endpoints": {"api": "https://x"}}' }
+    );
+    assert.strictEqual(String(result).trim(), '"https://x"');
+  });
+
   // Generate a test for each expected query
   for (const [numStr, expected] of Object.entries(EXPECTED)) {
     const num = Number.parseInt(numStr, 10);

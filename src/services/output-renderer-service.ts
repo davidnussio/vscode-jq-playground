@@ -1,6 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import * as vscode from "vscode";
 import {
   createOutputChannel,
@@ -9,10 +11,10 @@ import {
 } from "../adapters/vscode-adapter";
 import type { OutputTarget } from "../domain/models";
 
-export class OutputRendererService extends Effect.Service<OutputRendererService>()(
+export class OutputRendererService extends Context.Service<OutputRendererService>()(
   "@jqpg/OutputRendererService",
   {
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const outputChannel = yield* Effect.acquireRelease(
         createOutputChannel("jqpg", "json"),
         (ch) => Effect.sync(() => ch.dispose())
@@ -78,4 +80,6 @@ export class OutputRendererService extends Effect.Service<OutputRendererService>
       return { render, renderError };
     }),
   }
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make);
+}

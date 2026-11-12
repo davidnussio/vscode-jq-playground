@@ -1,5 +1,8 @@
+import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import type { TextDocument } from "vscode";
+import { JQ_PREFIX_REGEX, JQ_QUERY_REGEX } from "../domain/constants";
 import { JqParseError } from "../domain/errors";
 import {
   ConsoleOutput,
@@ -15,7 +18,6 @@ import { parseJqCommandArgs } from "../lib/command-line";
 
 const UNESCAPED_QUOTE_END_REGEX = /(?:^|[^\\])'\s*$/;
 const SINGLE_QUOTE_WHITESPACE_REGEX = /^'\s*$/;
-const JQ_PREFIX_REGEX = /jq\s+/;
 const TRAILING_WHITESPACE_REGEX = /\s*$/;
 
 const hasClosingQuote = (query: string): boolean => {
@@ -85,7 +87,7 @@ export const readEditorVariables = (
   const variables = new Map<string, string>();
   for (let i = 0; i < document.lineCount; i++) {
     const lineText = document.lineAt(i).text.trim();
-    if (lineText.startsWith("jq")) {
+    if (JQ_QUERY_REGEX.test(lineText)) {
       break;
     }
     if (lineText.startsWith("#")) {
@@ -102,10 +104,10 @@ export const readEditorVariables = (
   return variables;
 };
 
-export class QueryParserService extends Effect.Service<QueryParserService>()(
+export class QueryParserService extends Context.Service<QueryParserService>()(
   "@jqpg/QueryParserService",
   {
-    sync: () => {
+    make: Effect.sync(() => {
       const parse = Effect.fn("QueryParserService.parse")(function* (
         document: TextDocument,
         lineIndex: number,
@@ -117,8 +119,8 @@ export class QueryParserService extends Effect.Service<QueryParserService>()(
           });
         }
 
-        const rawLine = document.lineAt(lineIndex).text;
-        if (!rawLine.trimStart().startsWith("jq")) {
+        const rawLine = document.lineAt(lineIndex).text.trimStart();
+        if (!JQ_QUERY_REGEX.test(rawLine)) {
           return yield* new JqParseError({
             message: `Line does not start with jq: "${rawLine}"`,
           });
@@ -161,6 +163,8 @@ export class QueryParserService extends Effect.Service<QueryParserService>()(
       });
 
       return { parse };
-    },
+    }),
   }
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make);
+}

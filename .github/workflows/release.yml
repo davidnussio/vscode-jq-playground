@@ -3,17 +3,52 @@ name: Release Extension
 on:
   release:
     types: [published]
+  # Manual run: publish (or re-publish to a single registry) from an existing tag.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Git tag to release (e.g. v6.0.0)
+        required: true
+        type: string
+      prerelease:
+        description: Publish as pre-release
+        type: boolean
+        default: false
+      target:
+        description: Where to publish
+        type: choice
+        default: both
+        options:
+          - both
+          - marketplace
+          - openvsx
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  PRERELEASE: ${{ github.event.release.prerelease || inputs.prerelease || false }}
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      vsix: ${{ steps.package.outputs.vsix }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
 
       - uses: pnpm/action-setup@v5
+        with:
+          version: 10
 
       - uses: actions/setup-node@v6
         with:
@@ -22,32 +57,94 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Extract version
-        id: version
-        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - name: Check tag matches package.json version
+        run: |
+          PKG_VERSION="$(jq -r .version package.json)"
+          if [ "v$PKG_VERSION" != "$TAG" ]; then
+            echo "::error::Tag $TAG does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
 
+      - name: Unit tests
+        run: pnpm run test:unit
+
+      # `vsce package` runs `vscode:prepublish`, i.e. type check + lint + production bundle.
       - name: Package extension
-        run: pnpm dlx @vscode/vsce package --no-dependencies ${{ steps.version.outputs.value }}
-
-      - name: Publish to VS Marketplace
+        id: package
         run: |
-          ARGS="--no-dependencies ${{ steps.version.outputs.value }}"
-          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
-            ARGS="$ARGS --pre-release"
+          VSIX="vscode-jq-playground-${TAG#v}.vsix"
+          ARGS=(--no-dependencies --out "$VSIX")
+          if [ "$PRERELEASE" = "true" ]; then
+            ARGS+=(--pre-release)
           fi
-          pnpm dlx @vscode/vsce publish $ARGS
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+          pnpm dlx @vscode/vsce package "${ARGS[@]}"
+          echo "vsix=$VSIX" >> "$GITHUB_OUTPUT"
 
-      - name: Publish to Open VSX Registry
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vsix
+          path: ${{ steps.package.outputs.vsix }}
+          if-no-files-found: error
+
+      - name: Attach .vsix to GitHub Release
         run: |
-          ARGS="vscode-jq-playground-${{ steps.version.outputs.value }}.vsix -p ${{ secrets.OVSX_TOKEN }}"
-          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
-            ARGS="$ARGS --pre-release"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" "$VSIX" --clobber
+          else
+            echo "::notice::No GitHub Release for $TAG, skipping asset upload"
           fi
-          pnpm dlx ovsx publish $ARGS
-
-      - name: Upload .vsix to GitHub Release
-        run: gh release upload "${{ github.event.release.tag_name }}" vscode-jq-playground-${{ steps.version.outputs.value }}.vsix
         env:
           GH_TOKEN: ${{ github.token }}
+          VSIX: ${{ steps.package.outputs.vsix }}
+
+  # Registries are published from the same .vsix in independent jobs, so a
+  # failure on one side can be re-run without touching the other.
+  publish-marketplace:
+    name: Publish to VS Marketplace
+    needs: build
+    if: github.event_name == 'release' || inputs.target != 'openvsx'
+    runs-on: ubuntu-latest
+    # Marketplace Trusted Publishing: the job exchanges a GitHub OIDC token for a
+    # short-lived Marketplace credential, so no PAT secret is stored. Requires a
+    # Trusted Publishing policy on the publisher bound to this repo and to
+    # `release.yml` (see RELEASING.md).
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: vsix
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Publish
+        run: npx --yes @vscode/vsce publish --oidc --packagePath "$VSIX" --skip-duplicate
+        env:
+          VSIX: ${{ needs.build.outputs.vsix }}
+
+  publish-openvsx:
+    name: Publish to Open VSX
+    needs: build
+    if: github.event_name == 'release' || inputs.target != 'marketplace'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: vsix
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Publish
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "::error::Secret OVSX_TOKEN is not set"
+            exit 1
+          fi
+          npx --yes ovsx publish "$VSIX" --skip-duplicate
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_TOKEN }}
+          VSIX: ${{ needs.build.outputs.vsix }}

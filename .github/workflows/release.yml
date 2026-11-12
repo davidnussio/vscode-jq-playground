@@ -144,6 +144,9 @@ jobs:
             echo "::error::Secret OVSX_TOKEN is not set"
             exit 1
           fi
+          # A secret pasted with a trailing newline makes an invalid Authorization header.
+          OVSX_PAT="$(printf '%s' "$OVSX_PAT" | tr -d '[:space:]')"
+          export OVSX_PAT
           npx --yes ovsx publish "$VSIX" --skip-duplicate
         env:
           OVSX_PAT: ${{ secrets.OVSX_TOKEN }}

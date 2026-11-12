@@ -63,3 +63,6 @@ bin
 dist/**
 build/**
 .vscode/numbered-bookmarks.json
+
+# Local reference copies of upstream sources (see AGENTS.md)
+repos/

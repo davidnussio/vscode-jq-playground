@@ -1,9 +1,10 @@
 # Agent notes
 
-## Vendored library sources (`repos/`)
+## Local library sources (`repos/`)
 
-`repos/` contains read-only copies of upstream library sources, vendored with
-`git subtree` so agents can read real implementations, tests and docs.
+`repos/` holds read-only copies of upstream library sources so agents can read
+real implementations, tests and docs. It is git-ignored: the copies live only
+on your machine and are never committed.
 
 - `repos/effect` — Effect v4 monorepo (matches the `effect` version in
   `package.json`). Start from `repos/effect/LLMS.md`,
@@ -12,15 +13,17 @@
 
 Rules:
 
-- Treat `repos/**` as reference material only: never edit it and never import
-  from it. Application code imports from the `effect` npm package.
+- Treat `repos/**` as reference material only: never edit it, never import
+  from it and never commit it. Application code imports from the `effect` npm
+  package.
 - When an Effect API is unclear, read the source and tests in `repos/effect`
   before guessing. It is authoritative over the `effect-ts` skill, which may describe older v4 betas
   (e.g. `ServiceMap`, `effect/unstable/*`).
+- If `repos/effect` is missing, fetch it with the command below.
 
-Updating (keep it in sync with the `effect` version in `package.json`):
+Fetching or updating (keep it in sync with the `effect` version in
+`package.json`):
 
 ```bash
-git fetch --depth 1 https://github.com/Effect-TS/effect.git 'refs/tags/effect@<version>'
-git subtree merge --prefix repos/effect FETCH_HEAD --squash -m "chore: update vendored Effect to <version>"
+rm -rf repos/effect && git clone --depth 1 --branch 'effect@<version>' https://github.com/Effect-TS/effect.git repos/effect && rm -rf repos/effect/.git
 ```

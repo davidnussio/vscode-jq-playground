@@ -84,9 +84,14 @@ export class AiService extends Context.Service<AiService>()("@jqpg/AiService", {
     yield* Effect.promise(refreshModelAvailability);
 
     // Re-check when models change (e.g. Copilot installed/uninstalled)
-    vscode.lm.onDidChangeChatModels(() => {
-      refreshModelAvailability();
-    });
+    yield* Effect.acquireRelease(
+      Effect.sync(() =>
+        vscode.lm.onDidChangeChatModels(() => {
+          refreshModelAvailability();
+        })
+      ),
+      (listener) => Effect.sync(() => listener.dispose())
+    );
 
     const explainFilter = Effect.fn("AiService.explainFilter")(function* (
       filter: string,
@@ -119,9 +124,7 @@ export class AiService extends Context.Service<AiService>()("@jqpg/AiService", {
       );
     });
 
-    const isAvailable = Effect.sync(() => isAiAvailable());
-
-    return { explainFilter, fixError, generateFilter, isAvailable };
+    return { explainFilter, fixError, generateFilter };
   }),
 }) {
   static readonly layer = Layer.effect(this, this.make);

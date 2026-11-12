@@ -1,5 +1,3 @@
-import * as path from "node:path";
-
 export type SupportedPlatform = "darwin" | "linux" | "win32";
 
 export const BINARIES: Record<
@@ -7,7 +5,7 @@ export const BINARIES: Record<
   Record<string, { file: string; checksum: string }>
 > = {
   darwin: {
-    amd64: {
+    x64: {
       file: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-macos-amd64",
       checksum:
         "e80dbe0d2a2597e3c11c404f03337b981d74b4a8504b70586c354b7697a7c27f",
@@ -19,7 +17,7 @@ export const BINARIES: Record<
     },
   },
   linux: {
-    amd64: {
+    x64: {
       file: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64",
       checksum:
         "020468de7539ce70ef1bceaf7cde2e8c4f2ca6c3afb84642aabc5c97d9fc2a0d",
@@ -31,7 +29,7 @@ export const BINARIES: Record<
     },
   },
   win32: {
-    amd64: {
+    x64: {
       file: "https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-windows-amd64.exe",
       checksum:
         "23cb60a1354eed6bcc8d9b9735e8c7b388cd1fdcb75726b93bc299ef22dd9334",
@@ -39,9 +37,11 @@ export const BINARIES: Record<
   },
 };
 
+/** A line that starts a jq query. */
 export const JQ_QUERY_REGEX = /^jq\s/;
 
-export const EXAMPLES_PATH = path.join(".", "examples");
+/** The `jq ` prefix of a query line, to strip it off. */
+export const JQ_PREFIX_REGEX = /^jq\s+/;
 
 export const LANGUAGES = ["jqpg", "jq"] as const;
 

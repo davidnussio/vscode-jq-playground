@@ -74,7 +74,7 @@ const getActiveEditorJsonSample = (): string | undefined => {
   if (Option.isNone(editor)) {
     return undefined;
   }
-  const doc = Option.getOrThrow(editor).document;
+  const doc = editor.value.document;
   if (doc.languageId === "json" || doc.languageId === "jsonc") {
     return doc.getText().slice(0, 500);
   }
@@ -118,38 +118,30 @@ export const generateFilterCommand = () =>
 
     const ai = yield* AiService;
     const jsonSample = getActiveEditorJsonSample();
-    const response = yield* ai.generateFilter(
-      description,
-      jsonSample ?? undefined
-    );
+    const response = yield* ai.generateFilter(description, jsonSample);
 
     // generateFilter needs the full text to insert into a .jqpg block
     const filter = (yield* collectResponseText(response)).trim();
 
+    const block = `jq '${filter}'\n${jsonSample ?? "{}"}`;
+
+    // Append to the active playground, otherwise open a new one
     const ed = activeTextEditor();
-    if (Option.isSome(ed)) {
-      const editor = Option.getOrThrow(ed);
-      if (editor.document.languageId === "jqpg") {
-        const lastLine = editor.document.lineCount - 1;
-        const lastChar = editor.document.lineAt(lastLine).text.length;
-        yield* thenable(() =>
-          editor.edit((editBuilder) => {
-            editBuilder.insert(
-              new vscode.Position(lastLine, lastChar),
-              `\n\njq '${filter}'\n${jsonSample ?? "{}"}`
-            );
-          })
-        );
-      } else {
-        const content = `jq '${filter}'\n${jsonSample ?? "{}"}`;
-        const doc = yield* openTextDocument({ content, language: "jqpg" });
-        yield* showTextDocument(doc, {
-          viewColumn: vscode.ViewColumn.Beside,
-        });
-      }
-    } else {
-      const content = `jq '${filter}'\n${jsonSample ?? "{}"}`;
-      const doc = yield* openTextDocument({ content, language: "jqpg" });
-      yield* showTextDocument(doc, { viewColumn: vscode.ViewColumn.Beside });
+    if (Option.isSome(ed) && ed.value.document.languageId === "jqpg") {
+      const editor = ed.value;
+      const lastLine = editor.document.lineCount - 1;
+      const lastChar = editor.document.lineAt(lastLine).text.length;
+      yield* thenable(() =>
+        editor.edit((editBuilder) => {
+          editBuilder.insert(
+            new vscode.Position(lastLine, lastChar),
+            `\n\n${block}`
+          );
+        })
+      );
+      return;
     }
+
+    const doc = yield* openTextDocument({ content: block, language: "jqpg" });
+    yield* showTextDocument(doc, { viewColumn: vscode.ViewColumn.Beside });
   }).pipe(Effect.catchTag("AiUnavailableError", () => showUnavailableWarning));

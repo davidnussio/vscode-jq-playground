@@ -19,11 +19,6 @@ export class JqParseError extends Schema.TaggedError<JqParseError>()(
   { message: Schema.String }
 ) {}
 
-export class InvalidJsonInputError extends Schema.TaggedError<InvalidJsonInputError>()(
-  "InvalidJsonInputError",
-  { message: Schema.String }
-) {}
-
 export class FileNotFoundError extends Schema.TaggedError<FileNotFoundError>()(
   "FileNotFoundError",
   { path: Schema.String, message: Schema.String }
@@ -34,11 +29,6 @@ export class UnsupportedPlatformError extends Schema.TaggedError<UnsupportedPlat
   { platform: Schema.String, arch: Schema.String, message: Schema.String }
 ) {}
 
-export class CommandTimeoutError extends Schema.TaggedError<CommandTimeoutError>()(
-  "CommandTimeoutError",
-  { message: Schema.String, timeoutMs: Schema.Number }
-) {}
-
 export class DownloadError extends Schema.TaggedError<DownloadError>()(
   "DownloadError",
   { message: Schema.String }
@@ -47,11 +37,6 @@ export class DownloadError extends Schema.TaggedError<DownloadError>()(
 export class ChecksumMismatchError extends Schema.TaggedError<ChecksumMismatchError>()(
   "ChecksumMismatchError",
   { expected: Schema.String, actual: Schema.String, message: Schema.String }
-) {}
-
-export class ConfigurationError extends Schema.TaggedError<ConfigurationError>()(
-  "ConfigurationError",
-  { message: Schema.String }
 ) {}
 
 export class InputResolutionError extends Schema.TaggedError<InputResolutionError>()(

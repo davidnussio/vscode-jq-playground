@@ -1,9 +1,7 @@
 import { Array, pipe } from "effect";
 import { CodeLens, Range, type TextDocument } from "vscode";
 import { isAiAvailable } from "../ai/ai-service";
-import { JQ_QUERY_REGEX } from "../domain/constants";
-
-const JQ_PREFIX_REGEX = /^jq\s+/;
+import { JQ_PREFIX_REGEX, JQ_QUERY_REGEX } from "../domain/constants";
 
 export interface JqMatch {
   readonly document: TextDocument;

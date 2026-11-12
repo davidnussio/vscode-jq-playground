@@ -68,8 +68,8 @@ const howManyValueForOption = (key: string): number | false => {
   return typeof val === "number" ? val : false;
 };
 
-// Remove redundant quantifiers and clarify regex precedence
-const trimOption = String.replace(/^(?:['"]|['"]$)/g, "");
+// Strip one surrounding quote from each end of an option value
+const trimOption = String.replace(/^['"]|['"]$/g, "");
 
 const optionAndValues = (acc: OptionsPair): OptionsPair => {
   const howMany = howManyValueForOption(acc.remaining[0]);
@@ -100,7 +100,7 @@ const pairToCommandArgs = (pair: OptionsPair): string[] => {
   return pair.options.concat(pair.remaining.join(" "));
 };
 
-export const parseCommandArgs = (str: string): string[] => {
+const parseCommandArgs = (str: string): string[] => {
   const matchArr = str.match(
     /(--?\w+(?:-\w+)*|"(?:\\"|[^"])+"|(?:\s?[^\s]+\s?))/g
   );

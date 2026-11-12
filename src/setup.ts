@@ -50,7 +50,8 @@ const SetupCommands = Effect.gen(function* () {
   yield* registerCommand("extension.executeJqCommand", executeJqCommand);
   yield* registerCommand(
     "extension.executeJqInputCommand",
-    executeJqInputCommand
+    executeJqInputCommand,
+    { returnResult: true }
   );
   yield* registerCommand(
     "extension.configureJqPath",

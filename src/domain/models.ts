@@ -5,9 +5,6 @@ import * as Schema from "effect/Schema";
 export const JqBinaryPath = Schema.String.pipe(Schema.brand("JqBinaryPath"));
 export type JqBinaryPath = typeof JqBinaryPath.Type;
 
-export const JqFilter = Schema.String.pipe(Schema.brand("JqFilter"));
-export type JqFilter = typeof JqFilter.Type;
-
 export const JqVersion = Schema.String.pipe(Schema.brand("JqVersion"));
 export type JqVersion = typeof JqVersion.Type;
 
@@ -30,14 +27,6 @@ export const FileAppendOutput = (path: string): OutputTarget => ({
   path,
 });
 
-// --- Input source (informational) ---
-
-export type InputSource =
-  | { readonly _tag: "UrlInput"; readonly url: string }
-  | { readonly _tag: "FileInput"; readonly path: string }
-  | { readonly _tag: "WorkspaceDocInput"; readonly fileName: string }
-  | { readonly _tag: "InlineJsonInput" };
-
 // --- Parsed query ---
 
 export interface ParsedQuery {
@@ -46,15 +35,3 @@ export interface ParsedQuery {
   readonly inputLineIndex: number;
   readonly outputTarget: OutputTarget;
 }
-
-// --- Platform binary info ---
-
-export const PlatformBinaryInfo = Schema.Struct({
-  file: Schema.String,
-  checksum: Schema.String,
-});
-export type PlatformBinaryInfo = typeof PlatformBinaryInfo.Type;
-
-// --- Render output type (legacy compat) ---
-
-export type RenderOutputType = "output" | "editor";

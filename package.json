@@ -227,6 +227,7 @@
     "check-types": "tsc --noEmit",
     "lint": "ultracite check",
     "test": "vscode-test",
+    "test:unit": "vitest run",
     "generate:download": "node ./internals/download-manual.js",
     "generate:examples": "node ./internals/build-examples.js",
     "generate:autocomplete": "node ./internals/build-autocomplete.js",
@@ -245,7 +246,6 @@
     "@vscode/test-electron": "^3.1.0",
     "esbuild": "^0.28.2",
     "husky": "^9.1.7",
-    "lint-staged": "^17.6.0",
     "typescript": "^7.0.2",
     "ultracite": "7.4.3",
     "vitest": "^5.1.0",
@@ -256,10 +256,5 @@
   },
   "extensionDependencies": [
     "jq-syntax-highlighting.jq-syntax-highlighting"
-  ],
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,jsonc,css,scss,md,mdx}": [
-      "npx ultracite fix"
-    ]
-  }
+  ]
 }

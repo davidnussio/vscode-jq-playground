@@ -9,9 +9,9 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import type { TextDocument } from "vscode";
+import { JQ_QUERY_REGEX } from "../domain/constants";
 import { InputResolutionError } from "../domain/errors";
 
-const JQ_LINE_REGEX = /^jq\s/;
 const COMMENT_LINE_REGEX = /^#/;
 const WHITESPACE_REGEX = /\s+/;
 
@@ -37,8 +37,10 @@ const urlProcessor = Effect.fn("InputResolver.url")(function* (
       new InputResolutionError({ message: "Not a valid URL" })
     );
   }
-  const client = yield* HttpClient.HttpClient;
-  const response = yield* client.get(context).pipe(
+  // Error responses (4xx/5xx) are failures, not input for jq
+  const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient);
+  return yield* client.get(context).pipe(
+    Effect.flatMap((response) => response.text),
     Effect.timeout(Duration.seconds(10)),
     Effect.mapError(
       () =>
@@ -47,7 +49,6 @@ const urlProcessor = Effect.fn("InputResolver.url")(function* (
         })
     )
   );
-  return yield* response.text;
 });
 
 // --- Workspace document processor ---
@@ -110,6 +111,10 @@ const fileProcessor = (cwd: string, context: string) => {
 // --- Shell command processor (lines starting with "$ ") ---
 
 const SHELL_COMMAND_REGEX = /^\$ (.+)$/;
+const REGEX_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/g;
+
+const escapeRegex = (text: string): string =>
+  text.replace(REGEX_SPECIAL_CHARS, "\\$&");
 
 const shellCommandProcessor = (
   context: string,
@@ -127,7 +132,10 @@ const shellCommandProcessor = (
   // Substitute variables in the command string
   let commandStr = match[1];
   for (const [key, value] of variables) {
-    commandStr = commandStr.replace(new RegExp(`\\$${key}\\b`, "g"), value);
+    commandStr = commandStr.replace(
+      new RegExp(`\\$${escapeRegex(key)}\\b`, "g"),
+      () => value
+    );
   }
 
   return Effect.callback<string, InputResolutionError>((resume, signal) => {
@@ -201,7 +209,7 @@ const inlineJsonProcessor = (
   let line = startLine + 1;
   while (line < document.lineCount) {
     const text = document.lineAt(line++).text;
-    if (JQ_LINE_REGEX.test(text) || COMMENT_LINE_REGEX.test(text)) {
+    if (JQ_QUERY_REGEX.test(text) || COMMENT_LINE_REGEX.test(text)) {
       break;
     }
     lines.push(text);

@@ -13,6 +13,7 @@ import {
 } from "../adapters/vscode-adapter";
 import { fixErrorCommand } from "../ai/ai-commands";
 import { isAiAvailable } from "../ai/ai-service";
+import { JQ_QUERY_REGEX } from "../domain/constants";
 import { InputResolverService } from "../services/input-resolver-service";
 import { JqExecutionService } from "../services/jq-execution-service";
 import { OutputRendererService } from "../services/output-renderer-service";
@@ -29,19 +30,19 @@ const currentWorkingDirectory = (): string => {
   );
   const cwdFirstWorkspace = pipe(
     Option.fromNullishOr(workspace.workspaceFolders),
-    Option.map((folder) => folder[0].uri.path),
+    Option.map((folder) => folder[0].uri.fsPath),
     Option.getOrElse(() => ".")
   );
   return Option.getOrElse(cwdActiveFile, () => cwdFirstWorkspace);
 };
 
 const findPreviousJqQueryLine = (
-  document: import("vscode").TextDocument,
+  document: TextDocument,
   startLine: number
 ): Option.Option<number> => {
   let line = startLine;
   while (line >= 0) {
-    if (document.lineAt(line).text.startsWith("jq")) {
+    if (JQ_QUERY_REGEX.test(document.lineAt(line).text)) {
       return Option.some(line);
     }
     line--;
@@ -135,7 +136,7 @@ export const queryRunner = (openResult: "output" | "editor") =>
 
     if (Option.isNone(editor)) {
       yield* showWarningMessage("No active text editor found.");
-      return yield* Effect.fail("No active text editor found.");
+      return;
     }
 
     const ed = editor.value;

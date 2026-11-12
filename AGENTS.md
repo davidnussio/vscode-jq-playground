@@ -15,8 +15,7 @@ Rules:
 - Treat `repos/**` as reference material only: never edit it and never import
   from it. Application code imports from the `effect` npm package.
 - When an Effect API is unclear, read the source and tests in `repos/effect`
-  before guessing. It is authoritative over `effect-ts-llms.md` (Effect v3
-  docs) and over the `effect-ts` skill, which may describe older v4 betas
+  before guessing. It is authoritative over the `effect-ts` skill, which may describe older v4 betas
   (e.g. `ServiceMap`, `effect/unstable/*`).
 
 Updating (keep it in sync with the `effect` version in `package.json`):

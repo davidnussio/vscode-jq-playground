@@ -1,9 +1,11 @@
+import { randomBytes } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as Effect from "effect/Effect";
 import * as vscode from "vscode";
 import { VsCodeContext } from "../adapters/vscode-adapter";
 import { builtins } from "../builtins";
+import { FileNotFoundError } from "../domain/errors";
 import { JqExecutionService } from "../services/jq-execution-service";
 
 // --- Message protocol ---
@@ -519,15 +521,9 @@ const getWebviewHtml = (
 </html>`;
 };
 
-const getNonce = (): string => {
-  let text = "";
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) {
-    text += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return text;
-};
+const NONCE_BYTES = 16;
+
+const getNonce = (): string => randomBytes(NONCE_BYTES).toString("hex");
 
 // --- Panel command (Effect-based) ---
 
@@ -558,10 +554,18 @@ const setupWebview = (
     switch (msg.type) {
       case "execute": {
         const cwd = currentWorkingDirectory();
-        const args = [msg.filter];
-        const json = fs.readFileSync(msg.filePath, "utf-8");
         runFork(
-          jqExecution.execute(args, json, { cwd }).pipe(
+          Effect.try({
+            try: () => fs.readFileSync(msg.filePath, "utf-8"),
+            catch: () =>
+              new FileNotFoundError({
+                path: msg.filePath,
+                message: `Failed to read input file: ${msg.filePath}`,
+              }),
+          }).pipe(
+            Effect.flatMap((json) =>
+              jqExecution.execute([msg.filter], json, { cwd })
+            ),
             Effect.tap((output) =>
               Effect.sync(() =>
                 postMessage({ type: "result", output, isError: false })

@@ -2,19 +2,18 @@ import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as vscode from "vscode";
 import { activeTextEditor, VsCodeContext } from "../adapters/vscode-adapter";
-import { JQ_QUERY_REGEX } from "../domain/constants";
+import { JQ_PREFIX_REGEX, JQ_QUERY_REGEX } from "../domain/constants";
+import { isAiEnabled } from "./ai-service";
 import { buildChatSystemPrompt } from "./prompts";
 
 // --- Context helpers ---
-
-const JQ_PREFIX_REGEX = /^jq\s+/;
 
 const getActiveFilterAtCursor = (): string | undefined => {
   const ed = activeTextEditor();
   if (Option.isNone(ed)) {
     return undefined;
   }
-  const editor = Option.getOrThrow(ed);
+  const editor = ed.value;
   if (editor.document.languageId !== "jqpg") {
     return undefined;
   }
@@ -34,7 +33,7 @@ const getActiveInputSample = (): string | undefined => {
   if (Option.isNone(ed)) {
     return undefined;
   }
-  const editor = Option.getOrThrow(ed);
+  const editor = ed.value;
   const doc = editor.document;
   if (doc.languageId === "json" || doc.languageId === "jsonc") {
     return doc.getText().slice(0, 500);
@@ -70,6 +69,12 @@ export const registerChatParticipant = Effect.gen(function* () {
   const participant = vscode.chat.createChatParticipant(
     "jqpg.assistant",
     async (request, _context, response, token) => {
+      if (!isAiEnabled()) {
+        response.markdown(
+          "AI features are disabled. Enable them in settings: `jqPlayground.ai.enabled`"
+        );
+        return;
+      }
       const models = await vscode.lm.selectChatModels({ vendor: "copilot" });
       if (!models.length) {
         response.markdown(
